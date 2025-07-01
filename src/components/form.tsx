@@ -93,7 +93,7 @@ const Form = () => {
                 fullWidth
                 InputProps={{
                     startAdornment: (
-                        <span className="pl-2 pr-2">
+                        <span className="pr-2">
                             <Image src="/images/person_filled.png" alt="Person" width={32.42} height={27.53} />
                         </span>
                     ),
