@@ -1,13 +1,5 @@
-import Link from "next/link";
+import SignupPage from "./signup/page";
 
 export default function Home() {
-  return (
-    <main>
-      <nav>
-        <Link href="/pages/login">Login</Link>
-        <br />
-        <Link href="/pages/signup">Signup</Link>
-      </nav>
-    </main>
-  );
+  return <SignupPage />;
 }
