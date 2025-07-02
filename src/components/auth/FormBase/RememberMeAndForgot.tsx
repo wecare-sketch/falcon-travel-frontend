@@ -1,6 +1,7 @@
 "use client";
 import { FormControlLabel, Checkbox } from "@mui/material";
 import CheckIcon from "@mui/icons-material/Check";
+import Link from "next/link";
 
 const RememberMeAndForgot = () => {
   return (
@@ -47,12 +48,12 @@ const RememberMeAndForgot = () => {
           </span>
         }
       />
-      <a
+      <Link
         href="/auth/forgot-password"
         className="font-inter text-sm text-[#345794] hover:underline"
       >
         Forgot Password?
-      </a>
+      </Link>
     </div>
   );
 };
