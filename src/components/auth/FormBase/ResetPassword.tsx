@@ -1,5 +1,5 @@
 import React from "react";
-import { TextField } from "@mui/material";
+import PasswordInputWithToggle from "./PasswordInputWithToggle";
 
 interface Props {
   password: string;
@@ -14,38 +14,25 @@ const ResetPassword = ({
   setPassword,
   setConfirmPassword,
 }: Props) => {
-  const sharedStyles = {
-    borderRadius: "0.375rem",
-    height: "3.66rem",
-    fontFamily: "var(--font-inter), Inter, sans-serif",
-    fontSize: "1rem",
-    borderColor: "#D9D9D9",
-    background: "#F8F9FA",
-  };
-
   return (
-    <>
-      <TextField
-        label="New Password"
-        type="password"
-        fullWidth
-        required
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-        sx={{ mb: 4 }}
-        InputProps={{ style: sharedStyles }}
-      />
-      <TextField
-        label="Confirm Password"
-        type="password"
-        fullWidth
-        required
-        value={confirmPassword}
-        onChange={(e) => setConfirmPassword(e.target.value)}
-        sx={{ mb: 4 }}
-        InputProps={{ style: sharedStyles }}
-      />
-    </>
+    <div className="mt-6">
+      <div className="mb-4">
+        <PasswordInputWithToggle
+          label="New Password"
+          placeholder="Enter password"
+          value={password}
+          onChange={setPassword}
+        />
+      </div>
+      <div className="mb-10">
+        <PasswordInputWithToggle
+          label="Confirm Password"
+          placeholder="Enter password again"
+          value={confirmPassword}
+          onChange={setConfirmPassword}
+        />
+      </div>
+    </div>
   );
 };
 

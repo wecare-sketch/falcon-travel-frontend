@@ -16,27 +16,37 @@ const PersonalDetailsForm = () => {
         Add your Basic info to proceed
       </div>
 
-      <InputField id="fullName" label="Full Name" placeholder="Enter Your Name" />
-      <InputField id="phone" label="Phone Number" placeholder="Enter Your Phone Number" />
+      <InputField
+        id="fullName"
+        label="Full Name"
+        placeholder="Enter Your Name"
+      />
+      <InputField
+        id="phone"
+        label="Phone Number"
+        placeholder="Enter Your Phone Number"
+      />
 
       <label
         htmlFor="dob-mmdd"
         className="font-inter font-medium text-[0.9375rem] leading-[100%] mb-2 text-[#000000]"
       >
-        Date of Birth 
+        Date of Birth
       </label>
       <MonthDayPicker />
 
-      <Box className="flex flex-col md:flex-row justify-between items-center gap-4">
-        <button
-          type="submit"
-          className="w-full h-[3.57rem] rounded-[0.25rem] font-inter font-medium text-[1rem] leading-[100%] text-white transition cursor-pointer"
-          style={{
-            background: "linear-gradient(90deg, #345794 0%, #101B2E 100%)",
-          }}
-        >
-          <Link href="/login">Proceed</Link>
-        </button>
+      <Box className="flex flex-col md:flex-row justify-between items-center gap-4 mt-6">
+        <Link href="/auth/sign-in" className="w-full">
+          <button
+            type="button"
+            className="w-full h-[3.57rem] rounded-[0.25rem] font-inter font-medium text-[1rem] leading-[100%] text-white transition cursor-pointer"
+            style={{
+              background: "linear-gradient(90deg, #345794 0%, #101B2E 100%)",
+            }}
+          >
+            Proceed
+          </button>
+        </Link>
       </Box>
 
       <div className="mt-24 md:mt-28 flex justify-end">

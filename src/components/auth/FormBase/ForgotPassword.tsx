@@ -2,7 +2,11 @@ import React from "react";
 import EmailInput from "./EmailInput";
 
 const ForgotPassword = () => {
-  return <EmailInput />;
+  return (
+    <div className="mt-10">
+      <EmailInput />
+    </div>
+  );
 };
 
 export default ForgotPassword;
