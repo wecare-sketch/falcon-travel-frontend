@@ -7,11 +7,10 @@ import OtpForm from "@/components/auth/forms/OTPForm";
 import ResetPasswordForm from "@/components/auth/forms/ResetPasswordForm";
 import { notFound } from "next/navigation";
 
-// 👇 Make this async
 export default async function AuthPage({
   params,
 }: {
-  params: { flow: string };
+  params: Promise<{ flow: string }>;
 }) {
   const { flow } = await params;
 

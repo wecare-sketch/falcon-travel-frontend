@@ -7,6 +7,7 @@ import SignInUpSection from "./SignInUpSection";
 import ForgotPassword from "./ForgotPassword";
 import OtpSection from "./OtpSection";
 import ResetPassword from "./ResetPassword";
+import Link from "next/link";
 
 export type FormType =
   | "sign-in"
@@ -136,22 +137,22 @@ const FormBase = ({ type }: { type: FormType }) => {
             {type === "sign-up" ? (
               <span>
                 Already have an account?{" "}
-                <a
+                <Link
                   href="/auth/sign-in"
                   className="text-[#345794] font-bold hover:underline"
                 >
                   Sign In
-                </a>
+                </Link>
               </span>
             ) : (
               <span>
                 New here?{" "}
-                <a
+                <Link
                   href="/auth/sign-up"
                   className="text-[#345794] font-bold hover:underline"
                 >
                   Sign Up
-                </a>
+                </Link>
               </span>
             )}
           </div>
