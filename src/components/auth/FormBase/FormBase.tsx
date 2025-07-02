@@ -41,7 +41,6 @@ const FormBase = ({ type }: { type: FormType }) => {
   const handleSubmit = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     switch (type) {
-      case "sign-in":
       case "sign-up":
         router.push("/personal-details");
         break;
@@ -62,15 +61,16 @@ const FormBase = ({ type }: { type: FormType }) => {
     "sign-up": "Sign Up",
     "forgot-password": "Forgot Password",
     otp: "Enter your OTP",
-    "reset-password": "Reset Password",
+    "reset-password": "Set New Password",
   };
 
   const subtitleMap = {
     "sign-in": "Access your Falcon Account",
     "sign-up": "Create your Falcon Account",
-    "forgot-password": "Enter your email to reset your password",
-    otp: "Enter your 6-Digit OTP sent to your email",
-    "reset-password": "Enter a new password for your account",
+    "forgot-password": "Please send OTP to the email to reset new password",
+    otp: "Enter your 6-Digit otp that is send it on your email",
+    "reset-password":
+      "Set new password add same password in both the field to confirm",
   };
 
   const buttonLabelMap = {
@@ -78,75 +78,85 @@ const FormBase = ({ type }: { type: FormType }) => {
     "sign-up": "Sign Up",
     "forgot-password": "Send OTP",
     otp: "Confirm",
-    "reset-password": "Reset Password",
+    "reset-password": "Login",
   };
 
   return (
-    <Box className="bg-white rounded-[1.25rem] shadow-[0_8px_16px_0_#BBBBBB26] w-[90vw] max-w-full md:w-[28rem] lg:w-[32rem] mx-auto md:mx-8 my-4 md:my-8 flex flex-col px-4 md:px-10 pt-8 md:pt-12 pb-4 md:pb-6">
-      <div className="font-inter font-bold text-[2rem] text-[#1C2927] mb-2 text-center">
-        {titleMap[type]}
-      </div>
-      <div className="font-inter font-normal text-[1.125rem] text-[#1C2927] mb-8 text-center">
-        {subtitleMap[type]}
-      </div>
-
-      {["sign-in", "sign-up"].includes(type) && (
-        <SignInUpSection type={type as "sign-in" | "sign-up"} />
-      )}
-
-      {type === "forgot-password" && <ForgotPassword />}
-
-      {type === "otp" && (
-        <OtpSection otp={otp} onChange={handleOtpChange} timer={timer} />
-      )}
-
-      {type === "reset-password" && (
-        <ResetPassword
-          password={password}
-          confirmPassword={confirmPassword}
-          setPassword={setPassword}
-          setConfirmPassword={setConfirmPassword}
-        />
-      )}
-
-      {/* Submit */}
-      <button
-        type="submit"
-        onClick={handleSubmit}
-        className="w-full h-[3.57rem] rounded-[0.25rem] font-inter font-medium text-[1rem] leading-[100%] text-white transition mb-4 cursor-pointer"
-        style={{
-          background: "linear-gradient(90deg, #345794 0%, #101B2E 100%)",
-        }}
-      >
-        {buttonLabelMap[type]}
-      </button>
-
-      {/* Switch links */}
-      {(type === "sign-in" || type === "sign-up") && (
-        <div className="text-center mt-2 text-[#1C2927]">
-          {type === "sign-up" ? (
-            <span>
-              Already have an account?{" "}
-              <a
-                href="/auth/sign-in"
-                className="text-[#345794] font-bold hover:underline"
-              >
-                Sign In
-              </a>
-            </span>
-          ) : (
-            <span>
-              New here?{" "}
-              <a
-                href="/auth/sign-up"
-                className="text-[#345794] font-bold hover:underline"
-              >
-                Sign Up
-              </a>
-            </span>
-          )}
+    <Box
+      className="bg-white rounded-[1.25rem] shadow-[0_8px_16px_0_#BBBBBB26] w-[90vw] max-w-full md:w-[28rem] lg:w-[32rem] mx-auto md:mx-8 my-4 md:my-8 px-4 md:px-10 pt-8 md:pt-12 pb-4 md:pb-6"
+      sx={{
+        minHeight: "50rem",
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "space-between",
+      }}
+    >
+      <div className="flex-grow flex flex-col justify-center">
+        <div className="font-inter font-bold text-[2rem] text-[#1C2927] mb-2 text-center">
+          {titleMap[type]}
         </div>
-      )}
+        <div className="font-inter font-normal text-[1.125rem] text-[#1C2927] mb-8 text-center">
+          {subtitleMap[type]}
+        </div>
+
+        {["sign-in", "sign-up"].includes(type) && (
+          <SignInUpSection type={type as "sign-in" | "sign-up"} />
+        )}
+
+        {type === "forgot-password" && <ForgotPassword />}
+
+        {type === "otp" && (
+          <OtpSection otp={otp} onChange={handleOtpChange} timer={timer} />
+        )}
+
+        {type === "reset-password" && (
+          <ResetPassword
+            password={password}
+            confirmPassword={confirmPassword}
+            setPassword={setPassword}
+            setConfirmPassword={setConfirmPassword}
+          />
+        )}
+
+        {/* Submit */}
+        <button
+          type="submit"
+          onClick={handleSubmit}
+          className="w-full h-[3.57rem] rounded-[0.25rem] font-inter font-medium text-[1rem] leading-[100%] text-white transition mb-4 cursor-pointer"
+          style={{
+            background: "linear-gradient(90deg, #345794 0%, #101B2E 100%)",
+          }}
+        >
+          {buttonLabelMap[type]}
+        </button>
+
+        {/* Switch links */}
+        {(type === "sign-in" || type === "sign-up") && (
+          <div className="text-center mt-2 text-[#1C2927]">
+            {type === "sign-up" ? (
+              <span>
+                Already have an account?{" "}
+                <a
+                  href="/auth/sign-in"
+                  className="text-[#345794] font-bold hover:underline"
+                >
+                  Sign In
+                </a>
+              </span>
+            ) : (
+              <span>
+                New here?{" "}
+                <a
+                  href="/auth/sign-up"
+                  className="text-[#345794] font-bold hover:underline"
+                >
+                  Sign Up
+                </a>
+              </span>
+            )}
+          </div>
+        )}
+      </div>
 
       {/* Footer */}
       <div className="mt-10 flex justify-center">
