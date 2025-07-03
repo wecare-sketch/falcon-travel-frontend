@@ -86,7 +86,11 @@ const FormBase = ({ type }: { type: FormType }) => {
     <Box
       className="bg-white rounded-[1.25rem] shadow-[0_8px_16px_0_#BBBBBB26] w-[90vw] max-w-full md:w-[28rem] lg:w-[32rem] mx-auto md:mx-8 my-4 md:my-8 px-4 md:px-10 pt-8 md:pt-12 pb-4 md:pb-6"
       sx={{
-        minHeight: "50rem",
+        minHeight: {
+          xs: "15rem", // smaller for mobile
+          sm: "15", // small tablets
+          md: "50rem", // desktops and above
+        },
         display: "flex",
         flexDirection: "column",
         justifyContent: "space-between",
@@ -161,7 +165,7 @@ const FormBase = ({ type }: { type: FormType }) => {
 
       {/* Footer */}
       <div className="mt-10 flex justify-center">
-        <span className="font-inter font-normal text-[18px] leading-[27px] text-[#1C2927]">
+        <span className="font-inter font-normal text-sm md:text-[18px] md:leading-[27px] text-[#1C2927] text-center">
           Copyright © 2025 Falcon. All rights reserved
         </span>
       </div>

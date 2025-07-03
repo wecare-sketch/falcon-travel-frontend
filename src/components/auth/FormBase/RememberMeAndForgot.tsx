@@ -5,52 +5,37 @@ import Link from "next/link";
 
 const RememberMeAndForgot = () => {
   return (
-    <div className="flex items-center justify-between mb-6 ml-4">
+    <div className="flex sm:flex-row justify-between items-center mb-6 ml-4 below-320:flex-col">
       <FormControlLabel
         control={
           <Checkbox
             size="small"
             defaultChecked
-            sx={{ padding: 0, marginRight: 1 }}
+            sx={{
+              padding: 0,
+              marginRight: 1,
+            }}
             icon={
-              <span
-                style={{
-                  width: 18,
-                  height: 18,
-                  border: "2px solid #000",
-                  borderRadius: 4,
-                  backgroundColor: "#fff",
-                  display: "inline-block",
-                }}
-              />
+              <span className="w-[16px] h-[16px] md:w-[18px] md:h-[18px] border-2 border-black rounded-[4px] bg-white inline-block" />
             }
             checkedIcon={
-              <span
-                style={{
-                  width: 18,
-                  height: 18,
-                  border: "2px solid #000",
-                  borderRadius: 4,
-                  backgroundColor: "#fff",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
-              >
-                <CheckIcon style={{ fontSize: 16, color: "#000" }} />
+              <span className="w-[16px] h-[16px] md:w-[18px] md:h-[18px] border-2 border-black rounded-[4px] bg-white flex items-center justify-center">
+                <CheckIcon
+                  sx={{ fontSize: { xs: "12px", md: "16px" }, color: "#000" }}
+                />
               </span>
             }
           />
         }
         label={
-          <span className="text-[#1C2927] text-[18px] leading-[27px] font-normal">
+          <span className="text-[#1C2927] text-sm md:text-[18px] md:leading-[27px] font-normal">
             Keep me Logged in
           </span>
         }
       />
       <Link
         href="/auth/forgot-password"
-        className="font-inter text-sm text-[#345794] hover:underline"
+        className="font-inter text-sm md:text-[18px] md:leading-[27px] text-[#345794] hover:underline"
       >
         Forgot Password?
       </Link>

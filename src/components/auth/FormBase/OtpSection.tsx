@@ -10,7 +10,7 @@ interface Props {
 const OtpSection = ({ otp, onChange, timer }: Props) => {
   return (
     <>
-      <div className="flex justify-center gap-2 mb-6 text-black mt-10">
+      <div className="flex justify-center gap-1 md:gap-2 mb-6 text-black mt-10 px-2">
         {otp.map((val, i) => (
           <input
             key={i}
@@ -18,7 +18,7 @@ const OtpSection = ({ otp, onChange, timer }: Props) => {
             maxLength={1}
             value={val}
             onChange={(e) => onChange(e.target.value, i)}
-            className="w-16 h-16 text-center border rounded text-xl font-bold"
+            className="w-12 h-12 md:w-14 md:h-14 text-center border rounded text-base md:text-xl font-bold"
             style={{ borderColor: "#D9D9D9" }}
           />
         ))}
