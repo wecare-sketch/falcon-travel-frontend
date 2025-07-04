@@ -1,8 +1,9 @@
 "use client"
-
+import { useState } from "react"
 import { Box, Typography, Button } from "@mui/material"
 import { Plus } from "lucide-react"
 import { SongItem } from "./Song-Item"
+import { AddMusicModal } from "./Add-Music-Modal"
 
 interface Song {
   id: string
@@ -22,6 +23,21 @@ interface MusicListSectionProps {
 }
 
 export function MusicListSection({ title, songs, onAddSong, onPlaySong, onLikeSong, backgroundColor }: MusicListSectionProps) {
+  const [isAddMusicModalOpen, setIsAddMusicModalOpen] = useState(false)
+
+  const handleAddSong = () => {
+    setIsAddMusicModalOpen(true)
+    onAddSong?.()
+  }
+
+  const handleCloseAddMusicModal = () => {
+    setIsAddMusicModalOpen(false)
+  }
+
+  const handleAddMusic = (platform: string, link?: string) => {
+    console.log(`Adding music from ${platform}:`, link)
+    setIsAddMusicModalOpen(false)
+  }
   return (
     <Box
       sx={{
@@ -53,7 +69,7 @@ export function MusicListSection({ title, songs, onAddSong, onPlaySong, onLikeSo
 
         <Button
           size="small"
-          onClick={onAddSong}
+          onClick={handleAddSong}
           variant="contained"
           startIcon={<Plus size={14} />}
           sx={{
@@ -91,6 +107,7 @@ export function MusicListSection({ title, songs, onAddSong, onPlaySong, onLikeSo
           />
         ))}
       </Box>
+      <AddMusicModal open={isAddMusicModalOpen} onClose={handleCloseAddMusicModal} onAddMusic={handleAddMusic} />
     </Box>
   )
 }
