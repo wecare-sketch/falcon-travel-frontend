@@ -41,7 +41,7 @@ export function Sidebar({ isMobileOpen, onClose, onNavigate }: SidebarProps) {
         className={`
           fixed top-0 left-0 z-50 h-full bg-[#345794] text-white transition-transform duration-300
           ${isMobileOpen ? "translate-x-0 w-full" : "-translate-x-full w-0"}
-          md:relative md:translate-x-0 md:w-[258px] md:h-[713px]
+          md:relative md:translate-x-0 md:w-[258px] md:h-auto
         `}
       >
         <div className="flex flex-col h-full overflow-y-auto">
