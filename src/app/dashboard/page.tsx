@@ -6,6 +6,7 @@ import { Sidebar } from "@/components/dashboard/sidebar";
 import { CreateEventModal } from "@/components/dashboard/Upcoming-Events/Create-Event-Modal";
 import { MusicLibraryPage } from "@/components/dashboard/Music-Library/Music-Library-Page";
 import { UpcomingEventsPage } from "@/components/dashboard/Upcoming-Events/Upcoming-Events-Page";
+import { MediaGalleryPage } from "@/components/dashboard/media/Media-Gallery-Page";
 
 
 const Dashboard = () => {
@@ -56,9 +57,11 @@ const Dashboard = () => {
           {activeView === "Upcoming Events" && <UpcomingEventsPage setIsCreateModalOpen={setIsCreateModalOpen}/>}
 
           {activeView === "Music Library" && <MusicLibraryPage />}
+
+          {activeView === "Media" && <MediaGalleryPage />}
           
           {/* Future: You can add more views here */}
-          {activeView !== "Upcoming Events" && activeView !== "Music Library" &&(
+          {activeView !== "Upcoming Events" && activeView !== "Music Library" && activeView !== "Media" &&(
             <div className="text-center text-gray-500 mt-20">
               <p>No view selected or under construction.</p>
             </div>
