@@ -42,6 +42,9 @@ const FormBase = ({ type }: { type: FormType }) => {
   const handleSubmit = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     switch (type) {
+      case "sign-in":
+        router.push("/user/dashboard");
+        break;
       case "sign-up":
         router.push("/personal-details");
         break;

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Header } from "@/components/dashboard/Header";
-import { Sidebar } from "@/components/dashboard/Sidebar";
+import { Sidebar } from "@/components/dashboard/sidebar";
 import { MusicLibraryPage } from "@/components/dashboard/MusicLibrary/MusicLibraryPage";
 import { UpcomingEventsPage } from "@/components/dashboard/UpcomingEvents/UpcomingEventsPage";
 import { MediaGalleryPage } from "@/components/dashboard/Media/MediaGalleryPage";
