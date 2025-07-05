@@ -45,9 +45,6 @@ const FormBase = ({ type }: { type: FormType }) => {
       case "sign-up":
         router.push("/personal-details");
         break;
-      case "sign-in":
-        router.push("/dashboard");
-        break;
       case "forgot-password":
         router.push("/auth/otp");
         break;
