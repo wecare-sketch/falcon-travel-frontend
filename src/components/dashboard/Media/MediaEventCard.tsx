@@ -103,12 +103,22 @@ export function MediaEventCard({
         <Box
           sx={{
             display: "flex",
+            flexWrap: "wrap",
             alignItems: "center",
             justifyContent: "space-between",
+            rowGap: "12px",
+            columnGap: "16px",
             marginBottom: "16px",
           }}
         >
-          <Box sx={{ display: "flex", alignItems: "center", gap: "16px" }}>
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              gap: "16px",
+              flexWrap: "wrap",
+            }}
+          >
             <Box sx={{ display: "flex", alignItems: "center", gap: "4px" }}>
               <Image
                 src="/images/imgicon.png"
@@ -155,6 +165,7 @@ export function MediaEventCard({
               padding: "6px 16px",
               borderRadius: "6px",
               boxShadow: "none",
+              whiteSpace: "nowrap",
               "&:hover": {
                 backgroundColor: "#3A4F7A",
                 boxShadow: "none",
