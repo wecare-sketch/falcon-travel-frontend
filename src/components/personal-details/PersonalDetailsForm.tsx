@@ -49,8 +49,8 @@ const PersonalDetailsForm = () => {
         </Link>
       </Box>
 
-      <div className="mt-24 md:mt-28 flex justify-end">
-        <span className="font-inter font-normal text-[18px] leading-[27px] text-[#1C2927] w-full h-full flex items-center justify-center">
+      <div className="mt-10 flex justify-center">
+        <span className="font-inter font-normal text-sm md:text-[18px] md:leading-[27px] text-[#1C2927] text-center">
           Copyright © 2025 Falcon. All rights reserved
         </span>
       </div>
