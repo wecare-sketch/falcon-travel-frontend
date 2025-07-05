@@ -1,92 +1,194 @@
 "use client";
 
-import { Home, CalendarIcon, MessageSquare, X } from "lucide-react";
-import { SidebarNavItem } from "./Sidebar-Nav-Item";
-import { useState } from "react";
+import { useState, type FC } from "react";
+import { Drawer, Box, IconButton } from "@mui/material";
+import { X } from "lucide-react";
+import { SidebarNavItem } from "./SidebarNavItem";
+import Image from "next/image";
 
 interface SidebarProps {
   isMobileOpen: boolean;
   onClose: () => void;
-  onNavigate: (view: string) => void; // added prop for navigation
+  onNavigate: (view: string) => void;
+  role?: "admin" | "user";
 }
 
-export function Sidebar({ isMobileOpen, onClose, onNavigate }: SidebarProps) {
-  const [activeItem, setActiveItem] = useState("Dashboard");
+interface SubNavItem {
+  label: string;
+  view: string;
+}
 
-  const handleNavClick = (item: string) => {
-    setActiveItem(item);
-    onNavigate(item); // notify parent about main nav
-    onClose(); // optional: close sidebar on mobile after navigation
-    console.log(`Navigating to ${item}`);
-  };
+interface NavItem {
+  label: string;
+  icon: React.ReactElement;
+  view: string;
+  subItems?: SubNavItem[];
+}
 
-  const handleSubNavClick = (subItem: string) => {
-    onNavigate(subItem); // notify parent about sub-nav
+const drawerWidth = 258;
+
+const NAV_ITEMS: {
+  admin: NavItem[];
+  common: NavItem[];
+} = {
+  admin: [
+    {
+      label: "Dashboard",
+      icon: (
+        <Image
+          src="/images/dashboard.png"
+          alt="Dashboard"
+          width={20}
+          height={20}
+        />
+      ),
+      view: "Dashboard",
+    },
+  ],
+  common: [
+    {
+      label: "Events",
+      icon: (
+        <Image src="/images/calendar.png" alt="Events" width={20} height={20} />
+      ),
+      view: "Events",
+      subItems: [
+        { label: "Upcoming Events", view: "Upcoming Events" },
+        { label: "Music Library", view: "Music Library" },
+        { label: "Media", view: "Media" },
+      ],
+    },
+    {
+      label: "Feedback",
+      icon: (
+        <Image
+          src="/images/feedback.png"
+          alt="Feedback"
+          width={20}
+          height={20}
+        />
+      ),
+      view: "Feedback",
+    },
+  ],
+};
+
+export const Sidebar: FC<Readonly<SidebarProps>> = ({
+  isMobileOpen,
+  onClose,
+  onNavigate,
+  role = "user",
+}) => {
+  const [activeSubItem, setActiveSubItem] = useState<string | null>(null);
+
+  const handleNavClick = (view: string, subItems?: SubNavItem[]) => {
+    if (subItems?.length) {
+      const firstSub = subItems[0];
+      setActiveSubItem(firstSub.view);
+      onNavigate(firstSub.view);
+    } else {
+      setActiveSubItem(null);
+      onNavigate(view);
+    }
+
     onClose();
-    console.log(`Navigating to ${subItem}`);
   };
+
+  const handleSubNavClick = (subView: string) => {
+    setActiveSubItem(subView);
+    onNavigate(subView);
+    onClose();
+  };
+
+  const renderNavItems = () => {
+    const items = [
+      ...(role === "admin" ? NAV_ITEMS.admin : []),
+      ...NAV_ITEMS.common,
+    ];
+
+    return items.map(({ label, icon, view, subItems }) => (
+      <SidebarNavItem
+        key={label}
+        icon={icon}
+        label={label}
+        onClick={() => handleNavClick(view, subItems)}
+        defaultExpanded={view === "Events"}
+        subItems={
+          subItems?.map((sub) => ({
+            label: sub.label,
+            isActive: activeSubItem === sub.view,
+            onClick: () => handleSubNavClick(sub.view),
+          })) ?? []
+        }
+      />
+    ));
+  };
+
+  const drawerContent = (
+    <Box
+      sx={{
+        width: drawerWidth,
+        height: "100%",
+        bgcolor: "#345794",
+        color: "white",
+        display: "flex",
+        flexDirection: "column",
+      }}
+    >
+      {/* Mobile close button */}
+      <div className="md:hidden flex justify-end p-4">
+        <IconButton onClick={onClose}>
+          <X className="w-6 h-6 text-white" />
+        </IconButton>
+      </div>
+
+      <nav className="flex-1">
+        <div className="space-y-1">{renderNavItems()}</div>
+      </nav>
+    </Box>
+  );
 
   return (
     <>
-      {/* Overlay for mobile */}
-      {isMobileOpen && (
-        <div
-          className="fixed inset-0 bg-black/40 z-40 md:hidden"
-          onClick={onClose}
-        />
-      )}
+      {/* Desktop */}
+      <div className="hidden md:block">
+        <Drawer
+          variant="permanent"
+          open
+          sx={{
+            width: drawerWidth,
+            flexShrink: 0,
+            "& .MuiDrawer-paper": {
+              width: drawerWidth,
+              boxSizing: "border-box",
+              backgroundColor: "#345794",
+              borderRight: "none",
+              top: "102px",
+            },
+          }}
+        >
+          {drawerContent}
+        </Drawer>
+      </div>
 
-      {/* Sidebar */}
-      <div
-        className={`
-          fixed top-0 left-0 z-50 h-full bg-[#345794] text-white transition-transform duration-300
-          ${isMobileOpen ? "translate-x-0 w-full" : "-translate-x-full w-0"}
-          md:relative md:translate-x-0 md:w-[258px] md:h-auto
-        `}
-      >
-        <div className="flex flex-col h-full overflow-y-auto">
-          {/* Close button for mobile */}
-          <div className="md:hidden flex justify-end p-4">
-            <button onClick={onClose}>
-              <X className="w-6 h-6 text-white" />
-            </button>
-          </div>
-
-          <nav className="flex-1">
-            <div className="space-y-1">
-              <SidebarNavItem
-                icon={<CalendarIcon className="w-5 h-5" />}
-                label="Events"
-                isActive={activeItem === "Events"}
-                defaultExpanded={true}
-                onClick={() => handleNavClick("Events")}
-                subItems={[
-                  {
-                    label: "Upcoming Events",
-                    isActive: false,
-                    onClick: () => handleSubNavClick("Upcoming Events"),
-                  },
-                  {
-                    label: "Music Library",
-                    onClick: () => handleSubNavClick("Music Library"),
-                  },
-                  {
-                    label: "Media",
-                    onClick: () => handleSubNavClick("Media"),
-                  },
-                ]}
-              />
-
-              <SidebarNavItem
-                icon={<MessageSquare className="w-5 h-5" />}
-                label="Feedback"
-                isActive={activeItem === "Feedback"}
-                onClick={() => handleNavClick("Feedback")}
-              />
-            </div>
-          </nav>
-        </div>
+      {/* Mobile */}
+      <div className="md:hidden">
+        <Drawer
+          variant="temporary"
+          open={isMobileOpen}
+          onClose={onClose}
+          ModalProps={{ keepMounted: true }}
+          sx={{
+            "& .MuiDrawer-paper": {
+              width: "70%",
+              backgroundColor: "#345794",
+              borderRight: "none",
+            },
+          }}
+        >
+          {drawerContent}
+        </Drawer>
       </div>
     </>
   );
-}
+};

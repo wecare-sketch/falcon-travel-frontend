@@ -1,5 +1,15 @@
+"use client";
+
 import Image from "next/image";
 import { ChevronDown, Menu } from "lucide-react";
+import {
+  AppBar,
+  Toolbar,
+  Typography,
+  IconButton,
+  Avatar,
+  Box,
+} from "@mui/material";
 
 interface HeaderProps {
   title: string;
@@ -8,82 +18,128 @@ interface HeaderProps {
   onToggleSidebar?: () => void;
 }
 
-export function Header({ title, userName, userAvatar, onToggleSidebar }: HeaderProps) {
+export function Header({
+  title,
+  userName,
+  userAvatar,
+  onToggleSidebar,
+}: Readonly<HeaderProps>) {
   return (
-    <header className="bg-[linear-gradient(90deg,_#FFFFFF_0%,_#DEDEDE_100%)] border-b border-gray-200 w-full px-4 md:px-8 py-4">
-      <div className="flex items-center justify-between w-full relative">
-        {/* Left: Hamburger & Logo */}
-        <div className="flex items-center gap-3">
-          {/* Hamburger only on mobile */}
-          <button
-            className="md:hidden block text-black"
+    <AppBar
+      position="sticky"
+      elevation={0}
+      sx={{
+        background: "linear-gradient(90deg, #FFFFFF 0%, #DEDEDE 100%)",
+        borderBottom: "1px solid #e0e0e0",
+        px: { xs: 2, md: 4 },
+        py: 2,
+      }}
+    >
+      <Toolbar
+        disableGutters
+        sx={{ justifyContent: "space-between", alignItems: "center" }}
+      >
+        {/* Left: Hamburger + Logo */}
+        <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+          <IconButton
             onClick={onToggleSidebar}
+            sx={{ display: { xs: "inline-flex", md: "none" }, color: "#000" }}
           >
-            <Menu className="w-6 h-6" />
-          </button>
+            <Menu size={24} />
+          </IconButton>
 
-          {/* Logo always visible */}
           <Image
             src="/images/alligned-transparent-logo-200-x-70-px-1-1-ezgif.com-webp-to-png-converter 1.png"
             alt="Falcon Tour Travel"
             width={200}
             height={70}
-            className="h-[70px] w-[200px]"
+            style={{ width: "200px", height: "70px", objectFit: "contain" }}
             priority
           />
-        </div>
+        </Box>
 
-        {/* Center Title (only on md and up) */}
-        <div className="hidden md:flex flex-1 justify-start md:pl-20">
-          <h1 className="font-poppins font-normal text-[33px] leading-[1] tracking-[0] text-black text-center">
+        {/* Center: Title (only on md+) */}
+        <Box
+          sx={{
+            display: { xs: "none", md: "flex" },
+            flex: 1,
+            justifyContent: "start",
+            pl: 6,
+          }}
+        >
+          <Typography
+            variant="h4"
+            sx={{
+              fontFamily: "Poppins, sans-serif",
+              fontWeight: 400,
+              fontSize: "32px",
+              color: "#000",
+            }}
+          >
             {title}
-          </h1>
-        </div>
+          </Typography>
+        </Box>
 
-        {/* Right Section */}
-        <div className="flex items-center gap-4">
-          {/* Mobile: avatar + chevron */}
-          <div className="flex md:hidden items-center gap-2">
-            <div className="w-[34px] h-[34px] rounded-full bg-gray-300 overflow-hidden">
-              <Image
-                src={userAvatar || "/images/avatar.png"}
-                alt="Profile"
-                width={34}
-                height={34}
-                className="w-full h-full object-cover"
-              />
-            </div>
-            <ChevronDown className="w-4 h-4 text-gray-400" />
-          </div>
+        {/* Right: Avatar and Notification */}
+        <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+          {/* Mobile Avatar */}
+          <Box
+            sx={{
+              display: { xs: "flex", md: "none" },
+              alignItems: "center",
+              gap: 1,
+            }}
+          >
+            <Avatar
+              alt={userName}
+              src={userAvatar ?? "/images/avatar.png"}
+              sx={{ width: 34, height: 34 }}
+            />
+            <ChevronDown size={16} color="#9e9e9e" />
+          </Box>
 
-          {/* Desktop: notification + full profile */}
-          <div className="hidden md:flex items-center gap-4">
+          {/* Desktop: Notification + User info */}
+          <Box
+            sx={{
+              display: { xs: "none", md: "flex" },
+              alignItems: "center",
+              gap: 2,
+            }}
+          >
             <Image
               src="/images/Notification.png"
               alt="Notifications"
               width={24}
               height={24}
-              className="h-[24px] w-[24px]"
+              style={{ width: 24, height: 24, cursor: "pointer" }}
               priority
             />
-            <div className="flex items-center gap-3">
-              <span className="font-open-sans font-semibold text-[19px] text-black">
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+              <Typography
+                variant="body1"
+                sx={{
+                  fontWeight: 600,
+                  fontSize: "18px",
+                  color: "#000",
+                  fontFamily: "Open Sans, sans-serif",
+                }}
+              >
                 {userName}
-              </span>
-              <div className="w-[38px] h-[38px] rounded-full bg-gray-300 overflow-hidden">
-                <Image
-                  src={userAvatar || "/images/avatar.png"}
-                  alt="Profile"
-                  width={38}
-                  height={38}
-                  className="w-full h-full object-cover"
-                />
-              </div>
-              <ChevronDown className="w-4 h-4 text-gray-400" />
-            </div>
-          </div>
-        </div>
-      </div>
-    </header>
+              </Typography>
+              <Avatar
+                alt={userName}
+                src={userAvatar ?? "/images/avatar.png"}
+                sx={{ width: 38, height: 38, cursor: "pointer" }}
+              />
+              <ChevronDown
+                size={16}
+                color="#9e9e9e"
+                style={{ cursor: "pointer" }}
+              />
+            </Box>
+          </Box>
+        </Box>
+      </Toolbar>
+    </AppBar>
   );
 }
