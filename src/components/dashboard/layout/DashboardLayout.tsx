@@ -10,6 +10,7 @@ import { CreateEventModal } from "@/components/forms/CreateEvent/CreateEventModa
 import { useDispatch } from "react-redux";
 import { setUserRole } from "@/store/slices/userRoleSlice";
 import { CreateEventFormData } from "@/types/form";
+import { FeedBackPage } from "../Feedback/FeedBackPage";
 
 interface DashboardLayoutProps {
   role: "user" | "admin";
@@ -50,6 +51,8 @@ export function DashboardLayout({ role }: Readonly<DashboardLayoutProps>) {
         return <MusicLibraryPage />;
       case "Media":
         return <MediaGalleryPage />;
+      case "Feedback":
+        return <FeedBackPage/>
       default:
         return <div className="p-4">Select a view</div>;
     }

@@ -8,6 +8,7 @@ interface EventCardProps {
   title: string;
   date: string;
   imageUrl: string;
+  Label?:string;
   onViewDetails?: () => void;
 }
 
@@ -16,6 +17,7 @@ export function EventCard({
   date,
   imageUrl,
   onViewDetails,
+  Label,
 }: Readonly<EventCardProps>) {
   return (
     <Card
@@ -70,7 +72,7 @@ export function EventCard({
           {date}
         </Typography>
         <CustomButton
-          label="View Details"
+          label={Label}
           onClick={onViewDetails}
           width="100%"
           height="40px"
