@@ -52,6 +52,7 @@ export function UpcomingEventsPage({
             title={event.title}
             date={event.date}
             imageUrl={event.imageUrl}
+            Label="View Details"
             onViewDetails={() => handleViewDetails(event.id)}
           />
         ))}
