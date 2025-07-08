@@ -1,7 +1,9 @@
+import { useState } from "react";
 import { PageHeader } from "../PageHeader";
 import { EventCard } from "./EventCard";
 import { SearchFilters } from "../SearchFilter";
 import { CreateEventCard } from "./CreateEventCard";
+import { EventDetailsPage } from "../EventDetails/EventDetailPage";
 
 const events = [
   {
@@ -25,14 +27,19 @@ interface UpcomingEventsPageProps {
 export function UpcomingEventsPage({
   setIsCreateModalOpen,
 }: Readonly<UpcomingEventsPageProps>) {
+  const [selectedEventId, setSelectedEventId] = useState<number | null>(null);
+
   const handleViewDetails = (eventId: number) => {
-    console.log("View details for event:", eventId);
+    setSelectedEventId(eventId);
   };
 
   const handleCreateEvent = () => {
-    console.log("Create new event");
     setIsCreateModalOpen(true);
   };
+
+  if (selectedEventId !== null) {
+    return <EventDetailsPage eventId={selectedEventId} />;
+  }
 
   return (
     <div>
