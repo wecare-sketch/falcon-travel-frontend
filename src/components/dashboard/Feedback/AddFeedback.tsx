@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from "react";
-import { Box, Typography,TextField } from "@mui/material";
+import { Box, Typography,TextField} from "@mui/material";
 import SentimentVeryDissatisfiedIcon from '@mui/icons-material/SentimentVeryDissatisfied';
 import SentimentDissatisfiedIcon from '@mui/icons-material/SentimentDissatisfied';
 import SentimentNeutralIcon from '@mui/icons-material/SentimentNeutral';
 import SentimentSatisfiedIcon from '@mui/icons-material/SentimentSatisfied';
 import SentimentVerySatisfiedIcon from '@mui/icons-material/SentimentVerySatisfied';
 import { PageHeader } from "../PageHeader";
-import { CustomButton } from "../../shared/CustomButton";
+import { CustomButton } from "@/components/shared/CustomButton";
+import { FeedbackSuccessDialog } from "./FeedbackSuccessDialog";
 
 
 const feedbackQuestions = [
@@ -34,6 +35,8 @@ export default function AddFeedback({ eventId }: AddFeedbackProps) {
   const [loading, setLoading] = useState(true);
   const [ratings, setRatings] = useState<number[]>(Array(feedbackQuestions.length).fill(0));
   const [description, setDescription] = useState("");
+  const [open, setOpen] = useState(false);
+
 
   useEffect(() => {
     async function fetchFeedbackForEvent(id: number) {
@@ -47,6 +50,8 @@ export default function AddFeedback({ eventId }: AddFeedbackProps) {
     fetchFeedbackForEvent(eventId);
   }, [eventId]);
 
+  
+ 
   const handleRating = (questionIdx: number, value: number) => {
     const newRatings = [...ratings];
     newRatings[questionIdx] = value;
@@ -172,8 +177,11 @@ export default function AddFeedback({ eventId }: AddFeedbackProps) {
           sx={{
             background: "#345794"
           }}
+          onClick={()=>setOpen(true)}
         />
       </Box>
+    <FeedbackSuccessDialog open={open} onClose={()=>setOpen(false)}/>
+      
     </>
   );
 }
