@@ -2,6 +2,7 @@ import { useState } from "react";
 import { PageHeader } from "../PageHeader"
 import { SearchFilters } from "../SearchFilter"
 import { EventCard } from "../UpcomingEvents/EventCard"
+import AddFeedback from "./AddFeedback";
 
 const events = [
     {
@@ -25,7 +26,7 @@ export function FeedBackPage(){
         setSelectedEventId(eventId);
       };
       if (selectedEventId !== null) {
-        return <></>;
+        return <AddFeedback/>;
       }
     return(
         <>
