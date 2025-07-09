@@ -26,7 +26,7 @@ export function FeedBackPage(){
         setSelectedEventId(eventId);
       };
       if (selectedEventId !== null) {
-        return <AddFeedback/>;
+        return <AddFeedback eventId={selectedEventId}/>;
       }
     return(
         <>

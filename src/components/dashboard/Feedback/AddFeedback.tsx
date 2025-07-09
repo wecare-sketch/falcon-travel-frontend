@@ -1,11 +1,13 @@
-import React, { useState } from "react";
-import { Box, Typography, Button, TextField } from "@mui/material";
+import React, { useState, useEffect } from "react";
+import { Box, Typography,TextField } from "@mui/material";
 import SentimentVeryDissatisfiedIcon from '@mui/icons-material/SentimentVeryDissatisfied';
 import SentimentDissatisfiedIcon from '@mui/icons-material/SentimentDissatisfied';
 import SentimentNeutralIcon from '@mui/icons-material/SentimentNeutral';
 import SentimentSatisfiedIcon from '@mui/icons-material/SentimentSatisfied';
 import SentimentVerySatisfiedIcon from '@mui/icons-material/SentimentVerySatisfied';
 import { PageHeader } from "../PageHeader";
+import { CustomButton } from "../../shared/CustomButton";
+
 
 const feedbackQuestions = [
   "long established fact that a reader will be distracted by the readable content of a page",
@@ -23,9 +25,27 @@ const emojiIcons = [
   <SentimentVerySatisfiedIcon key="very-satisfied" fontSize="large" />
 ];
 
-export default function AddFeedback() {
+interface AddFeedbackProps {
+  eventId: number;
+}
+
+export default function AddFeedback({ eventId }: AddFeedbackProps) {
+  const [feedback, setFeedback] = useState<{ eventId: number; text: string } | null>(null);
+  const [loading, setLoading] = useState(true);
   const [ratings, setRatings] = useState<number[]>(Array(feedbackQuestions.length).fill(0));
   const [description, setDescription] = useState("");
+
+  useEffect(() => {
+    async function fetchFeedbackForEvent(id: number) {
+      setTimeout(() => {
+        setFeedback({ eventId: id, text: "Sample feedback for event " + id });
+        console.log("Loaded feedback:", feedback);
+        setLoading(false);
+      }, 500);
+    }
+
+    fetchFeedbackForEvent(eventId);
+  }, [eventId]);
 
   const handleRating = (questionIdx: number, value: number) => {
     const newRatings = [...ratings];
@@ -33,30 +53,39 @@ export default function AddFeedback() {
     setRatings(newRatings);
   };
 
+  if (loading) return <div>Loading feedback...</div>;
+
   return (
     <>
-      <PageHeader title="Add Event FeedBack" />
+      <PageHeader
+        title="Add Event FeedBack"
+        headerContent={
+          <Box
+            sx={{
+              display: "grid",
+              gridTemplateColumns: "repeat(5, 35px)",
+              justifyContent: "flex-end",
+              gap: 1.5
+            }}
+          >
+            {emojiIcons.map((icon, idx) => (
+              <Box
+                key={idx}
+                sx={{
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center"
+                }}
+              >
+                {icon}
+              </Box>
+            ))}
+          </Box>
+        }
+      />
 
-      {/* Emoji Icons */}
-      <Box
-        sx={{
-          display: "flex",
-          justifyContent: { xs: "center", sm: "flex-end" },
-          flexWrap: "wrap",
-          gap: 2,
-          position: "relative",
-          top: { xs: 0, sm: "-60px" },
-          mb: { xs: 2, sm: 0 }
-        }}
-      >
-        {emojiIcons.map((icon, idx) => (
-          <Box key={idx}>{icon}</Box>
-        ))}
-      </Box>
-
-      {/* Questions List */}
       <Box>
-        <ul style={{ paddingLeft: 20 }}>
+        <ul style={{ paddingLeft: 20, paddingRight: 10 }}>
           {feedbackQuestions.map((q, idx) => (
             <li key={idx} style={{ listStyleType: "disc", marginBottom: 16 }}>
               <Box
@@ -64,7 +93,7 @@ export default function AddFeedback() {
                   display: "flex",
                   alignItems: "center",
                   flexDirection: { xs: "column", sm: "row" },
-                  gap: { xs: 1, sm: 0 }
+                  gap: 1
                 }}
               >
                 <Typography
@@ -77,7 +106,14 @@ export default function AddFeedback() {
                 >
                   {q}
                 </Typography>
-                <Box sx={{ display: "flex", gap: 2 }}>
+
+                <Box
+                  sx={{
+                    display: "grid",
+                    gridTemplateColumns: "repeat(5, 35px)",
+                    gap: 2
+                  }}
+                >
                   {[1, 2, 3, 4, 5].map((val) => (
                     <Box
                       key={val}
@@ -99,7 +135,6 @@ export default function AddFeedback() {
         </ul>
       </Box>
 
-      {/* Description Field */}
       <Typography sx={{ mt: 3, mb: 1, fontWeight: 400, color: "#212121", fontSize: "20px" }}>
         Add Description
       </Typography>
@@ -113,7 +148,6 @@ export default function AddFeedback() {
         sx={{ mb: 3 }}
       />
 
-      {/* Buttons */}
       <Box
         sx={{
           display: "flex",
@@ -123,25 +157,22 @@ export default function AddFeedback() {
           gap: 2
         }}
       >
-        <Button
-          variant="outlined"
+        <CustomButton
+          label="Cancel"
+          inverted
+          width={typeof window !== 'undefined' && window.innerWidth < 600 ? "100%" : "150px"}
           sx={{
-            width: { xs: "100%", sm: "150px" },
             border: "1px solid #00000029",
             color: "#345794"
           }}
-        >
-          Cancel
-        </Button>
-        <Button
-          variant="contained"
+        />
+        <CustomButton
+          label="Submit Feedback"
+          width={typeof window !== 'undefined' && window.innerWidth < 600 ? "100%" : "230px"}
           sx={{
-            width: { xs: "100%", sm: "230px" },
             background: "#345794"
           }}
-        >
-          Submit Feedback
-        </Button>
+        />
       </Box>
     </>
   );
