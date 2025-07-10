@@ -3,8 +3,8 @@
 import type React from "react"
 
 import { useState } from "react"
-import { Box, Typography, Tabs, Tab, IconButton,Button } from "@mui/material"
-import { Upload,Heart, Edit, Trash2 } from "lucide-react"
+import { Box, Typography, Tabs, Tab, IconButton, Button } from "@mui/material"
+import { Upload, Heart} from "lucide-react"
 import { PageHeader } from "../PageHeader"
 import Image from "next/image"
 import { SearchFilters } from "../SearchFilter"
@@ -206,7 +206,7 @@ export function MediaUploadPage({ onBack, onUpload }: MediaUploadPageProps) {
               margin: "0 auto 16px",
             }}
           >
-            <Image src="/images/upload.png" alt="upload" width={36} height={36}/>
+            <Image src="/images/upload.png" alt="upload" width={36} height={36} />
           </Box>
 
           <Typography
@@ -308,7 +308,7 @@ export function MediaUploadPage({ onBack, onUpload }: MediaUploadPageProps) {
                   </Typography>
 
                   {/* Action Buttons */}
-                  <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+                  <Box sx={{ display: "flex", justifyContent: "space-around" }}>
                     <IconButton
                       onClick={() => handleEdit(file.id)}
                       sx={{
@@ -321,7 +321,7 @@ export function MediaUploadPage({ onBack, onUpload }: MediaUploadPageProps) {
                         },
                       }}
                     >
-                      <Edit className="w-4 h-4" />
+                      <Image src="/images/edit.png" alt="edit" width={14} height={14} />
                     </IconButton>
                     <IconButton
                       onClick={() => handleDelete(file.id)}
@@ -335,7 +335,7 @@ export function MediaUploadPage({ onBack, onUpload }: MediaUploadPageProps) {
                         },
                       }}
                     >
-                      <Trash2 className="w-4 h-4" />
+                      <Image src="/images/mediadel.png" alt="delete" width={14} height={14} />
                     </IconButton>
                   </Box>
                 </Box>
