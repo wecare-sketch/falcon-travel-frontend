@@ -6,6 +6,7 @@ import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 import { LabelValuePair } from "./ui/LabelValuePair";
 import Image from "next/image";
+import React, { useState } from "react";
 
 interface EventInfoCardProps {
   eventType: string;
@@ -138,6 +139,13 @@ type EventSummaryCardProps = {
 };
 
 function EventSummaryCard({ totalAmount, remainingAmount, payableAmount }: EventSummaryCardProps) {
+  const [isEditing, setIsEditing] = useState(false);
+  const [editablePayable, setEditablePayable] = useState(payableAmount);
+
+  const handleEditClick = () => setIsEditing(true);
+  const handleSave = () => setIsEditing(false);
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => setEditablePayable(Number(e.target.value));
+
   return (
     <Box
       sx={{
@@ -241,7 +249,7 @@ function EventSummaryCard({ totalAmount, remainingAmount, payableAmount }: Event
             position: "relative",
           }}
         >
-          <Box
+                          <Box
             sx={{
               background: "#F04438",
               borderRadius: "50%",
@@ -259,11 +267,30 @@ function EventSummaryCard({ totalAmount, remainingAmount, payableAmount }: Event
             <Typography sx={{ color: "#222", fontWeight: 500, fontSize: 14 }}>
               Payable Amount
             </Typography>
-            <Typography sx={{ color: "#222", fontWeight: 700, fontSize: 22 }}>
-              $ {payableAmount}
-            </Typography>
+            {isEditing ? (
+              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                <input
+                  type="number"
+                  value={editablePayable}
+                  onChange={handleChange}
+                  style={{ width: 80, fontSize: 18, fontWeight: 700, padding: 4 }}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') handleSave();
+                  }}
+                />
+              </Box>
+            ) : (
+              <Typography sx={{ color: "#222", fontWeight: 700, fontSize: 22 }}>
+                $ {editablePayable}
+              </Typography>
+            )}
+         
           </Box>
-          <Image src="/images/Edit.png" alt="edit" width={20} height={20}
+          <Image
+            src="/images/Edit.png"
+            alt="edit"
+            width={20}
+            height={20}
             style={{
               fontSize: 18,
               position: "absolute",
@@ -273,6 +300,7 @@ function EventSummaryCard({ totalAmount, remainingAmount, payableAmount }: Event
               cursor: "pointer",
               opacity: 0.7,
             }}
+            onClick={handleEditClick}
           />
         </Box>
       </Box>
