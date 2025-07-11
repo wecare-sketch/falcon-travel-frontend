@@ -30,6 +30,7 @@ const drawerWidth = 258;
 const NAV_ITEMS: {
   admin: NavItem[];
   common: NavItem[];
+  admin_end_items: NavItem[];
 } = {
   admin: [
     {
@@ -71,6 +72,13 @@ const NAV_ITEMS: {
       view: "Feedback",
     },
   ],
+  admin_end_items:[
+    {
+      label: "User Requests",
+      icon: (<Image src="/images/feedback.png" alt="User Requests" width={20} height={20} />),
+      view: "User Requests",
+    },
+  ]
 };
 
 export const Sidebar: FC<Readonly<SidebarProps>> = ({
@@ -104,6 +112,7 @@ export const Sidebar: FC<Readonly<SidebarProps>> = ({
     const items = [
       ...(role === "admin" ? NAV_ITEMS.admin : []),
       ...NAV_ITEMS.common,
+      ...(role === "admin" ? NAV_ITEMS.admin_end_items : [])
     ];
 
     return items.map(({ label, icon, view, subItems }) => (
