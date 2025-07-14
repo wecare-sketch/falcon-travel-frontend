@@ -98,6 +98,7 @@ export function UpcomingEventsPage({
     setSelectedEventId(eventId);
   };
 
+
   const handleCreateEvent = () => {
     setIsCreateModalOpen(true);
   };
@@ -163,7 +164,7 @@ export function UpcomingEventsPage({
                     </td>
                     <td className="py-2 px-2">{event.clientName}</td>
                     <td className="py-2 px-2">
-                      <DescriptionIcon className="cursor-pointer mr-2 text-[#C2C9D1]" />
+                      <DescriptionIcon className="cursor-pointer mr-2 text-[#C2C9D1]" onClick={() => handleViewDetails(event.id)} />
                       <EditIcon className="cursor-pointer mr-2 text-[#C2C9D1]" />
                       <DeleteIcon className="cursor-pointer text-[#C2C9D1]" />
                     </td>
