@@ -16,6 +16,11 @@ import { SectionVehicleInfo } from "./SectionVehicleInfo";
 import { SectionPaymentDetails } from "./SectionPaymentDetails";
 import { CreateEventFormData } from "@/types/form";
 import { CustomButton } from "@/components/shared/CustomButton";
+import { useSelector } from "react-redux";
+import { RootState } from "@/store";
+import { useState } from "react";
+import { ShareEventModal } from "../ShareEventModal";
+
 
 interface CreateEventModalProps {
   open: boolean;
@@ -46,8 +51,9 @@ export function CreateEventModal({
       equityDivision: "",
     },
   });
-
+  const role = useSelector((state: RootState) => state.userRole.role);
   const { handleSubmit, reset, getValues } = methods;
+  const [showShareModal, setShowShareModal] = useState(false);
 
   const handleAddStop = () => {
     const stop = getValues("addStops").trim();
@@ -63,83 +69,95 @@ export function CreateEventModal({
 
   const onSubmit = (data: CreateEventFormData) => {
     onCreateEvent(data);
-    handleCancel();
+    if (role === "admin") {
+      onClose();
+      setShowShareModal(true);
+    } else {
+      handleCancel();
+    }
+  };
+
+  const handleCloseShareModal = () => {
+    setShowShareModal(false);
   };
 
   return (
-    <FormProvider {...methods}>
-      <Dialog
-        open={open}
-        onClose={onClose}
-        maxWidth="lg"
-        fullWidth
-        PaperProps={{
-          sx: {
-            borderRadius: "8px",
-            padding: "24px",
-            minHeight: "600px",
-            maxHeight: "90vh",
-            overflow: "auto",
-          },
-        }}
-      >
-        {/* Header */}
-        <DialogTitle
-          sx={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            padding: "0 0 16px 0",
-            borderBottom: "1px solid #E0E0E0",
-            marginBottom: "24px",
+    <>
+      <FormProvider {...methods}>
+        <Dialog
+          open={open}
+          onClose={onClose}
+          maxWidth="lg"
+          fullWidth
+          PaperProps={{
+            sx: {
+              borderRadius: "8px",
+              padding: "24px",
+              minHeight: "600px",
+              maxHeight: "90vh",
+              overflow: "auto",
+            },
           }}
         >
-          <Typography
-            component="span"
-            variant="h5"
-            sx={{ color: "#345794", fontWeight: 600, fontSize: "24px" }}
-          >
-            Create New Event
-          </Typography>
-          <IconButton onClick={onClose} sx={{ padding: "4px" }}>
-            <X className="w-6 h-6 text-gray-600" />
-          </IconButton>
-        </DialogTitle>
-
-        <DialogContent sx={{ padding: 0, overflow: "visible" }}>
-          <SectionEventDetails />
-          <SectionStops onAddStop={handleAddStop} />
-          <SectionVehicleInfo />
-          <SectionPaymentDetails />
-
-          <Box
+          {/* Header */}
+          <DialogTitle
             sx={{
               display: "flex",
-              justifyContent: "flex-end",
-              gap: 2,
-              flexWrap: "wrap",
+              justifyContent: "space-between",
+              alignItems: "center",
+              padding: "0 0 16px 0",
+              borderBottom: "1px solid #E0E0E0",
+              marginBottom: "24px",
             }}
           >
-            <CustomButton
-              label="Cancel"
-              onClick={handleCancel}
-              inverted
+            <Typography
+              component="span"
+              variant="h5"
+              sx={{ color: "#345794", fontWeight: 600, fontSize: "24px" }}
+            >
+              Create New Event
+            </Typography>
+            <IconButton onClick={onClose} sx={{ padding: "4px" }}>
+              <X className="w-6 h-6 text-gray-600" />
+            </IconButton>
+          </DialogTitle>
+
+          <DialogContent sx={{ padding: 0, overflow: "visible" }}>
+            <SectionEventDetails />
+            <SectionStops onAddStop={handleAddStop} />
+            <SectionVehicleInfo />
+            <SectionPaymentDetails />
+
+            <Box
               sx={{
-                minWidth: { xs: "100%", sm: "140px" },
-                height: 44,
+                display: "flex",
+                justifyContent: "flex-end",
+                gap: 2,
+                flexWrap: "wrap",
               }}
-            />
-            <CustomButton
-              label="+ Create Event"
-              onClick={handleSubmit(onSubmit)}
-              sx={{
-                minWidth: { xs: "100%", sm: "180px" },
-                height: 44,
-              }}
-            />
-          </Box>
-        </DialogContent>
-      </Dialog>
-    </FormProvider>
+            >
+              <CustomButton
+                label="Cancel"
+                onClick={handleCancel}
+                inverted
+                sx={{
+                  minWidth: { xs: "100%", sm: "140px" },
+                  height: 44,
+                }}
+              />
+              <CustomButton
+                label="+ Create Event"
+                onClick={handleSubmit(onSubmit)}
+                sx={{
+                  minWidth: { xs: "100%", sm: "180px" },
+                  height: 44,
+                }}
+              />
+            </Box>
+          </DialogContent>
+        </Dialog>
+      </FormProvider>
+      <ShareEventModal open={showShareModal} onClose={handleCloseShareModal} />
+    </>
   );
 }
