@@ -7,6 +7,9 @@ import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 import { LabelValuePair } from "./ui/LabelValuePair";
 import Image from "next/image";
 import React, { useState } from "react";
+import { useSelector } from "react-redux";
+import { RootState } from "@/store";
+
 
 interface EventInfoCardProps {
   eventType: string;
@@ -35,6 +38,7 @@ export function EventInfoCard({
   onShareIt,
   onPayNow,
 }: EventInfoCardProps) {
+  const role = useSelector((state: RootState) => state.userRole.role);
   return (
     <Box
       sx={{
@@ -68,7 +72,122 @@ export function EventInfoCard({
         </Box>
 
         {/* Right Column: Total & Actions */}
-        <Box sx={{ flex: 1 }}>
+        {role === "admin"? 
+        (
+          <Box sx={{ flex: 1, p: 2 }}>
+          {/* Amount Summary Box */}
+          <Box
+            sx={{
+              borderRadius: "12px",
+              background: "#F9F9F9",
+              padding: "20px",
+              textAlign: "center",
+              mb: 3,
+            }}
+          >
+            <Typography
+              sx={{
+                fontSize: "16px",
+                fontWeight: 600,
+                color: "#345794",
+                mb: 1,
+              }}
+            >
+              Total Amount
+            </Typography>
+            <Typography
+              sx={{
+                fontSize: "32px",
+                fontWeight: 600,
+                color: "#757575",
+                mb: 2,
+              }}
+            >
+              $ 3000
+            </Typography>
+        
+            <Typography
+              sx={{
+                fontSize: "16px",
+                fontWeight: 600,
+                color: "#345794",
+                mb: 1,
+              }}
+            >
+              Remaining Amount
+            </Typography>
+            <Typography
+              sx={{
+                fontSize: "24px",
+                fontWeight: 700,
+                color: "#B00020",
+              }}
+            >
+              $ 800
+            </Typography>
+          </Box>
+        
+          {/* Action Buttons */}
+          <Box sx={{ display: "flex", gap: 2, mb: 2 }}>
+            <Button
+              variant="outlined"
+              disabled
+              sx={{
+                flex: 1,
+                backgroundColor: "#F5F5F5",
+                color: "#BDBDBD",
+                borderColor: "#E0E0E0",
+                fontWeight: 500,
+                fontSize: 14,
+                textTransform: "none",
+              }}
+            >
+              Download Invoice
+            </Button>
+        
+            <Button
+              variant="outlined"
+              sx={{
+                flex: 1,
+                color: "#345794",
+                borderColor: "#345794",
+                fontWeight: 500,
+                fontSize: 14,
+                textTransform: "none",
+                backgroundColor: "#fff",
+                "&:hover": {
+                  borderColor: "#2c4770",
+                },
+              }}
+            >
+              Share Itinerary
+            </Button>
+          </Box>
+        
+          <Button
+            fullWidth
+            variant="contained"
+            sx={{
+              backgroundColor: "#345794",
+              fontWeight: 600,
+              fontSize: 16,
+              textTransform: "none",
+              borderRadius: "6px",
+              boxShadow: "none",
+              "&:hover": {
+                backgroundColor: "#2c4770",
+                boxShadow: "none",
+              },
+            }}
+          >
+            Send Reminder
+          </Button>
+        </Box>
+        
+      )
+        :
+        (
+          <Box sx={{ flex: 1 }}>
           {/* Total Amount Box */}
           <EventSummaryCard totalAmount={totalAmount} remainingAmount={remainingAmount} payableAmount={totalAmount - remainingAmount} />
 
@@ -127,6 +246,7 @@ export function EventInfoCard({
             Pay Now
           </Button>
         </Box>
+        )}
       </Box>
     </Box>
   );
