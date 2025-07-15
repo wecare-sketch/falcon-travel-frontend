@@ -3,6 +3,8 @@ import { PageHeader } from "../PageHeader"
 import { SearchFilters } from "../SearchFilter"
 import { EventCard } from "../UpcomingEvents/EventCard"
 import AddFeedback from "./AddFeedback";
+import { RootState } from "@/store";
+import { useSelector } from "react-redux";
 
 const events = [
     {
@@ -10,17 +12,24 @@ const events = [
       title: "Annual Corporate Gala",
       date: "Dec 15, 2023",
       imageUrl: "/images/Clip path group.png?height=212&width=288",
+      rating: 3.7,
+      totalReviews: 10,
+      lastReviewDate: "Feb 26, 2025",
     },
     {
       id: 2,
       title: "Annual Corporate Gala",
       date: "Dec 15, 2023",
       imageUrl: "/images/Clip path group.png?height=212&width=288",
+      rating: 3.7,
+      totalReviews: 15,
+      lastReviewDate: "Mar 01, 2025",
     },
   ];
 
 export function FeedBackPage(){
   const [selectedEventId, setSelectedEventId] = useState<number | null>(null);
+  const role = useSelector((state: RootState) => state.userRole.role);
 
     const handleViewDetails = (eventId: number) => {
         setSelectedEventId(eventId);
@@ -39,8 +48,11 @@ export function FeedBackPage(){
             title={event.title}
             date={event.date}
             imageUrl={event.imageUrl}
+            rating={event.rating}
+            totalReviews={event.totalReviews}
+            lastReviewDate={event.lastReviewDate}
             onViewDetails={() => handleViewDetails(event.id)}
-            Label="Add Your Feedback"
+            Label={role==="user"?"Add Your Feedback":"View Details"}
           />
         ))}
         </div>
