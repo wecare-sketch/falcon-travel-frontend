@@ -4,6 +4,9 @@ import Image from "next/image";
 import { Card, CardContent, Typography, Box, Button } from "@mui/material";
 import { Video } from "lucide-react";
 import { MediaUploadArea } from "./MediaUploadArea";
+import { RootState } from "@/store";
+import { useSelector } from "react-redux";
+
 
 interface MediaEventCardProps {
   title: string;
@@ -30,6 +33,7 @@ export function MediaEventCard({
     console.log(`Uploading ${files.length} files for ${title}`);
     onFileUpload?.(files);
   };
+  const role = useSelector((state: RootState) => state.userRole.role);
 
   return (
     <Card
@@ -97,7 +101,7 @@ export function MediaEventCard({
         </Typography>
 
         {/* Upload Area */}
-        <MediaUploadArea onFileUpload={handleFileUpload} />
+        {role ==="user"?(<MediaUploadArea onFileUpload={handleFileUpload} />):(<></>)}
 
         {/* Media Stats */}
         <Box
@@ -172,7 +176,7 @@ export function MediaEventCard({
               },
             }}
           >
-            Add Media
+            {role==="user"?"Add Media":"Download"}
           </Button>
         </Box>
       </CardContent>
