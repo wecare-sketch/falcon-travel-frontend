@@ -125,18 +125,18 @@ export function UpcomingEventsPage({
             </button>
           </div>
           <div className="overflow-x-auto bg-white rounded shadow">
-            <table className="w-full border-collapse">
+            <table className="w-full border border-gray-300 border-t-0 border-collapse text-sm">
               <thead>
                 <tr className="bg-[#F8F9FB] text-[#00000080]">
-                  <th className="py-3 px-2 font-semibold text-center"><input type="checkbox" /></th>
-                  <th className="py-3 px-2 font-semibold text-center">No..</th>
-                  <th className="py-3 px-2 font-semibold text-center">Event Name</th>
-                  <th className="py-3 px-2 font-semibold text-center">Date</th>
-                  <th className="py-3 px-2 font-semibold text-center">Passenger</th>
-                  <th className="py-3 px-2 font-semibold text-center">Remaining Amount</th>
-                  <th className="py-3 px-2 font-semibold text-center">Payment Status</th>
-                  <th className="py-3 px-2 font-semibold text-center">Client Name</th>
-                  <th className="py-3 px-2 font-semibold text-center">Action</th>
+                  <th className="py-3 px-2 font-semibold text-center border border-gray-300"><input type="checkbox" /></th>
+                  <th className="py-3 px-2 font-semibold text-center border border-gray-300">No..</th>
+                  <th className="py-3 px-2 font-semibold text-center border border-gray-300">Event Name</th>
+                  <th className="py-3 px-2 font-semibold text-center border border-gray-300">Date</th>
+                  <th className="py-3 px-2 font-semibold text-center border border-gray-300">Passenger</th>
+                  <th className="py-3 px-2 font-semibold text-center border border-gray-300">Remaining Amount</th>
+                  <th className="py-3 px-2 font-semibold text-center border border-gray-300">Payment Status</th>
+                  <th className="py-3 px-2 font-semibold text-center border border-gray-300">Client Name</th>
+                  <th className="py-3 px-2 font-semibold text-center border border-gray-300">Action</th>
                 </tr>
               </thead>
               <tbody>
@@ -145,13 +145,13 @@ export function UpcomingEventsPage({
                     key={event.id}
                     className={idx % 2 === 1 ? "bg-[#F3F6F9] text-center text-black" : "bg-white text-center text-black"}
                   >
-                    <td className="py-2 px-2"><input type="checkbox" /></td>
-                    <td className="py-2 px-2">{(page - 1) * PAGE_SIZE + idx + 1}</td>
-                    <td className="py-2 px-2">{event.title}</td>
-                    <td className="py-2 px-2">{event.date}</td>
-                    <td className="py-2 px-2">{event.passenger}</td>
-                    <td className="py-2 px-2">{event.remainingAmount}</td>
-                    <td className="py-2 px-2">
+                    <td className="py-2 px-2 border border-gray-300"><input type="checkbox" /></td>
+                    <td className="py-2 px-2 border border-gray-300">{(page - 1) * PAGE_SIZE + idx + 1}</td>
+                    <td className="py-2 px-2 border border-gray-300">{event.title}</td>
+                    <td className="py-2 px-2 border border-gray-300">{event.date}</td>
+                    <td className="py-2 px-2 border border-gray-300">{event.passenger}</td>
+                    <td className="py-2 px-2 border border-gray-300">{event.remainingAmount}</td>
+                    <td className="py-2 px-2 border border-gray-300">
                       <span
                         className={`px-4 py-1 rounded-lg font-semibold ${
                           event.paymentStatus === "Paid"
@@ -162,8 +162,8 @@ export function UpcomingEventsPage({
                         {event.paymentStatus}
                       </span>
                     </td>
-                    <td className="py-2 px-2">{event.clientName}</td>
-                    <td className="py-2 px-2">
+                    <td className="py-2 px-2 border border-gray-300">{event.clientName}</td>
+                    <td className="py-2 px-2 border border-gray-300">
                       <DescriptionIcon className="cursor-pointer mr-2 text-[#C2C9D1]" onClick={() => handleViewDetails(event.id)} />
                       <EditIcon className="cursor-pointer mr-2 text-[#C2C9D1]" />
                       <DeleteIcon className="cursor-pointer text-[#C2C9D1]" />
