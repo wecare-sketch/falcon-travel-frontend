@@ -19,11 +19,11 @@ const feedbackQuestions = [
 ];
 
 const emojiIcons = [
-  <SentimentVeryDissatisfiedIcon key="very-dissatisfied" fontSize="large" />,
-  <SentimentDissatisfiedIcon key="dissatisfied" fontSize="large" />,
-  <SentimentNeutralIcon key="neutral" fontSize="large" />,
-  <SentimentSatisfiedIcon key="satisfied" fontSize="large" />,
-  <SentimentVerySatisfiedIcon key="very-satisfied" fontSize="large" />
+  <SentimentVeryDissatisfiedIcon key="very-dissatisfied" fontSize="large" sx={{ color: "black" }}/>,
+  <SentimentDissatisfiedIcon key="dissatisfied" fontSize="large" sx={{ color: "black" }}/>,
+  <SentimentNeutralIcon key="neutral" fontSize="large" sx={{ color: "black" }}/>,
+  <SentimentSatisfiedIcon key="satisfied" fontSize="large" sx={{ color: "black" }}/>,
+  <SentimentVerySatisfiedIcon key="very-satisfied" fontSize="large" sx={{ color: "black" }}/>
 ];
 
 interface AddFeedbackProps {
@@ -106,6 +106,7 @@ export default function AddFeedback({ eventId }: AddFeedbackProps) {
                     flex: 1,
                     fontSize: 15,
                     mb: { xs: 1, sm: 0 },
+                    color:"black",
                     textAlign: { xs: "left", sm: "inherit" }
                   }}
                 >
