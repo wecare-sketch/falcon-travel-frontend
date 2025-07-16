@@ -1,8 +1,10 @@
 "use client"
-
+import { useState } from "react"
 import { PageHeader } from "../PageHeader"
 import { MediaEventCard } from "./MediaEventCard"
 import { Box } from "@mui/material"
+import { MediaUploadPage } from "./AddMedia"
+
 
 const mediaEvents = [
   {
@@ -35,6 +37,7 @@ const mediaEvents = [
 ]
 
 export function MediaGalleryPage() {
+  const [selectedEventId, setSelectedEventId] = useState<number | null>(null);
 
   const handleFileUpload = (eventId: number, files: FileList) => {
     console.log(`Uploading ${files.length} files for event ${eventId}`)
@@ -42,10 +45,13 @@ export function MediaGalleryPage() {
   }
 
   const handleAddMedia = (eventId: number) => {
+    setSelectedEventId(eventId)
     console.log("Add media for event:", eventId)
-    // Handle add media action
   }
-
+  if(selectedEventId!== null)
+    {
+      return <MediaUploadPage />
+    }
   return (
     <>
       <PageHeader title="Media Gallery" />
