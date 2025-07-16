@@ -1,13 +1,19 @@
 "use client";
 
 import Image from "next/image";
-import { Box, Card, CardContent, CardMedia, Typography } from "@mui/material";
+import { Box, Card, CardContent, CardMedia, Typography, Rating } from "@mui/material";
 import { CustomButton } from "@/components/shared/CustomButton";
+import { RootState } from "@/store";
+import { useSelector } from "react-redux";
 
 interface EventCardProps {
   title: string;
   date: string;
   imageUrl: string;
+  rating?: number;
+  totalReviews?: number;
+  lastReviewDate?: string;
+  Label?: string;
   onViewDetails?: () => void;
 }
 
@@ -15,8 +21,14 @@ export function EventCard({
   title,
   date,
   imageUrl,
+  rating,
+  totalReviews,
+  lastReviewDate,
   onViewDetails,
+  Label,
 }: Readonly<EventCardProps>) {
+  const role = useSelector((state: RootState) => state.userRole.role);
+
   return (
     <Card
       sx={{
@@ -69,8 +81,34 @@ export function EventCard({
         <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
           {date}
         </Typography>
+        {/* Rating Row */}
+        {role==="admin"?
+        (<Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
+          <Typography variant="h3" sx={{ fontWeight: 600, mr: 2, fontSize: "2.5rem" }}>
+            {rating}
+          </Typography>
+          <Box>
+            <Box sx={{ display: "flex", alignItems: "center" }}>
+              <Typography variant="caption" color="text.secondary" sx={{ mr: 1 }}>
+                Based on {totalReviews} reviews
+              </Typography>
+              <Rating value={rating} precision={0.1} readOnly size="small" sx={{
+                '& .MuiRating-iconFilled': {
+                  color: '#345794',
+                }
+              }} />
+            </Box>
+            <Typography variant="caption" color="text.secondary" sx={{ display: "block" }}>
+              Last till: {lastReviewDate}
+            </Typography>
+          </Box>
+        </Box>)
+        :
+        (<></>)
+        }
+        
         <CustomButton
-          label="View Details"
+          label={Label}
           onClick={onViewDetails}
           width="100%"
           height="40px"
