@@ -118,7 +118,7 @@ export function UpcomingEventsPage({
         <div className="p-4">
           <div className="flex justify-end mb-3">
             <button
-              className="bg-[#345794] text-white rounded px-6 py-2 font-semibold text-base"
+              className="bg-[#345794] text-white rounded px-6 py-2 font-semibold text-base cursor-pointer"
               onClick={handleCreateEvent}
             >
               + Create Event
