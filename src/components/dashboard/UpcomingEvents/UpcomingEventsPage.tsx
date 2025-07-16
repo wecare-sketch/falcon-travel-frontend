@@ -143,7 +143,7 @@ export function UpcomingEventsPage({
                 {paginatedEvents.map((event, idx) => (
                   <tr
                     key={event.id}
-                    className={idx % 2 === 1 ? "bg-[#F3F6F9] text-center" : "bg-white text-center"}
+                    className={idx % 2 === 1 ? "bg-[#F3F6F9] text-center text-black" : "bg-white text-center text-black"}
                   >
                     <td className="py-2 px-2"><input type="checkbox" /></td>
                     <td className="py-2 px-2">{(page - 1) * PAGE_SIZE + idx + 1}</td>
@@ -188,7 +188,7 @@ export function UpcomingEventsPage({
                 onClick={() => setPage(i + 1)}
                 className={`border px-3 py-1 font-semibold text-base min-w-[36px] rounded ${
                   page === i + 1
-                    ? "bg-[#345794] text-white border-[#345794]"
+                    ? "bg-white text-[#345794] border-[#345794]"
                     : "bg-white text-[#345794] border-[#d1d5db]"
                 }`}
               >
