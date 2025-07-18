@@ -12,6 +12,7 @@ import {
   Chip,
   Card,
 } from "@mui/material"
+import { useIsMobile } from "@/hooks/useIsMobile"
 
 interface UpcomingEvent {
   id: string
@@ -57,6 +58,58 @@ const upcomingEvents: UpcomingEvent[] = [
   },
 ]
 
+function UpcomingEventMobileCard({ event }: { event: UpcomingEvent }) {
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case "Paid":
+        return { backgroundColor: "#B7EB8F", color: "#52C41A" };
+      case "Pending":
+        return { backgroundColor: "#FFE58F", color: "#FAAD14" };
+      case "Overdue":
+        return { backgroundColor: "#FFCCC7", color: "#FF4D4F" };
+      default:
+        return { backgroundColor: "#F5F5F5", color: "#666" };
+    }
+  };
+  return (
+    <Box
+      sx={{
+        backgroundColor: "white",
+        borderRadius: "8px",
+        padding: "16px",
+        marginBottom: "12px",
+        boxShadow: "0px 1px 3px rgba(0, 0, 0, 0.1)",
+        border: "1px solid #E0E0E0",
+      }}
+    >
+      <Typography variant="subtitle2" sx={{ color: "#4A5F8A", fontWeight: 600, mb: 0.5 }}>
+        {event.eventName}
+      </Typography>
+      <Typography variant="body2" sx={{ color: "#666", mb: 0.5 }}>
+        <strong>Date:</strong> {event.date}
+      </Typography>
+      <Typography variant="body2" sx={{ color: "#666", mb: 0.5 }}>
+        <strong>Client:</strong> {event.client}
+      </Typography>
+      <Typography variant="body2" sx={{ color: "#666", mb: 0.5 }}>
+        <strong>Vehicles Required:</strong> {event.vehiclesRequired}
+      </Typography>
+      <Chip
+        label={event.paymentStatus}
+        size="small"
+        sx={{
+          ...getStatusColor(event.paymentStatus),
+          fontSize: "12px",
+          fontWeight: 500,
+          height: "24px",
+          borderRadius: "0px",
+          mt: 1,
+        }}
+      />
+    </Box>
+  );
+}
+
 export function UpcomingEventsTable() {
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -70,169 +123,186 @@ export function UpcomingEventsTable() {
         return { backgroundColor: "#F5F5F5", color: "#666" }
     }
   }
-
+  const isMobile=useIsMobile()
   return (
-    <Card
-      sx={{
-        borderRadius: "12px",
-        boxShadow: "0px 2px 8px rgba(0, 0, 0, 0.1)",
-        borderWidth: 1,
-        borderStyle: "solid",
-        borderColor: "#E0E0E0",
-        backgroundColor: "white",
-        overflow: "hidden",
-      }}
-    >
-      <Box sx={{ padding: "20px 24px 16px" }}>
+    isMobile ? (
+      <Box>
         <Typography
           variant="h6"
           sx={{
             color: "#333",
             fontSize: "18px",
             fontWeight: 600,
+            mb: 2,
           }}
         >
           Upcoming Events
         </Typography>
+        {upcomingEvents.map((event) => (
+          <UpcomingEventMobileCard key={event.id} event={event} />
+        ))}
       </Box>
-      <Box sx={{ height: "1px", width: "100%", backgroundColor: "#C2C2C2", marginBottom: "8px" }} />
-
-
-      <TableContainer>
-        <Table>
-          <TableHead>
-            <TableRow sx={{ backgroundColor: "#F8F9FA" }}>
-              <TableCell
-                sx={{
-                  color: "#666",
-                  fontSize: "14px",
-                  fontWeight: 600,
-                  padding: "12px 24px",
-                  borderBottom: "1px solid #E0E0E0",
-                }}
-              >
-                Event Name
-              </TableCell>
-              <TableCell
-                sx={{
-                  color: "#666",
-                  fontSize: "14px",
-                  fontWeight: 600,
-                  padding: "12px 24px",
-                  borderBottom: "1px solid #E0E0E0",
-                }}
-              >
-                Date
-              </TableCell>
-              <TableCell
-                sx={{
-                  color: "#666",
-                  fontSize: "14px",
-                  fontWeight: 600,
-                  padding: "12px 24px",
-                  borderBottom: "1px solid #E0E0E0",
-                }}
-              >
-                Client
-              </TableCell>
-              <TableCell
-                sx={{
-                  color: "#666",
-                  fontSize: "14px",
-                  fontWeight: 600,
-                  padding: "12px 24px",
-                  borderBottom: "1px solid #E0E0E0",
-                }}
-              >
-                Vehicles Required
-              </TableCell>
-              <TableCell
-                sx={{
-                  color: "#666",
-                  fontSize: "14px",
-                  fontWeight: 600,
-                  padding: "12px 24px",
-                  borderBottom: "1px solid #E0E0E0",
-                }}
-              >
-                Payment Status
-              </TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {upcomingEvents.map((event) => (
-              <TableRow
-                key={event.id}
-                sx={{
-                  "&:hover": {
-                    backgroundColor: "#F8F9FA",
-                  },
-                }}
-              >
-                <TableCell sx={{ padding: "16px 24px", borderBottom: "1px solid #F0F0F0" }}>
-                  <Typography
-                    variant="body2"
-                    sx={{
-                      color: "#333",
-                      fontSize: "14px",
-                      fontWeight: 500,
-                    }}
-                  >
-                    {event.eventName}
-                  </Typography>
+    ) : (
+      <Card
+        sx={{
+          borderRadius: "12px",
+          boxShadow: "0px 2px 8px rgba(0, 0, 0, 0.1)",
+          borderWidth: 1,
+          borderStyle: "solid",
+          borderColor: "#E0E0E0",
+          backgroundColor: "white",
+          overflow: "hidden",
+        }}
+      >
+        <Box sx={{ padding: "20px 24px 16px" }}>
+          <Typography
+            variant="h6"
+            sx={{
+              color: "#333",
+              fontSize: "18px",
+              fontWeight: 600,
+            }}
+          >
+            Upcoming Events
+          </Typography>
+        </Box>
+        <Box sx={{ height: "1px", width: "100%", backgroundColor: "#C2C2C2", marginBottom: "8px" }} />
+        <TableContainer>
+          <Table>
+            <TableHead>
+              <TableRow sx={{ backgroundColor: "#F8F9FA" }}>
+                <TableCell
+                  sx={{
+                    color: "#666",
+                    fontSize: "14px",
+                    fontWeight: 600,
+                    padding: "12px 24px",
+                    borderBottom: "1px solid #E0E0E0",
+                  }}
+                >
+                  Event Name
                 </TableCell>
-                <TableCell sx={{ padding: "16px 24px", borderBottom: "1px solid #F0F0F0" }}>
-                  <Typography
-                    variant="body2"
-                    sx={{
-                      color: "#666",
-                      fontSize: "14px",
-                    }}
-                  >
-                    {event.date}
-                  </Typography>
+                <TableCell
+                  sx={{
+                    color: "#666",
+                    fontSize: "14px",
+                    fontWeight: 600,
+                    padding: "12px 24px",
+                    borderBottom: "1px solid #E0E0E0",
+                  }}
+                >
+                  Date
                 </TableCell>
-                <TableCell sx={{ padding: "16px 24px", borderBottom: "1px solid #F0F0F0" }}>
-                  <Typography
-                    variant="body2"
-                    sx={{
-                      color: "#666",
-                      fontSize: "14px",
-                    }}
-                  >
-                    {event.client}
-                  </Typography>
+                <TableCell
+                  sx={{
+                    color: "#666",
+                    fontSize: "14px",
+                    fontWeight: 600,
+                    padding: "12px 24px",
+                    borderBottom: "1px solid #E0E0E0",
+                  }}
+                >
+                  Client
                 </TableCell>
-                <TableCell sx={{ padding: "16px 24px", borderBottom: "1px solid #F0F0F0" }}>
-                  <Typography
-                    variant="body2"
-                    sx={{
-                      color: "#333",
-                      fontSize: "14px",
-                      fontWeight: 500,
-                    }}
-                  >
-                    {event.vehiclesRequired}
-                  </Typography>
+                <TableCell
+                  sx={{
+                    color: "#666",
+                    fontSize: "14px",
+                    fontWeight: 600,
+                    padding: "12px 24px",
+                    borderBottom: "1px solid #E0E0E0",
+                  }}
+                >
+                  Vehicles Required
                 </TableCell>
-                <TableCell sx={{ padding: "16px 24px", borderBottom: "1px solid #F0F0F0" }}>
-                  <Chip
-                    label={event.paymentStatus}
-                    size="small"
-                    sx={{
-                      ...getStatusColor(event.paymentStatus),
-                      fontSize: "12px",
-                      fontWeight: 500,
-                      height: "24px",
-                      borderRadius:"0px"
-                    }}
-                  />
+                <TableCell
+                  sx={{
+                    color: "#666",
+                    fontSize: "14px",
+                    fontWeight: 600,
+                    padding: "12px 24px",
+                    borderBottom: "1px solid #E0E0E0",
+                  }}
+                >
+                  Payment Status
                 </TableCell>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
-    </Card>
-  )
+            </TableHead>
+            <TableBody>
+              {upcomingEvents.map((event) => (
+                <TableRow
+                  key={event.id}
+                  sx={{
+                    "&:hover": {
+                      backgroundColor: "#F8F9FA",
+                    },
+                  }}
+                >
+                  <TableCell sx={{ padding: "16px 24px", borderBottom: "1px solid #F0F0F0" }}>
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        color: "#333",
+                        fontSize: "14px",
+                        fontWeight: 500,
+                      }}
+                    >
+                      {event.eventName}
+                    </Typography>
+                  </TableCell>
+                  <TableCell sx={{ padding: "16px 24px", borderBottom: "1px solid #F0F0F0" }}>
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        color: "#666",
+                        fontSize: "14px",
+                      }}
+                    >
+                      {event.date}
+                    </Typography>
+                  </TableCell>
+                  <TableCell sx={{ padding: "16px 24px", borderBottom: "1px solid #F0F0F0" }}>
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        color: "#666",
+                        fontSize: "14px",
+                      }}
+                    >
+                      {event.client}
+                    </Typography>
+                  </TableCell>
+                  <TableCell sx={{ padding: "16px 24px", borderBottom: "1px solid #F0F0F0" }}>
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        color: "#333",
+                        fontSize: "14px",
+                        fontWeight: 500,
+                      }}
+                    >
+                      {event.vehiclesRequired}
+                    </Typography>
+                  </TableCell>
+                  <TableCell sx={{ padding: "16px 24px", borderBottom: "1px solid #F0F0F0" }}>
+                    <Chip
+                      label={event.paymentStatus}
+                      size="small"
+                      sx={{
+                        ...getStatusColor(event.paymentStatus),
+                        fontSize: "12px",
+                        fontWeight: 500,
+                        height: "24px",
+                        borderRadius:"0px"
+                      }}
+                    />
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      </Card>
+    )
+  );
 }

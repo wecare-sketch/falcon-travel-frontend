@@ -9,6 +9,8 @@ import { RootState } from "@/store";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import DescriptionIcon from "@mui/icons-material/Description";
+import { useIsMobile } from "@/hooks/useIsMobile";
+import { MobileEventListItem } from "../MobileListItem";
 
 const events = [
   {
@@ -94,6 +96,7 @@ export function UpcomingEventsPage({
   const [selectedEventId, setSelectedEventId] = useState<number | null>(null);
   const role = useSelector((state: RootState) => state.userRole.role);
   const [page, setPage] = useState(1);
+  const isMobile = useIsMobile()
   const handleViewDetails = (eventId: number) => {
     setSelectedEventId(eventId);
   };
@@ -114,111 +117,161 @@ export function UpcomingEventsPage({
     <div>
       <PageHeader title="List of Events" />
       <SearchFilters />
-      {role === "admin" ? (
-        <div className="p-4">
-          <div className="flex justify-end mb-3">
-            <button
-              className="bg-[#345794] text-white rounded px-6 py-2 font-semibold text-base cursor-pointer"
-              onClick={handleCreateEvent}
-            >
-              + Create Event
-            </button>
-          </div>
-          <div className="overflow-x-auto bg-white rounded shadow">
-            <table className="w-full border border-gray-300 border-t-0 border-collapse text-sm">
-              <thead>
-                <tr className="bg-[#F8F9FB] text-[#00000080]">
-                  <th className="py-3 px-2 font-semibold text-center border border-gray-300"><input type="checkbox" /></th>
-                  <th className="py-3 px-2 font-semibold text-center border border-gray-300">No..</th>
-                  <th className="py-3 px-2 font-semibold text-center border border-gray-300">Event Name</th>
-                  <th className="py-3 px-2 font-semibold text-center border border-gray-300">Date</th>
-                  <th className="py-3 px-2 font-semibold text-center border border-gray-300">Passenger</th>
-                  <th className="py-3 px-2 font-semibold text-center border border-gray-300">Remaining Amount</th>
-                  <th className="py-3 px-2 font-semibold text-center border border-gray-300">Payment Status</th>
-                  <th className="py-3 px-2 font-semibold text-center border border-gray-300">Client Name</th>
-                  <th className="py-3 px-2 font-semibold text-center border border-gray-300">Action</th>
-                </tr>
-              </thead>
-              <tbody>
-                {paginatedEvents.map((event, idx) => (
-                  <tr
+      {role === "admin"
+        ? (
+            isMobile ? (
+              <div>
+                {paginatedEvents.map((event) => (
+                  <MobileEventListItem
                     key={event.id}
-                    className={idx % 2 === 1 ? "bg-[#F3F6F9] text-center text-black" : "bg-white text-center text-black"}
-                  >
-                    <td className="py-2 px-2 border border-gray-300"><input type="checkbox" /></td>
-                    <td className="py-2 px-2 border border-gray-300">{(page - 1) * PAGE_SIZE + idx + 1}</td>
-                    <td className="py-2 px-2 border border-gray-300">{event.title}</td>
-                    <td className="py-2 px-2 border border-gray-300">{event.date}</td>
-                    <td className="py-2 px-2 border border-gray-300">{event.passenger}</td>
-                    <td className="py-2 px-2 border border-gray-300">{event.remainingAmount}</td>
-                    <td className="py-2 px-2 border border-gray-300">
-                      <span
-                        className={`px-4 py-1 rounded-lg font-semibold ${
-                          event.paymentStatus === "Paid"
-                            ? "bg-green-200 text-green-800"
-                            : "bg-red-200 text-red-800"
-                        }`}
-                      >
-                        {event.paymentStatus}
-                      </span>
-                    </td>
-                    <td className="py-2 px-2 border border-gray-300">{event.clientName}</td>
-                    <td className="py-2 px-2 border border-gray-300">
-                      <DescriptionIcon className="cursor-pointer mr-2 text-[#C2C9D1]" onClick={() => handleViewDetails(event.id)} />
-                      <EditIcon className="cursor-pointer mr-2 text-[#C2C9D1]" />
-                      <DeleteIcon className="cursor-pointer text-[#C2C9D1]" />
-                    </td>
-                  </tr>
+                    eventName={event.title}
+                    clientName={event.clientName}
+                    passenger={parseInt(event.passenger, 10) || 0}
+                    date={event.date}
+                    remainingAmount={parseInt(event.remainingAmount.replace(/\$/g, ""), 10) || 0}
+                    paymentStatus={event.paymentStatus as "Paid" | "Pending" | "Overdue"}
+                    onEdit={() => {}}
+                    onDelete={() => {}}
+                  />
                 ))}
-              </tbody>
-            </table>
-          </div>
-          {/* Pagination */}
-          <div className="flex justify-end mt-4 gap-2">
-            <button
-              onClick={() => setPage((p) => Math.max(1, p - 1))}
-              disabled={page === 1}
-              className="border border-[#d1d5db] bg-white text-[#345794] rounded px-3 py-1 font-semibold text-base min-w-[36px] disabled:opacity-50"
-            >
-              {"<"}
-            </button>
-            {Array.from({ length: totalPages }, (_, i) => (
-              <button
-                key={i + 1}
-                onClick={() => setPage(i + 1)}
-                className={`border px-3 py-1 font-semibold text-base min-w-[36px] rounded ${
-                  page === i + 1
-                    ? "bg-white text-[#345794] border-[#345794]"
-                    : "bg-white text-[#345794] border-[#d1d5db]"
-                }`}
-              >
-                {i + 1}
-              </button>
+                {/* Pagination for mobile */}
+                <div className="flex justify-end mt-4 gap-2">
+                  <button
+                    onClick={() => setPage((p) => Math.max(1, p - 1))}
+                    disabled={page === 1}
+                    className="border border-[#d1d5db] bg-white text-[#345794] rounded px-3 py-1 font-semibold text-base min-w-[36px] disabled:opacity-50"
+                  >
+                    {"<"}
+                  </button>
+                  {Array.from({ length: totalPages }, (_, i) => (
+                    <button
+                      key={i + 1}
+                      onClick={() => setPage(i + 1)}
+                      className={`border px-3 py-1 font-semibold text-base min-w-[36px] rounded ${
+                        page === i + 1
+                          ? "bg-white text-[#345794] border-[#345794]"
+                          : "bg-white text-[#345794] border-[#d1d5db]"
+                      }`}
+                    >
+                      {i + 1}
+                    </button>
+                  ))}
+                  <button
+                    onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                    disabled={page === totalPages}
+                    className="border border-[#d1d5db] bg-white text-[#345794] rounded px-3 py-1 font-semibold text-base min-w-[36px] disabled:opacity-50"
+                  >
+                    {">"}
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="p-4">
+                <div className="flex justify-end mb-3">
+                  <button
+                    className="bg-[#345794] text-white rounded px-6 py-2 font-semibold text-base cursor-pointer"
+                    onClick={handleCreateEvent}
+                  >
+                    + Create Event
+                  </button>
+                </div>
+                <div className="overflow-x-auto bg-white rounded shadow">
+                  <table className="w-full border border-gray-300 border-t-0 border-collapse text-sm">
+                    <thead>
+                      <tr className="bg-[#F8F9FB] text-[#00000080]">
+                        <th className="py-3 px-2 font-semibold text-center border border-gray-300"><input type="checkbox" /></th>
+                        <th className="py-3 px-2 font-semibold text-center border border-gray-300">No..</th>
+                        <th className="py-3 px-2 font-semibold text-center border border-gray-300">Event Name</th>
+                        <th className="py-3 px-2 font-semibold text-center border border-gray-300">Date</th>
+                        <th className="py-3 px-2 font-semibold text-center border border-gray-300">Passenger</th>
+                        <th className="py-3 px-2 font-semibold text-center border border-gray-300">Remaining Amount</th>
+                        <th className="py-3 px-2 font-semibold text-center border border-gray-300">Payment Status</th>
+                        <th className="py-3 px-2 font-semibold text-center border border-gray-300">Client Name</th>
+                        <th className="py-3 px-2 font-semibold text-center border border-gray-300">Action</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {paginatedEvents.map((event, idx) => (
+                        <tr
+                          key={event.id}
+                          className={idx % 2 === 1 ? "bg-[#F3F6F9] text-center text-black" : "bg-white text-center text-black"}
+                        >
+                          <td className="py-2 px-2 border border-gray-300"><input type="checkbox" /></td>
+                          <td className="py-2 px-2 border border-gray-300">{(page - 1) * PAGE_SIZE + idx + 1}</td>
+                          <td className="py-2 px-2 border border-gray-300">{event.title}</td>
+                          <td className="py-2 px-2 border border-gray-300">{event.date}</td>
+                          <td className="py-2 px-2 border border-gray-300">{event.passenger}</td>
+                          <td className="py-2 px-2 border border-gray-300">{event.remainingAmount}</td>
+                          <td className="py-2 px-2 border border-gray-300">
+                            <span
+                              className={`px-4 py-1 rounded-lg font-semibold ${
+                                event.paymentStatus === "Paid"
+                                  ? "bg-green-200 text-green-800"
+                                  : "bg-red-200 text-red-800"
+                              }`}
+                            >
+                              {event.paymentStatus}
+                            </span>
+                          </td>
+                          <td className="py-2 px-2 border border-gray-300">{event.clientName}</td>
+                          <td className="py-2 px-2 border border-gray-300">
+                            <DescriptionIcon className="cursor-pointer mr-2 text-[#C2C9D1]" onClick={() => handleViewDetails(event.id)} />
+                            <EditIcon className="cursor-pointer mr-2 text-[#C2C9D1]" />
+                            <DeleteIcon className="cursor-pointer text-[#C2C9D1]" />
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                {/* Pagination */}
+                <div className="flex justify-end mt-4 gap-2">
+                  <button
+                    onClick={() => setPage((p) => Math.max(1, p - 1))}
+                    disabled={page === 1}
+                    className="border border-[#d1d5db] bg-white text-[#345794] rounded px-3 py-1 font-semibold text-base min-w-[36px] disabled:opacity-50"
+                  >
+                    {"<"}
+                  </button>
+                  {Array.from({ length: totalPages }, (_, i) => (
+                    <button
+                      key={i + 1}
+                      onClick={() => setPage(i + 1)}
+                      className={`border px-3 py-1 font-semibold text-base min-w-[36px] rounded ${
+                        page === i + 1
+                          ? "bg-white text-[#345794] border-[#345794]"
+                          : "bg-white text-[#345794] border-[#d1d5db]"
+                      }`}
+                    >
+                      {i + 1}
+                    </button>
+                  ))}
+                  <button
+                    onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                    disabled={page === totalPages}
+                    className="border border-[#d1d5db] bg-white text-[#345794] rounded px-3 py-1 font-semibold text-base min-w-[36px] disabled:opacity-50"
+                  >
+                    {">"}
+                  </button>
+                </div>
+              </div>
+            )
+          )
+        : (
+          <div className="mt-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {events.map((event) => (
+              <EventCard
+                key={event.id}
+                title={event.title}
+                date={event.date}
+                imageUrl={event.imageUrl}
+                Label="View Details"
+                onViewDetails={() => handleViewDetails(event.id)}
+              />
             ))}
-            <button
-              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-              disabled={page === totalPages}
-              className="border border-[#d1d5db] bg-white text-[#345794] rounded px-3 py-1 font-semibold text-base min-w-[36px] disabled:opacity-50"
-            >
-              {">"}
-            </button>
+            <CreateEventCard onCreateEvent={handleCreateEvent} />
           </div>
-        </div>
-      ) : (
-        <div className="mt-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {events.map((event) => (
-            <EventCard
-              key={event.id}
-              title={event.title}
-              date={event.date}
-              imageUrl={event.imageUrl}
-              Label="View Details"
-              onViewDetails={() => handleViewDetails(event.id)}
-            />
-          ))}
-          <CreateEventCard onCreateEvent={handleCreateEvent} />
-        </div>
-      )}
+        )}
 
     </div>
   );
