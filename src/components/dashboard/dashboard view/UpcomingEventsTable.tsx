@@ -10,9 +10,12 @@ import {
   TableHead,
   TableRow,
   Chip,
-  Card,
+  Card
 } from "@mui/material"
 import { useIsMobile } from "@/hooks/useIsMobile"
+import { CustomDivider } from "@/components/shared/CustomDivider"
+
+
 
 interface UpcomingEvent {
   id: string
@@ -74,38 +77,111 @@ function UpcomingEventMobileCard({ event }: { event: UpcomingEvent }) {
   return (
     <Box
       sx={{
-        backgroundColor: "white",
+        backgroundColor: "#fff",
         borderRadius: "8px",
-        padding: "16px",
-        marginBottom: "12px",
-        boxShadow: "0px 1px 3px rgba(0, 0, 0, 0.1)",
         border: "1px solid #E0E0E0",
+        padding: "0px 15px",
+        position: "relative",
+        display: "flex",
+        alignItems: "flex-start",
+        Height: 150,
+        marginBottom: "12px",
       }}
     >
-      <Typography variant="subtitle2" sx={{ color: "#4A5F8A", fontWeight: 600, mb: 0.5 }}>
-        {event.eventName}
-      </Typography>
-      <Typography variant="body2" sx={{ color: "#666", mb: 0.5 }}>
-        <strong>Date:</strong> {event.date}
-      </Typography>
-      <Typography variant="body2" sx={{ color: "#666", mb: 0.5 }}>
-        <strong>Client:</strong> {event.client}
-      </Typography>
-      <Typography variant="body2" sx={{ color: "#666", mb: 0.5 }}>
-        <strong>Vehicles Required:</strong> {event.vehiclesRequired}
-      </Typography>
-      <Chip
-        label={event.paymentStatus}
-        size="small"
+      {/* Main Content */}
+      <Box sx={{ flex: 1 }}>
+        {/* Event Name Row */}
+        <Box sx={{ display: "flex", alignItems: "center", marginBottom: "10px",marginTop:"10px" }}>
+          <Typography
+            sx={{
+              color: "#345794",
+              fontWeight: 400,
+              fontSize: "14px",
+              marginRight: "6px",
+              whiteSpace: "nowrap",
+            }}
+          >
+            Event Name:
+          </Typography>
+          <Typography
+            sx={{
+              color: "#787878",
+              fontWeight: 400,
+              fontSize: "16px",
+              whiteSpace: "nowrap",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              flex: 1,
+            }}
+          >
+            {event.eventName}
+          </Typography>
+        </Box>
+        <CustomDivider />
+
+        {/* Client/Amount Row */}
+        <Box sx={{ display: "flex", margin: "5px 0"}}>
+          <Box sx={{ flex: 1 }}>
+            <Typography sx={{ color: "#345794", fontSize: "14px", fontWeight: 400 }}>
+              Client:
+            </Typography>
+            <Typography sx={{ color: "#787878", fontSize: "16px", fontWeight: 400 }}>
+              {event.client}
+            </Typography>
+          </Box>
+          <Box sx={{ flex: 1 }}>
+          <Chip
+            label={event.paymentStatus}
+            size="small"
+            sx={{
+              ...getStatusColor(event.paymentStatus),
+              fontSize: "13px",
+              fontWeight: 500,
+              height: "28px",
+              borderRadius: "12px",
+              px: 2,
+            }}
+          />
+          </Box>
+        </Box>
+
+        {/* Passenger/Date Row */}
+        <Box sx={{ display: "flex", alignItems: "center" }}>
+          <Box sx={{ flex: 1 }}>
+            <Typography sx={{ color: "#345794", fontSize: "14px", fontWeight: 400 }}>
+              Vehicles Required:
+            </Typography>
+            <Typography sx={{ color: "#787878", fontSize: "13px", fontWeight: 400 }}>
+              {event.vehiclesRequired}
+            </Typography>
+          </Box>
+          <Box sx={{ flex: 1 }}>
+            <Typography sx={{ color: "#345794", fontSize: "14px", fontWeight: 400 }}>
+              Date:
+            </Typography>
+            <Typography sx={{ color: "#787878", fontSize: "13px", fontWeight: 400 }}>
+              {event.date}
+            </Typography>
+          </Box>
+          
+        </Box>
+      </Box>
+
+      {/* Action Icons */}
+      <Box
         sx={{
-          ...getStatusColor(event.paymentStatus),
-          fontSize: "12px",
-          fontWeight: 500,
-          height: "24px",
-          borderRadius: "0px",
-          mt: 1,
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "end",
+          justifyContent: "flex-start",
+          borderRadius: "8px",
+          marginLeft: "8px",
+          minWidth: "36px",
+          height: "64px",
         }}
-      />
+      >
+       
+      </Box>
     </Box>
   );
 }

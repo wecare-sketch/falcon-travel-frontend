@@ -7,7 +7,9 @@ import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import DescriptionIcon from "@mui/icons-material/Description";
 import { useIsMobile } from "@/hooks/useIsMobile";
-
+import { Box, Typography, Chip, IconButton } from "@mui/material";
+import { Edit, Trash2 } from "lucide-react";
+import { CustomDivider } from "@/components/shared/CustomDivider";
 
 
 const admin_events = [
@@ -84,30 +86,163 @@ function UserRequestMobileListItem({
   onEdit?: () => void;
   onDelete?: () => void;
 }) {
+  const paymentStatus = "Pending";
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case "Paid":
+        return { backgroundColor: "#E8F5E8", color: "#2E7D32" };
+      case "Pending":
+        return { backgroundColor: "#F87171", color: "#fff" };
+      case "Overdue":
+        return { backgroundColor: "#FFF3E0", color: "#F57C00" };
+      default:
+        return { backgroundColor: "#F5F5F5", color: "#666" };
+    }
+  };
   return (
-    <div style={{ background: '#fff', borderRadius: 8, padding: 16, marginBottom: 12, boxShadow: '0px 1px 3px rgba(0,0,0,0.1)', border: '1px solid #E0E0E0', position: 'relative' }}>
-      <div style={{ position: 'absolute', top: 12, right: 12, display: 'flex', flexDirection: 'column', gap: 4 }}>
-        <EditIcon style={{ cursor: 'pointer', marginBottom: 4, color: '#6B7280' }} onClick={onEdit} />
-        <DeleteIcon style={{ cursor: 'pointer', color: '#6B7280' }} onClick={onDelete} />
-      </div>
-      <div style={{ marginBottom: 8, paddingRight: 80 }}>
-        <strong>Event Name:</strong> {eventName}
-      </div>
-      <div style={{ marginBottom: 8, paddingRight: 80 }}>
-        <strong>Client Name:</strong> {clientName}
-      </div>
-      <div style={{ marginBottom: 8, paddingRight: 80 }}>
-        <strong>Location:</strong> {location}
-      </div>
-      <div style={{ display: 'flex', gap: 24, paddingRight: 80 }}>
-        <div>
-          <strong>Passenger:</strong> {passenger}
-        </div>
-        <div>
-          <strong>Date:</strong> {date}
-        </div>
-      </div>
-    </div>
+    <Box
+      sx={{
+        backgroundColor: "#fff",
+        borderRadius: "8px",
+        border: "1px solid #E0E0E0",
+        padding: "0px 15px",
+        position: "relative",
+        display: "flex",
+        alignItems: "flex-start",
+        Height: 150,
+        marginBottom: "12px",
+      }}
+    >
+      {/* Main Content */}
+      <Box sx={{ flex: 1 }}>
+        {/* Event Name Row */}
+        <Box sx={{ display: "flex", alignItems: "center", marginBottom: "10px",marginTop:"10px" }}>
+          <Typography
+            sx={{
+              color: "#345794",
+              fontWeight: 400,
+              fontSize: "14px",
+              marginRight: "6px",
+              whiteSpace: "nowrap",
+            }}
+          >
+            Event Name:
+          </Typography>
+          <Typography
+            sx={{
+              color: "#787878",
+              fontWeight: 400,
+              fontSize: "16px",
+              whiteSpace: "nowrap",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              flex: 1,
+            }}
+          >
+            {eventName}
+          </Typography>
+        </Box>
+        <CustomDivider />
+
+        {/* Client/Amount Row */}
+        <Box sx={{ display: "flex", margin: "5px 0"}}>
+          <Box sx={{ flex: 1 }}>
+            <Typography sx={{ color: "#345794", fontSize: "14px", fontWeight: 400 }}>
+              Client Name:
+            </Typography>
+            <Typography sx={{ color: "#787878", fontSize: "16px", fontWeight: 400 }}>
+              {clientName}
+            </Typography>
+          </Box>
+          <Box sx={{ flex: 1 }}>
+            <Typography sx={{ color: "#345794", fontSize: "14px", fontWeight: 400 }}>
+              Remaining Amount:
+            </Typography>
+            <Typography sx={{ color: "#787878", fontSize: "16px", fontWeight: 400 }}>
+              $ {location}
+            </Typography>
+          </Box>
+        </Box>
+
+        {/* Passenger/Date Row */}
+        <Box sx={{ display: "flex", alignItems: "center" }}>
+          <Box sx={{ flex: 1 }}>
+            <Typography sx={{ color: "#345794", fontSize: "14px", fontWeight: 400 }}>
+              Passenger:
+            </Typography>
+            <Typography sx={{ color: "#787878", fontSize: "13px", fontWeight: 400 }}>
+              {passenger}
+            </Typography>
+          </Box>
+          <Box sx={{ flex: 1 }}>
+            <Typography sx={{ color: "#345794", fontSize: "14px", fontWeight: 400 }}>
+              Date:
+            </Typography>
+            <Typography sx={{ color: "#787878", fontSize: "13px", fontWeight: 400 }}>
+              {date}
+            </Typography>
+          </Box>
+          
+        </Box>
+      </Box>
+
+      {/* Action Icons */}
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "end",
+          justifyContent: "flex-start",
+          borderRadius: "8px",
+          marginLeft: "8px",
+          minWidth: "36px",
+          height: "64px",
+        }}
+      >
+        <IconButton
+          onClick={onEdit}
+          sx={{
+            color: "#fff",
+            width: 40,
+            height: 45,
+            borderRadius: "0px",
+            marginBottom:"2px",
+            background: "#888",
+            "&:hover": { background: "#aaa" },
+            p: 0,
+          }}
+        >
+          <Edit style={{ width: 18, height: 18 }} />
+        </IconButton>
+        <IconButton
+          onClick={onDelete}
+          sx={{
+            color: "#fff",
+            width: 40,
+            height: 45,
+            borderRadius: "0 0 20px 20px",
+            background: "#888",
+            "&:hover": { background: "#aaa" },
+            p: 0,
+          }}
+        >
+          <Trash2 style={{ width: 18, height: 18 }} />
+        </IconButton>
+        <Chip
+            label={paymentStatus}
+            size="small"
+            sx={{
+              ...getStatusColor(paymentStatus),
+              fontSize: "13px",
+              fontWeight: 500,
+              height: "28px",
+              borderRadius: "12px",
+              mt:5,
+              px: 2,
+            }}
+          />
+      </Box>
+    </Box>
   );
 }
 

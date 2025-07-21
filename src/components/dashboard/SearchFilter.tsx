@@ -90,6 +90,7 @@ export function SearchFilters({ onSearch }: SearchFiltersProps) {
                 value={selectedHost}
                 onChange={(value) => setSelectedHost(value)}
                 options={hostOptions}
+                width={280}
               />
             </div>
             <CustomSelect
@@ -97,6 +98,7 @@ export function SearchFilters({ onSearch }: SearchFiltersProps) {
               value={selectedStatus}
               onChange={setSelectedStatus}
               options={statusOptions}
+              width={280}
             />
           </DialogContent>
           <DialogActions>

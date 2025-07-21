@@ -2,6 +2,7 @@
 
 import { Box, Typography, Chip, IconButton } from "@mui/material"
 import { Edit, Trash2 } from "lucide-react"
+import { CustomDivider } from "../shared/CustomDivider"
 
 interface MobileEventListItemProps {
   eventName: string
@@ -27,225 +28,159 @@ export function MobileEventListItem({
   const getStatusColor = (status: string) => {
     switch (status) {
       case "Paid":
-        return { backgroundColor: "#E8F5E8", color: "#2E7D32" }
+        return { backgroundColor: "#E8F5E8", color: "#2E7D32" };
       case "Pending":
-        return { backgroundColor: "#FFF3E0", color: "#F57C00" }
+        return { backgroundColor: "#F87171", color: "#fff" };
       case "Overdue":
-        return { backgroundColor: "#FFEBEE", color: "#D32F2F" }
+        return { backgroundColor: "#FFF3E0", color: "#F57C00" };
       default:
-        return { backgroundColor: "#F5F5F5", color: "#666" }
+        return { backgroundColor: "#F5F5F5", color: "#666" };
     }
-  }
+  };
 
   return (
     <Box
       sx={{
-        backgroundColor: "white",
+        backgroundColor: "#fff",
         borderRadius: "8px",
-        padding: "16px",
-        marginBottom: "12px",
-        boxShadow: "0px 1px 3px rgba(0, 0, 0, 0.1)",
         border: "1px solid #E0E0E0",
+        padding: "0px 15px",
         position: "relative",
+        display: "flex",
+        alignItems: "flex-start",
+        Height: 150,
+        marginBottom: "12px",
       }}
     >
+      {/* Main Content */}
+      <Box sx={{ flex: 1 }}>
+        {/* Event Name Row */}
+        <Box sx={{ display: "flex", alignItems: "center", marginBottom: "10px",marginTop:"10px" }}>
+          <Typography
+            sx={{
+              color: "#345794",
+              fontWeight: 400,
+              fontSize: "14px",
+              marginRight: "6px",
+              whiteSpace: "nowrap",
+            }}
+          >
+            Event Name:
+          </Typography>
+          <Typography
+            sx={{
+              color: "#787878",
+              fontWeight: 400,
+              fontSize: "16px",
+              whiteSpace: "nowrap",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              flex: 1,
+            }}
+          >
+            {eventName}
+          </Typography>
+        </Box>
+        <CustomDivider />
+
+        {/* Client/Amount Row */}
+        <Box sx={{ display: "flex", margin: "5px 0"}}>
+          <Box sx={{ flex: 1 }}>
+            <Typography sx={{ color: "#345794", fontSize: "14px", fontWeight: 400 }}>
+              Client Name:
+            </Typography>
+            <Typography sx={{ color: "#787878", fontSize: "16px", fontWeight: 400 }}>
+              {clientName}
+            </Typography>
+          </Box>
+          <Box sx={{ flex: 1 }}>
+            <Typography sx={{ color: "#345794", fontSize: "14px", fontWeight: 400 }}>
+              Remaining Amount:
+            </Typography>
+            <Typography sx={{ color: "#787878", fontSize: "16px", fontWeight: 400 }}>
+              $ {remainingAmount}
+            </Typography>
+          </Box>
+        </Box>
+
+        {/* Passenger/Date Row */}
+        <Box sx={{ display: "flex", alignItems: "center" }}>
+          <Box sx={{ flex: 1 }}>
+            <Typography sx={{ color: "#345794", fontSize: "14px", fontWeight: 400 }}>
+              Passenger:
+            </Typography>
+            <Typography sx={{ color: "#787878", fontSize: "13px", fontWeight: 400 }}>
+              {passenger}
+            </Typography>
+          </Box>
+          <Box sx={{ flex: 1 }}>
+            <Typography sx={{ color: "#345794", fontSize: "14px", fontWeight: 400 }}>
+              Date:
+            </Typography>
+            <Typography sx={{ color: "#787878", fontSize: "13px", fontWeight: 400 }}>
+              {date}
+            </Typography>
+          </Box>
+          
+        </Box>
+      </Box>
+
       {/* Action Icons */}
       <Box
         sx={{
-          position: "absolute",
-          top: "12px",
-          right: "12px",
           display: "flex",
           flexDirection: "column",
-          gap: "4px",
+          alignItems: "end",
+          justifyContent: "flex-start",
+          borderRadius: "8px",
+          marginLeft: "8px",
+          minWidth: "36px",
+          height: "64px",
         }}
       >
         <IconButton
           onClick={onEdit}
           sx={{
-            width: 32,
-            height: 32,
-            backgroundColor: "#6B7280",
-            color: "white",
-            "&:hover": {
-              backgroundColor: "#4B5563",
-            },
+            color: "#fff",
+            width: 40,
+            height: 45,
+            borderRadius: "0px",
+            marginBottom:"2px",
+            background: "#888",
+            "&:hover": { background: "#aaa" },
+            p: 0,
           }}
         >
-          <Edit className="w-4 h-4" />
+          <Edit style={{ width: 18, height: 18 }} />
         </IconButton>
-
         <IconButton
           onClick={onDelete}
           sx={{
-            width: 32,
-            height: 32,
-            backgroundColor: "#6B7280",
-            color: "white",
-            "&:hover": {
-              backgroundColor: "#4B5563",
-            },
+            color: "#fff",
+            width: 40,
+            height: 45,
+            borderRadius: "0 0 20px 20px",
+            background: "#888",
+            "&:hover": { background: "#aaa" },
+            p: 0,
           }}
         >
-          <Trash2 className="w-4 h-4" />
+          <Trash2 style={{ width: 18, height: 18 }} />
         </IconButton>
-      </Box>
-
-      {/* Event Name */}
-      <Box sx={{ marginBottom: "12px", paddingRight: "80px" }}>
-        <Typography
-          variant="body2"
-          sx={{
-            color: "#4A5F8A",
-            fontSize: "12px",
-            fontWeight: 500,
-            marginBottom: "2px",
-          }}
-        >
-          Event Name:
-        </Typography>
-        <Typography
-          variant="body1"
-          sx={{
-            color: "#333",
-            fontSize: "14px",
-            fontWeight: 500,
-          }}
-        >
-          {eventName}
-        </Typography>
-      </Box>
-
-      {/* Client Name and Remaining Amount */}
-      <Box
-        sx={{
-          display: "flex",
-          justifyContent: "space-between",
-          marginBottom: "12px",
-          paddingRight: "80px",
-        }}
-      >
-        <Box sx={{ flex: 1 }}>
-          <Typography
-            variant="body2"
-            sx={{
-              color: "#4A5F8A",
-              fontSize: "12px",
-              fontWeight: 500,
-              marginBottom: "2px",
-            }}
-          >
-            Client Name:
-          </Typography>
-          <Typography
-            variant="body1"
-            sx={{
-              color: "#333",
-              fontSize: "14px",
-              fontWeight: 500,
-            }}
-          >
-            {clientName}
-          </Typography>
-        </Box>
-
-        <Box sx={{ textAlign: "right" }}>
-          <Typography
-            variant="body2"
-            sx={{
-              color: "#4A5F8A",
-              fontSize: "12px",
-              fontWeight: 500,
-              marginBottom: "2px",
-            }}
-          >
-            Remaining Amount:
-          </Typography>
-          <Typography
-            variant="body1"
-            sx={{
-              color: "#333",
-              fontSize: "14px",
-              fontWeight: 500,
-            }}
-          >
-            $ {remainingAmount}
-          </Typography>
-        </Box>
-      </Box>
-
-      {/* Passenger, Date and Payment Status */}
-      <Box
-        sx={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "flex-end",
-          paddingRight: "80px",
-        }}
-      >
-        <Box sx={{ display: "flex", gap: "24px" }}>
-          <Box>
-            <Typography
-              variant="body2"
-              sx={{
-                color: "#4A5F8A",
-                fontSize: "12px",
-                fontWeight: 500,
-                marginBottom: "2px",
-              }}
-            >
-              Passenger:
-            </Typography>
-            <Typography
-              variant="body1"
-              sx={{
-                color: "#333",
-                fontSize: "14px",
-                fontWeight: 500,
-              }}
-            >
-              {passenger}
-            </Typography>
-          </Box>
-
-          <Box>
-            <Typography
-              variant="body2"
-              sx={{
-                color: "#4A5F8A",
-                fontSize: "12px",
-                fontWeight: 500,
-                marginBottom: "2px",
-              }}
-            >
-              Date:
-            </Typography>
-            <Typography
-              variant="body1"
-              sx={{
-                color: "#333",
-                fontSize: "14px",
-                fontWeight: 500,
-              }}
-            >
-              {date}
-            </Typography>
-          </Box>
-        </Box>
-
-        {/* Payment Status */}
         <Chip
-          label={paymentStatus}
-          size="small"
-          sx={{
-            ...getStatusColor(paymentStatus),
-            fontSize: "12px",
-            fontWeight: 500,
-            height: "24px",
-            borderRadius: "12px",
-          }}
-        />
+            label={paymentStatus}
+            size="small"
+            sx={{
+              ...getStatusColor(paymentStatus),
+              fontSize: "13px",
+              fontWeight: 500,
+              height: "28px",
+              borderRadius: "12px",
+              mt:5,
+              px: 2,
+            }}
+          />
       </Box>
     </Box>
-  )
+  );
 }
