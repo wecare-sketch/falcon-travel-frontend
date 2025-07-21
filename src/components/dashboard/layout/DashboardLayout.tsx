@@ -81,7 +81,7 @@ export function DashboardLayout({ role }: Readonly<DashboardLayoutProps>) {
           role={role}
         />
 
-        <div className="flex-1 w-full px-15 pt-8 pb-4">{renderView()}</div>
+        <div className="flex-1 w-full px-5 pt-8 pb-4">{renderView()}</div>
       </div>
 
       <CreateEventModal
