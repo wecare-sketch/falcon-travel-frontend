@@ -6,6 +6,8 @@ import { EventDetailsPage } from "../EventDetails/EventDetailPage";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import DescriptionIcon from "@mui/icons-material/Description";
+import { useIsMobile } from "@/hooks/useIsMobile";
+
 
 
 const admin_events = [
@@ -65,11 +67,56 @@ interface UserRequestsPage {
     setIsCreateModalOpen: (isOpen: boolean) => void;
 }
 
+function UserRequestMobileListItem({
+  eventName,
+  clientName,
+  passenger,
+  date,
+  location,
+  onEdit,
+  onDelete,
+}: {
+  eventName: string;
+  clientName: string;
+  passenger: number;
+  date: string;
+  location: string;
+  onEdit?: () => void;
+  onDelete?: () => void;
+}) {
+  return (
+    <div style={{ background: '#fff', borderRadius: 8, padding: 16, marginBottom: 12, boxShadow: '0px 1px 3px rgba(0,0,0,0.1)', border: '1px solid #E0E0E0', position: 'relative' }}>
+      <div style={{ position: 'absolute', top: 12, right: 12, display: 'flex', flexDirection: 'column', gap: 4 }}>
+        <EditIcon style={{ cursor: 'pointer', marginBottom: 4, color: '#6B7280' }} onClick={onEdit} />
+        <DeleteIcon style={{ cursor: 'pointer', color: '#6B7280' }} onClick={onDelete} />
+      </div>
+      <div style={{ marginBottom: 8, paddingRight: 80 }}>
+        <strong>Event Name:</strong> {eventName}
+      </div>
+      <div style={{ marginBottom: 8, paddingRight: 80 }}>
+        <strong>Client Name:</strong> {clientName}
+      </div>
+      <div style={{ marginBottom: 8, paddingRight: 80 }}>
+        <strong>Location:</strong> {location}
+      </div>
+      <div style={{ display: 'flex', gap: 24, paddingRight: 80 }}>
+        <div>
+          <strong>Passenger:</strong> {passenger}
+        </div>
+        <div>
+          <strong>Date:</strong> {date}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function UserRequestsPage({
     setIsCreateModalOpen,
 }: Readonly<UserRequestsPage>) {
     const [selectedEventId, setSelectedEventId] = useState<number | null>(null);
     const [page, setPage] = useState(1);
+  const isMobile = useIsMobile()
     const handleViewDetails = (eventId: number) => {
         setSelectedEventId(eventId);
     };
@@ -90,7 +137,54 @@ export function UserRequestsPage({
         <div>
             <PageHeader title="List of Events" />
             <SearchFilters />
-            <div className="p-4">
+            {isMobile?
+            (<div>
+                {paginatedEvents.map((event) => (
+                  <UserRequestMobileListItem
+                    key={event.id}
+                    eventName={event.title}
+                    clientName={event.clientName}
+                    passenger={parseInt(event.passenger, 10) || 0}
+                    date={event.date}
+                    location={event.location}
+                    onEdit={() => {}}
+                    onDelete={() => {}}
+                  />
+                ))}
+                {/* Pagination for mobile */}
+                <div className="flex justify-end mt-4 gap-2">
+                  <button
+                    onClick={() => setPage((p) => Math.max(1, p - 1))}
+                    disabled={page === 1}
+                    className="border border-[#d1d5db] bg-white text-[#345794] rounded px-3 py-1 font-semibold text-base min-w-[36px] disabled:opacity-50"
+                  >
+                    {"<"}
+                  </button>
+                  {Array.from({ length: totalPages }, (_, i) => (
+                    <button
+                      key={i + 1}
+                      onClick={() => setPage(i + 1)}
+                      className={`border px-3 py-1 font-semibold text-base min-w-[36px] rounded ${
+                        page === i + 1
+                          ? "bg-white text-[#345794] border-[#345794]"
+                          : "bg-white text-[#345794] border-[#d1d5db]"
+                      }`}
+                    >
+                      {i + 1}
+                    </button>
+                  ))}
+                  <button
+                    onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                    disabled={page === totalPages}
+                    className="border border-[#d1d5db] bg-white text-[#345794] rounded px-3 py-1 font-semibold text-base min-w-[36px] disabled:opacity-50"
+                  >
+                    {">"}
+                  </button>
+                </div>
+              </div>)
+            :
+            (
+                <div className="p-4">
                 <div className="overflow-x-auto bg-white rounded shadow">
                     <table className="w-full border border-gray-300 border-collapse text-sm">
                         <thead>
@@ -168,6 +262,8 @@ export function UserRequestsPage({
                     </button>
                 </div>
             </div>
+            )}
+            
         </div>
     );
 }
