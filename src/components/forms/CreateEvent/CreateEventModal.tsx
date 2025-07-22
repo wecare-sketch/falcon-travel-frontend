@@ -8,8 +8,9 @@ import {
   IconButton,
   Typography,
   Box,
+  Avatar,
 } from "@mui/material";
-import { X } from "lucide-react";
+import { X,User } from "lucide-react";
 import { SectionEventDetails } from "./SectionEventDetails";
 import { SectionStops } from "./SectionStops";
 import { SectionVehicleInfo } from "./SectionVehicleInfo";
@@ -18,9 +19,8 @@ import { CreateEventFormData } from "@/types/form";
 import { CustomButton } from "@/components/shared/CustomButton";
 import { useSelector } from "react-redux";
 import { RootState } from "@/store";
-import { useState } from "react";
+import { useState, useRef, ChangeEvent } from "react";
 import { ShareEventModal } from "../ShareEventModal";
-
 
 interface CreateEventModalProps {
   open: boolean;
@@ -35,6 +35,8 @@ export function CreateEventModal({
 }: Readonly<CreateEventModalProps>) {
   const methods = useForm({
     defaultValues: {
+      eventImage: "",
+      eventName: "",
       eventType: "",
       clientName: "",
       phoneNumber: "",
@@ -52,8 +54,11 @@ export function CreateEventModal({
     },
   });
   const role = useSelector((state: RootState) => state.userRole.role);
-  const { handleSubmit, reset, getValues } = methods;
+  const { handleSubmit, reset, getValues, setValue, watch } = methods;
   const [showShareModal, setShowShareModal] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const eventImage = watch("eventImage");
 
   const handleAddStop = () => {
     const stop = getValues("addStops").trim();
@@ -79,6 +84,23 @@ export function CreateEventModal({
 
   const handleCloseShareModal = () => {
     setShowShareModal(false);
+  };
+
+  const handleImageClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleImageChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        if (event.target?.result) {
+          setValue("eventImage", event.target.result as string);
+        }
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   return (
@@ -123,6 +145,53 @@ export function CreateEventModal({
           </DialogTitle>
 
           <DialogContent sx={{ padding: 0, overflow: "visible" }}>
+            {/* Add Event Image Section */}
+            <Box
+              sx={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "start",
+                marginBottom: "24px",
+              }}
+            >
+               <Typography
+                variant="body2"
+                sx={{ color: "#000000",fontSize:"20px" }}
+              >
+                {eventImage ? "Change Image" : "Add Event Image"}
+              </Typography>
+              <input
+                type="file"
+                ref={fileInputRef}
+                onChange={handleImageChange}
+                accept="image/*"
+                style={{ display: "none" }}
+              />
+              <Avatar
+                src={eventImage}
+                sx={{
+                  width: 100,
+                  height: 100,
+                  cursor: "pointer",
+                  backgroundColor: "#F5F7FA",
+                  border: "1px dashed #D1D5DB",
+                }}
+                onClick={handleImageClick}
+              >
+                {!eventImage && (
+                  <div className="flex flex-col justify-center items-center">
+                  <div><User className="w-10 h-10 text-gray-600" /></div>
+                  <div><Typography
+                    variant="body2"
+                    sx={{ color: "#6B7280", textAlign: "center" }}
+                  >
+                    Add Image
+                  </Typography></div>
+                  </div>
+                )}
+              </Avatar>
+            </Box>
+
             <SectionEventDetails />
             <SectionStops onAddStop={handleAddStop} />
             <SectionVehicleInfo />
