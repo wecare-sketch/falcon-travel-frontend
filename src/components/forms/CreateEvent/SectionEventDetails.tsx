@@ -14,6 +14,17 @@ export function SectionEventDetails() {
 
   return (
     <FormSection title="Event Details">
+      {/* Event Name (Full Width) */}
+      <Box sx={{ marginBottom: "16px" }}>
+        <FormInput
+          label="Event Name"
+          placeholder="Enter Event Name"
+          error={!!errors.eventName}
+          helperText={errors.eventName?.message as string}
+          {...register("eventName", { required: "Event name is required" })}
+        />
+      </Box>
+
       {/* Row 1 */}
       <Box
         sx={{
