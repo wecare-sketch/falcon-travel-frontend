@@ -56,7 +56,14 @@ export function MobileEventListItem({
       {/* Main Content */}
       <Box sx={{ flex: 1, minWidth: 0 }}>
         {/* Event Name Row */}
-        <Box sx={{ display: "flex", alignItems: "center", marginBottom: "10px", marginTop: "10px" }}>
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            marginBottom: "10px",
+            marginTop: "10px",
+          }}
+        >
           <Typography
             sx={{
               color: "#345794",
@@ -87,18 +94,26 @@ export function MobileEventListItem({
         {/* Client/Amount Row */}
         <Box sx={{ display: "flex", margin: "5px 0" }}>
           <Box sx={{ flex: 1 }}>
-            <Typography sx={{ color: "#345794", fontSize: "14px", fontWeight: 400 }}>
+            <Typography
+              sx={{ color: "#345794", fontSize: "14px", fontWeight: 400 }}
+            >
               Client Name:
             </Typography>
-            <Typography sx={{ color: "#787878", fontSize: "16px", fontWeight: 400 }}>
+            <Typography
+              sx={{ color: "#787878", fontSize: "16px", fontWeight: 400 }}
+            >
               {clientName}
             </Typography>
           </Box>
           <Box sx={{ flex: 1 }}>
-            <Typography sx={{ color: "#345794", fontSize: "14px", fontWeight: 400 }}>
+            <Typography
+              sx={{ color: "#345794", fontSize: "14px", fontWeight: 400 }}
+            >
               Remaining Amount:
             </Typography>
-            <Typography sx={{ color: "#787878", fontSize: "16px", fontWeight: 400 }}>
+            <Typography
+              sx={{ color: "#787878", fontSize: "16px", fontWeight: 400 }}
+            >
               $ {remainingAmount}
             </Typography>
           </Box>
@@ -107,18 +122,26 @@ export function MobileEventListItem({
         {/* Passenger/Date Row */}
         <Box sx={{ display: "flex", alignItems: "center" }}>
           <Box sx={{ flex: 1 }}>
-            <Typography sx={{ color: "#345794", fontSize: "14px", fontWeight: 400 }}>
+            <Typography
+              sx={{ color: "#345794", fontSize: "14px", fontWeight: 400 }}
+            >
               Passenger:
             </Typography>
-            <Typography sx={{ color: "#787878", fontSize: "13px", fontWeight: 400 }}>
+            <Typography
+              sx={{ color: "#787878", fontSize: "13px", fontWeight: 400 }}
+            >
               {passenger}
             </Typography>
           </Box>
           <Box sx={{ flex: 1 }}>
-            <Typography sx={{ color: "#345794", fontSize: "14px", fontWeight: 400 }}>
+            <Typography
+              sx={{ color: "#345794", fontSize: "14px", fontWeight: 400 }}
+            >
               Date:
             </Typography>
-            <Typography sx={{ color: "#787878", fontSize: "13px", fontWeight: 400 }}>
+            <Typography
+              sx={{ color: "#787878", fontSize: "13px", fontWeight: 400 }}
+            >
               {date}
             </Typography>
           </Box>

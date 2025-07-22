@@ -37,7 +37,6 @@ export function CustomSelect({
       }}
       size="small"
     >
-
       <InputLabel
         id={`${label}-label`}
         sx={{
