@@ -48,12 +48,13 @@ export function MobileEventListItem({
         position: "relative",
         display: "flex",
         alignItems: "flex-start",
-        Height: 150,
+        flexWrap: "wrap",
+        minHeight: 150,
         marginBottom: "12px",
       }}
     >
       {/* Main Content */}
-      <Box sx={{ flex: 1 }}>
+      <Box sx={{ flex: 1, minWidth: 0 }}>
         {/* Event Name Row */}
         <Box
           sx={{
@@ -147,7 +148,7 @@ export function MobileEventListItem({
         </Box>
       </Box>
 
-      {/* Action Icons */}
+      {/* Actions + Status Chip */}
       <Box
         sx={{
           display: "flex",
@@ -157,7 +158,6 @@ export function MobileEventListItem({
           borderRadius: "8px",
           marginLeft: "8px",
           minWidth: "36px",
-          height: "64px",
         }}
       >
         <IconButton
@@ -189,6 +189,17 @@ export function MobileEventListItem({
         >
           <Trash2 style={{ width: 18, height: 18 }} />
         </IconButton>
+      </Box>
+
+      {/* Payment Status Chip - Separated Row to Avoid Overflow */}
+      <Box
+        sx={{
+          width: "100%",
+          display: "flex",
+          justifyContent: "flex-end",
+          marginBottom: 2,
+        }}
+      >
         <Chip
           label={paymentStatus}
           size="small"
@@ -198,8 +209,10 @@ export function MobileEventListItem({
             fontWeight: 500,
             height: "28px",
             borderRadius: "12px",
-            mt: 5,
             px: 2,
+            maxWidth: "100%",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
           }}
         />
       </Box>
