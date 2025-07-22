@@ -1,18 +1,18 @@
-"use client"
+"use client";
 
-import { Box, Typography, Chip, IconButton } from "@mui/material"
-import { Edit, Trash2 } from "lucide-react"
-import { CustomDivider } from "../shared/CustomDivider"
+import { Box, Typography, Chip, IconButton } from "@mui/material";
+import { Edit, Trash2 } from "lucide-react";
+import { CustomDivider } from "../shared/CustomDivider";
 
 interface MobileEventListItemProps {
-  eventName: string
-  clientName: string
-  passenger: number
-  date: string
-  remainingAmount: number
-  paymentStatus: "Paid" | "Pending" | "Overdue"
-  onEdit?: () => void
-  onDelete?: () => void
+  eventName: string;
+  clientName: string;
+  passenger: number;
+  date: string;
+  remainingAmount: number;
+  paymentStatus: "Paid" | "Pending" | "Overdue";
+  onEdit?: () => void;
+  onDelete?: () => void;
 }
 
 export function MobileEventListItem({
@@ -55,7 +55,14 @@ export function MobileEventListItem({
       {/* Main Content */}
       <Box sx={{ flex: 1 }}>
         {/* Event Name Row */}
-        <Box sx={{ display: "flex", alignItems: "center", marginBottom: "10px",marginTop:"10px" }}>
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            marginBottom: "10px",
+            marginTop: "10px",
+          }}
+        >
           <Typography
             sx={{
               color: "#345794",
@@ -84,20 +91,28 @@ export function MobileEventListItem({
         <CustomDivider />
 
         {/* Client/Amount Row */}
-        <Box sx={{ display: "flex", margin: "5px 0"}}>
+        <Box sx={{ display: "flex", margin: "5px 0" }}>
           <Box sx={{ flex: 1 }}>
-            <Typography sx={{ color: "#345794", fontSize: "14px", fontWeight: 400 }}>
+            <Typography
+              sx={{ color: "#345794", fontSize: "14px", fontWeight: 400 }}
+            >
               Client Name:
             </Typography>
-            <Typography sx={{ color: "#787878", fontSize: "16px", fontWeight: 400 }}>
+            <Typography
+              sx={{ color: "#787878", fontSize: "16px", fontWeight: 400 }}
+            >
               {clientName}
             </Typography>
           </Box>
           <Box sx={{ flex: 1 }}>
-            <Typography sx={{ color: "#345794", fontSize: "14px", fontWeight: 400 }}>
+            <Typography
+              sx={{ color: "#345794", fontSize: "14px", fontWeight: 400 }}
+            >
               Remaining Amount:
             </Typography>
-            <Typography sx={{ color: "#787878", fontSize: "16px", fontWeight: 400 }}>
+            <Typography
+              sx={{ color: "#787878", fontSize: "16px", fontWeight: 400 }}
+            >
               $ {remainingAmount}
             </Typography>
           </Box>
@@ -106,22 +121,29 @@ export function MobileEventListItem({
         {/* Passenger/Date Row */}
         <Box sx={{ display: "flex", alignItems: "center" }}>
           <Box sx={{ flex: 1 }}>
-            <Typography sx={{ color: "#345794", fontSize: "14px", fontWeight: 400 }}>
+            <Typography
+              sx={{ color: "#345794", fontSize: "14px", fontWeight: 400 }}
+            >
               Passenger:
             </Typography>
-            <Typography sx={{ color: "#787878", fontSize: "13px", fontWeight: 400 }}>
+            <Typography
+              sx={{ color: "#787878", fontSize: "13px", fontWeight: 400 }}
+            >
               {passenger}
             </Typography>
           </Box>
           <Box sx={{ flex: 1 }}>
-            <Typography sx={{ color: "#345794", fontSize: "14px", fontWeight: 400 }}>
+            <Typography
+              sx={{ color: "#345794", fontSize: "14px", fontWeight: 400 }}
+            >
               Date:
             </Typography>
-            <Typography sx={{ color: "#787878", fontSize: "13px", fontWeight: 400 }}>
+            <Typography
+              sx={{ color: "#787878", fontSize: "13px", fontWeight: 400 }}
+            >
               {date}
             </Typography>
           </Box>
-          
         </Box>
       </Box>
 
@@ -145,7 +167,7 @@ export function MobileEventListItem({
             width: 40,
             height: 45,
             borderRadius: "0px",
-            marginBottom:"2px",
+            marginBottom: "2px",
             background: "#888",
             "&:hover": { background: "#aaa" },
             p: 0,
@@ -168,18 +190,18 @@ export function MobileEventListItem({
           <Trash2 style={{ width: 18, height: 18 }} />
         </IconButton>
         <Chip
-            label={paymentStatus}
-            size="small"
-            sx={{
-              ...getStatusColor(paymentStatus),
-              fontSize: "13px",
-              fontWeight: 500,
-              height: "28px",
-              borderRadius: "12px",
-              mt:5,
-              px: 2,
-            }}
-          />
+          label={paymentStatus}
+          size="small"
+          sx={{
+            ...getStatusColor(paymentStatus),
+            fontSize: "13px",
+            fontWeight: 500,
+            height: "28px",
+            borderRadius: "12px",
+            mt: 5,
+            px: 2,
+          }}
+        />
       </Box>
     </Box>
   );
