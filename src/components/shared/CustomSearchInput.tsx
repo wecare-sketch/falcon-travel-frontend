@@ -17,7 +17,7 @@ export function CustomSearchInput({
   maxWidth = 300,
 }: Readonly<CustomSearchInputProps>) {
   return (
-    <div className="relative" style={{ flex: "1 1 238px", maxWidth }}>
+    <div className="relative" style={{ width: "100%", maxWidth }}>
       <TextField
         variant="outlined"
         placeholder={placeholder}
