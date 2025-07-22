@@ -15,6 +15,8 @@ import { ProfileImage } from "./ui/ProfileImage"
 import { MemberInfoCell } from "./ui/MemberInfoCell"
 import { AmountCell } from "./ui/AmountCell"
 import { StatusChip } from "./ui/StatusChip"
+import { useIsMobile } from "@/hooks/useIsMobile"
+import { CustomDivider } from "@/components/shared/CustomDivider"
 
 interface Member {
   id: string
@@ -31,6 +33,8 @@ interface MembersTableProps {
 }
 
 export function MembersTable({ members }: MembersTableProps) {
+  const isMobile = useIsMobile()
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case "Paid":
@@ -44,8 +48,75 @@ export function MembersTable({ members }: MembersTableProps) {
     }
   }
 
+  return isMobile ? (
+    <Box>
+      <Typography variant="h6" fontWeight={500} mb={2}>
+        Members of Event
+      </Typography>
+      {members.map((member) => (
+        <Box
+          key={member.id}
+          sx={{
+            backgroundColor: "white",
+            borderRadius: "10px",
+            border: "1px solid #E0E0E0",
+            padding: 2,
+            mb: 2,
+            boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
+          }}
+        >
+          {/* Member Name */}
+          <Box>
+            <Typography fontSize={12} fontWeight={600} color="#345794">
+              Member Name:
+            </Typography>
+            <Typography fontSize={14} color="#333">{member.name}</Typography>
+          </Box>
+          <CustomDivider/>
+          <Box sx={{display:"flex",justifyContent:"space-between",alignItems:"center",marginTop:"5px"}}>
+            <Box mb={1}>
+              <Typography fontSize={12} fontWeight={600} color="#345794">
+                Phone Number:
+              </Typography>
+              <Typography fontSize={14}>{member.phoneNumber}</Typography>
+              <Typography fontSize={12} fontWeight={600} color="#345794">
+                Email:
+              </Typography>
+              <Typography fontSize={14}>{member.email}</Typography>
+            </Box>
 
-  return (
+
+
+            <Box mb={1}>
+              <Typography fontSize={12} fontWeight={600} color="#345794">
+                Due Amount:
+              </Typography>
+              <Typography fontSize={14}>${member.dueAmount}</Typography>
+              <Typography fontSize={12} fontWeight={600} color="#345794">
+                Payment Status:
+              </Typography>
+              <Typography
+                fontSize={14}
+                sx={{
+                  ...getStatusColor(member.paymentStatus),
+                  px: 1,
+                  py: 0.5,
+                  borderRadius: "6px",
+                  display: "inline-block",
+                  fontWeight: 600,
+                }}
+              >
+                {member.paymentStatus}
+              </Typography>
+            </Box>
+
+          </Box>
+
+        </Box>
+      ))}
+    </Box>
+  ) : (
+    // Desktop layout
     <Box
       sx={{
         backgroundColor: "white",
@@ -62,10 +133,10 @@ export function MembersTable({ members }: MembersTableProps) {
         sx={{
           fontWeight: 400,
           fontSize: "23px",
-          paddingLeft:"30px",
+          paddingLeft: "30px",
           marginBottom: "24px",
           color: "#333",
-          background:"#F1F6FF"
+          background: "#F1F6FF",
         }}
       >
         Members of event
@@ -75,84 +146,32 @@ export function MembersTable({ members }: MembersTableProps) {
         <Table>
           <TableHead>
             <TableRow>
-              <TableCell
-                sx={{
-                  color: "#4A5F8A",
-                  fontSize: "12px",
-                  fontWeight: 600,
-                  borderBottom: "2px solid #E0E0E0",
-                  padding: "12px 16px",
-                }}
-              >
-                Member Name
-              </TableCell>
-              <TableCell
-                sx={{
-                  color: "#4A5F8A",
-                  fontSize: "12px",
-                  fontWeight: 600,
-                  borderBottom: "2px solid #E0E0E0",
-                  padding: "12px 16px",
-                }}
-              >
-                Phone Number
-              </TableCell>
-              <TableCell
-                sx={{
-                  color: "#4A5F8A",
-                  fontSize: "12px",
-                  fontWeight: 600,
-                  borderBottom: "2px solid #E0E0E0",
-                  padding: "12px 16px",
-                }}
-              >
-                Email Address
-              </TableCell>
-              <TableCell
-                sx={{
-                  color: "#4A5F8A",
-                  fontSize: "12px",
-                  fontWeight: 600,
-                  borderBottom: "2px solid #E0E0E0",
-                  padding: "12px 16px",
-                }}
-              >
-                Due Amount
-              </TableCell>
-              <TableCell
-                sx={{
-                  color: "#4A5F8A",
-                  fontSize: "12px",
-                  fontWeight: 600,
-                  borderBottom: "2px solid #E0E0E0",
-                  padding: "12px 16px",
-                }}
-              >
-                Payment Status
-              </TableCell>
+              {["Member Name", "Phone Number", "Email Address", "Due Amount", "Payment Status"].map((text) => (
+                <TableCell
+                  key={text}
+                  sx={{
+                    color: "#4A5F8A",
+                    fontSize: "12px",
+                    fontWeight: 600,
+                    borderBottom: "2px solid #E0E0E0",
+                    padding: "12px 16px",
+                  }}
+                >
+                  {text}
+                </TableCell>
+              ))}
             </TableRow>
           </TableHead>
           <TableBody>
             {members.map((member) => (
               <TableRow
                 key={member.id}
-                sx={{
-                  "&:hover": {
-                    backgroundColor: "#F8F9FA",
-                  },
-                }}
+                sx={{ "&:hover": { backgroundColor: "#F8F9FA" } }}
               >
                 <TableCell sx={{ padding: "16px", borderBottom: "1px solid #F0F0F0" }}>
                   <Box sx={{ display: "flex", alignItems: "center", gap: "12px" }}>
                     <ProfileImage />
-                    <Typography
-                      variant="body2"
-                      sx={{
-                        color: "#333",
-                        fontSize: "14px",
-                        fontWeight: 500,
-                      }}
-                    >
+                    <Typography variant="body2" sx={{ color: "#333", fontSize: "14px", fontWeight: 500 }}>
                       {member.name}
                     </Typography>
                   </Box>

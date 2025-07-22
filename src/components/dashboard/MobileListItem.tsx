@@ -1,18 +1,18 @@
-"use client"
+"use client";
 
-import { Box, Typography, Chip, IconButton } from "@mui/material"
-import { Edit, Trash2 } from "lucide-react"
-import { CustomDivider } from "../shared/CustomDivider"
+import { Box, Typography, Chip, IconButton } from "@mui/material";
+import { Edit, Trash2 } from "lucide-react";
+import { CustomDivider } from "../shared/CustomDivider";
 
 interface MobileEventListItemProps {
-  eventName: string
-  clientName: string
-  passenger: number
-  date: string
-  remainingAmount: number
-  paymentStatus: "Paid" | "Pending" | "Overdue"
-  onEdit?: () => void
-  onDelete?: () => void
+  eventName: string;
+  clientName: string;
+  passenger: number;
+  date: string;
+  remainingAmount: number;
+  paymentStatus: "Paid" | "Pending" | "Overdue";
+  onEdit?: () => void;
+  onDelete?: () => void;
 }
 
 export function MobileEventListItem({
@@ -48,14 +48,15 @@ export function MobileEventListItem({
         position: "relative",
         display: "flex",
         alignItems: "flex-start",
-        Height: 150,
+        flexWrap: "wrap",
+        minHeight: 150,
         marginBottom: "12px",
       }}
     >
       {/* Main Content */}
-      <Box sx={{ flex: 1 }}>
+      <Box sx={{ flex: 1, minWidth: 0 }}>
         {/* Event Name Row */}
-        <Box sx={{ display: "flex", alignItems: "center", marginBottom: "10px",marginTop:"10px" }}>
+        <Box sx={{ display: "flex", alignItems: "center", marginBottom: "10px", marginTop: "10px" }}>
           <Typography
             sx={{
               color: "#345794",
@@ -84,7 +85,7 @@ export function MobileEventListItem({
         <CustomDivider />
 
         {/* Client/Amount Row */}
-        <Box sx={{ display: "flex", margin: "5px 0"}}>
+        <Box sx={{ display: "flex", margin: "5px 0" }}>
           <Box sx={{ flex: 1 }}>
             <Typography sx={{ color: "#345794", fontSize: "14px", fontWeight: 400 }}>
               Client Name:
@@ -121,11 +122,10 @@ export function MobileEventListItem({
               {date}
             </Typography>
           </Box>
-          
         </Box>
       </Box>
 
-      {/* Action Icons */}
+      {/* Actions + Status Chip */}
       <Box
         sx={{
           display: "flex",
@@ -135,7 +135,6 @@ export function MobileEventListItem({
           borderRadius: "8px",
           marginLeft: "8px",
           minWidth: "36px",
-          height: "64px",
         }}
       >
         <IconButton
@@ -145,7 +144,7 @@ export function MobileEventListItem({
             width: 40,
             height: 45,
             borderRadius: "0px",
-            marginBottom:"2px",
+            marginBottom: "2px",
             background: "#888",
             "&:hover": { background: "#aaa" },
             p: 0,
@@ -167,19 +166,32 @@ export function MobileEventListItem({
         >
           <Trash2 style={{ width: 18, height: 18 }} />
         </IconButton>
+      </Box>
+
+      {/* Payment Status Chip - Separated Row to Avoid Overflow */}
+      <Box
+        sx={{
+          width: "100%",
+          display: "flex",
+          justifyContent: "flex-end",
+          marginBottom: 2,
+        }}
+      >
         <Chip
-            label={paymentStatus}
-            size="small"
-            sx={{
-              ...getStatusColor(paymentStatus),
-              fontSize: "13px",
-              fontWeight: 500,
-              height: "28px",
-              borderRadius: "12px",
-              mt:5,
-              px: 2,
-            }}
-          />
+          label={paymentStatus}
+          size="small"
+          sx={{
+            ...getStatusColor(paymentStatus),
+            fontSize: "13px",
+            fontWeight: 500,
+            height: "28px",
+            borderRadius: "12px",
+            px: 2,
+            maxWidth: "100%",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+          }}
+        />
       </Box>
     </Box>
   );
