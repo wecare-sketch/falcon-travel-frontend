@@ -50,7 +50,7 @@ export function MembersTable({ members }: MembersTableProps) {
 
   return isMobile ? (
     <Box>
-      <Typography variant="h6" fontWeight={500} mb={2}>
+      <Typography variant="h6" fontWeight={500} mb={2} color="#101010">
         Members of Event
       </Typography>
       {members.map((member) => (
@@ -70,7 +70,7 @@ export function MembersTable({ members }: MembersTableProps) {
             <Typography fontSize={12} fontWeight={600} color="#345794">
               Member Name:
             </Typography>
-            <Typography fontSize={14} color="#333">{member.name}</Typography>
+            <Typography fontSize={14} color="#000000">{member.name}</Typography>
           </Box>
           <CustomDivider/>
           <Box sx={{display:"flex",justifyContent:"space-between",alignItems:"center",marginTop:"5px"}}>
@@ -78,20 +78,17 @@ export function MembersTable({ members }: MembersTableProps) {
               <Typography fontSize={12} fontWeight={600} color="#345794">
                 Phone Number:
               </Typography>
-              <Typography fontSize={14}>{member.phoneNumber}</Typography>
+              <Typography fontSize={14} color="#000000">{member.phoneNumber}</Typography>
               <Typography fontSize={12} fontWeight={600} color="#345794">
                 Email:
               </Typography>
-              <Typography fontSize={14}>{member.email}</Typography>
+              <Typography fontSize={14} color="#000000">{member.email}</Typography>
             </Box>
-
-
-
             <Box mb={1}>
               <Typography fontSize={12} fontWeight={600} color="#345794">
                 Due Amount:
               </Typography>
-              <Typography fontSize={14}>${member.dueAmount}</Typography>
+              <Typography fontSize={14} color="#000000">${member.dueAmount}</Typography>
               <Typography fontSize={12} fontWeight={600} color="#345794">
                 Payment Status:
               </Typography>
