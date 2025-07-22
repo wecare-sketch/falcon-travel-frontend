@@ -2,6 +2,8 @@
 
 import Image from "next/image";
 import { ChevronDown, Menu } from "lucide-react";
+import { SettingsDrawer } from "./Settings";
+import { useState } from "react";
 import {
   AppBar,
   Toolbar,
@@ -24,7 +26,18 @@ export function Header({
   userAvatar,
   onToggleSidebar,
 }: Readonly<HeaderProps>) {
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false)
+
+  const handleProfileClick = () => {
+    setIsSettingsOpen(true)
+  }
+
+  const handleCloseSettings = () => {
+    setIsSettingsOpen(false)
+  }
+
   return (
+    <>
     <AppBar
       position="sticky"
       elevation={0}
@@ -88,7 +101,9 @@ export function Header({
               display: { xs: "flex", md: "none" },
               alignItems: "center",
               gap: 1,
+              cursor: "pointer"
             }}
+            onClick={handleProfileClick}
           >
             <Avatar
               alt={userName}
@@ -114,7 +129,7 @@ export function Header({
               style={{ width: 24, height: 24, cursor: "pointer" }}
               priority
             />
-            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1,cursor:"pointer" }} onClick={handleProfileClick}>
               <Typography
                 variant="body1"
                 sx={{
@@ -141,5 +156,13 @@ export function Header({
         </Box>
       </Toolbar>
     </AppBar>
+      <SettingsDrawer
+      open={isSettingsOpen}
+      onClose={handleCloseSettings}
+      userName={userName}
+      userEmail="james.watson@example.com"
+      userAvatar={userAvatar}
+    />
+  </>
   );
 }

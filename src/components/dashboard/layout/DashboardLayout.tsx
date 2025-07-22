@@ -12,6 +12,7 @@ import { setUserRole } from "@/store/slices/userRoleSlice";
 import { CreateEventFormData } from "@/types/form";
 import { FeedBackPage } from "../Feedback/FeedBackPage";
 import { DashboardPage } from "../dashboard view/DashboardPage";
+import { UserRequestsPage } from "../UserRequests/UserRequestsPage";
 
 interface DashboardLayoutProps {
   role: "user" | "admin";
@@ -56,6 +57,8 @@ export function DashboardLayout({ role }: Readonly<DashboardLayoutProps>) {
         return <MediaGalleryPage />;
       case "Feedback":
         return <FeedBackPage/>
+      case "User Requests":
+          return <UserRequestsPage setIsCreateModalOpen={setIsCreateModalOpen}/>
       default:
         return <div className="p-4">Select a view</div>;
     }
@@ -78,7 +81,7 @@ export function DashboardLayout({ role }: Readonly<DashboardLayoutProps>) {
           role={role}
         />
 
-        <div className="flex-1 w-full px-15 pt-8 pb-4">{renderView()}</div>
+        <div className="flex-1 w-full px-5 pt-8 pb-4">{renderView()}</div>
       </div>
 
       <CreateEventModal

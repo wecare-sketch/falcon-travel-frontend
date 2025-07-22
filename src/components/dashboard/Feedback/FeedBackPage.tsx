@@ -5,6 +5,7 @@ import { EventCard } from "../UpcomingEvents/EventCard"
 import AddFeedback from "./AddFeedback";
 import { RootState } from "@/store";
 import { useSelector } from "react-redux";
+import { FeedbackDetailsPage } from "./FeedbackDetailsPage";
 
 const events = [
     {
@@ -27,6 +28,7 @@ const events = [
     },
   ];
 
+
 export function FeedBackPage(){
   const [selectedEventId, setSelectedEventId] = useState<number | null>(null);
   const role = useSelector((state: RootState) => state.userRole.role);
@@ -34,9 +36,17 @@ export function FeedBackPage(){
     const handleViewDetails = (eventId: number) => {
         setSelectedEventId(eventId);
       };
-      if (selectedEventId !== null) {
-        return <AddFeedback eventId={selectedEventId}/>;
+      if(role==="user"){
+        if (selectedEventId !== null) {
+          return <AddFeedback eventId={selectedEventId}/>;
+        }
       }
+      else{
+        if (selectedEventId !== null) {
+          return <FeedbackDetailsPage eventId={selectedEventId} />;
+        }
+      }
+      
     return(
         <>
         <PageHeader title="Add Event FeedBack" />
