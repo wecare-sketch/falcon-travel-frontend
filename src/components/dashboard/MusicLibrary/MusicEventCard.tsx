@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { Card, CardContent, Typography, Box } from "@mui/material";
 import { MusicListSection } from "./MusicListSection";
+import HeadphonesIcon from '@mui/icons-material/Headphones';
 
 interface Song {
   id: string;
@@ -119,12 +120,7 @@ export function MusicEventCard({
               fontWeight: "bold",
             }}
           >
-            <Image
-              src="/images/headphone.png"
-              alt="headphone"
-              width={15}
-              height={15}
-            />
+            <HeadphonesIcon sx={{ fontSize: 15,color:"black",backgroundColor:"white" }} />
           </Box>
           {trackCount} tracks
         </Typography>
