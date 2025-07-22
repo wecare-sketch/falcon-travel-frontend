@@ -13,7 +13,7 @@ interface CustomSelectProps {
   value: string;
   onChange: (value: string) => void;
   options: Option[];
-  width?: number | string;
+  maxWidth?: number | string;
 }
 
 const ChevronIconComponent = () => (
@@ -25,17 +25,19 @@ export function CustomSelect({
   value,
   onChange,
   options,
-  width = 200,
+  maxWidth = 300,
 }: Readonly<CustomSelectProps>) {
   return (
     <FormControl
       sx={{
-        minWidth: width,
+        width: "100%",
+        maxWidth,
         background: "#fff",
         borderRadius: "6px",
       }}
       size="small"
     >
+
       <InputLabel
         id={`${label}-label`}
         sx={{
