@@ -5,6 +5,7 @@ import "@/styles/globals.css";
 import { LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { Providers } from "@/redux/Provider";
+import { Toaster } from "react-hot-toast";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -27,7 +28,10 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <LocalizationProvider dateAdapter={AdapterDayjs}>
-          <Providers>{children}</Providers>
+          <Providers>
+          <Toaster position="top-right" />
+            {children}
+          </Providers>
         </LocalizationProvider>
       </body>
     </html>

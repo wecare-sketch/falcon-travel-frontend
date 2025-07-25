@@ -17,12 +17,14 @@ import {
 } from "@mui/material"
 import { LinkIcon } from "lucide-react"
 import { useState } from "react"
-
+import axios from "@/lib/axios"
+import toast from "react-hot-toast"
 
 interface ShareEventModalProps {
   open: boolean
   onClose: () => void
   eventTitle?: string
+  slug: string
 }
 
 interface SharedUser {
@@ -33,21 +35,12 @@ interface SharedUser {
   avatar: string
 }
 
-export function ShareEventModal({ open, onClose, eventTitle = "New Event" }: ShareEventModalProps) {
+export function ShareEventModal({ open, onClose, eventTitle = "New Event", slug }: ShareEventModalProps) {
   const [email, setEmail] = useState("")
   const [userStatus, setUserStatus] = useState("")
-  const [sharedUsers, setSharedUsers] = useState<SharedUser[]>([
-    {
-      id: "1",
-      name: "Waheed Khan",
-      email: "waheed@example.com",
-      status: "Host",
-      avatar: "W",
-    },
-  ])
+  const [sharedUsers, setSharedUsers] = useState<SharedUser[]>([])
 
   const handleCopyLink = () => {
-    // Copy event link to clipboard
     const eventLink = `https://falcon-tour.com/events/${eventTitle.toLowerCase().replace(/\s+/g, "-")}`
     navigator.clipboard.writeText(eventLink)
     console.log("Link copied to clipboard:", eventLink)
@@ -72,9 +65,24 @@ export function ShareEventModal({ open, onClose, eventTitle = "New Event" }: Sha
     setSharedUsers(sharedUsers.filter((user) => user.id !== userId))
   }
 
-  const handleShareInvite = () => {
-    console.log("Sharing invites to:", sharedUsers)
-    onClose()
+  const handleShareInvite = async () => {
+    try {
+      const payload = {
+        host: sharedUsers.find((user) => user.status === "Host")?.email || "",
+        cohosts: sharedUsers
+          .filter((user) => user.status === "Co-Host")
+          .map((user) => user.email),
+        slug,
+      }
+
+      await axios.post(`/admin/event/${slug}/create`, payload)
+      toast.success("Event invite shared successfully")
+      console.log("Sharing invites to:", sharedUsers)
+      onClose()
+    } catch (error: unknown) {
+      toast.error("Failed to share invite")
+      console.error("API Error:", error)
+    }
   }
 
   const handleCancel = () => {
