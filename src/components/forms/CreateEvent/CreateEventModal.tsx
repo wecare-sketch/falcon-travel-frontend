@@ -121,8 +121,7 @@ export function CreateEventModal({
           handleCancel();
         }
       },
-      onError: (err: unknown) => {
-        console.error(err);
+      onError: () => {
         toast.error("Failed to create event");
       },
     });

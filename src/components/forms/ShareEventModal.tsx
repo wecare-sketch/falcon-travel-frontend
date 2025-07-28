@@ -79,9 +79,8 @@ export function ShareEventModal({ open, onClose, eventTitle = "New Event", slug 
       toast.success("Event invite shared successfully")
       console.log("Sharing invites to:", sharedUsers)
       onClose()
-    } catch (error: unknown) {
+    } catch {
       toast.error("Failed to share invite")
-      console.error("API Error:", error)
     }
   }
 

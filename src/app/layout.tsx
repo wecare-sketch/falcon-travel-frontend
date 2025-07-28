@@ -29,7 +29,7 @@ export default function RootLayout({
       >
         <LocalizationProvider dateAdapter={AdapterDayjs}>
           <Providers>
-          <Toaster position="top-right" />
+          <Toaster position="top-center" />
             {children}
           </Providers>
         </LocalizationProvider>

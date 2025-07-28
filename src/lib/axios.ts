@@ -10,10 +10,11 @@ const axiosInstance = axios.create({
 axiosInstance.interceptors.request.use(
   (config) => {
     const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
-    if (token) {
+    if (token && !config.headers?.Authorization) {
       config.headers = config.headers || {};
       config.headers.Authorization = `Bearer ${token}`;
     }
+    
     return config;
   },
   (error) => Promise.reject(error)
