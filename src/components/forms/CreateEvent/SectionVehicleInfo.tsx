@@ -6,7 +6,10 @@ import { Box } from "@mui/material";
 import { useFormContext } from "react-hook-form";
 
 export function SectionVehicleInfo() {
-  const { register } = useFormContext();
+  const {
+    register,
+    formState: { errors },
+  } = useFormContext();
 
   return (
     <FormSection title="Vehicle Info">
@@ -22,16 +25,25 @@ export function SectionVehicleInfo() {
           <FormInput
             label="Choose Vehicle"
             placeholder="Vehicle Name"
-            {...register("chooseVehicle")}
+            error={!!errors.chooseVehicle}
+            helperText={errors.chooseVehicle?.message as string}
+            {...register("chooseVehicle", {
+              required: "Vehicle name is required",
+            })}
           />
         </Box>
 
         <Box sx={{ flex: { xs: "1 1 100%", md: "1 1 calc(33.33% - 12px)" } }}>
           <FormInput
-            label="Number of Passenger"
+            label="Number of Passengers"
             placeholder="Add number"
             type="number"
-            {...register("numberOfPassenger")}
+            error={!!errors.numberOfPassenger}
+            helperText={errors.numberOfPassenger?.message as string}
+            {...register("numberOfPassenger", {
+              required: "Number of passengers is required",
+              min: { value: 1, message: "At least one passenger required" },
+            })}
           />
         </Box>
 
@@ -39,7 +51,11 @@ export function SectionVehicleInfo() {
           <FormInput
             label="Hours Reserved"
             placeholder="Add Time"
-            {...register("hoursReserved")}
+            error={!!errors.hoursReserved}
+            helperText={errors.hoursReserved?.message as string}
+            {...register("hoursReserved", {
+              required: "Reservation time is required",
+            })}
           />
         </Box>
       </Box>

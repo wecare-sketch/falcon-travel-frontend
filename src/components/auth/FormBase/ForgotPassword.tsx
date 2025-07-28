@@ -1,10 +1,17 @@
+"use client";
+
 import React from "react";
 import EmailInput from "./EmailInput";
 
-const ForgotPassword = () => {
+interface ForgotPasswordProps {
+  email: string;
+  setEmail: React.Dispatch<React.SetStateAction<string>>;
+}
+
+const ForgotPassword = ({ email, setEmail }: ForgotPasswordProps) => {
   return (
     <div className="mt-10">
-      <EmailInput />
+      <EmailInput value={email} onChange={setEmail} />
     </div>
   );
 };

@@ -10,7 +10,7 @@ import {
   Box,
   Avatar,
 } from "@mui/material";
-import { X,User } from "lucide-react";
+import { X, User } from "lucide-react";
 import { SectionEventDetails } from "./SectionEventDetails";
 import { SectionStops } from "./SectionStops";
 import { SectionVehicleInfo } from "./SectionVehicleInfo";
@@ -21,6 +21,8 @@ import { useSelector } from "react-redux";
 import { RootState } from "@/store";
 import { useState, useRef, ChangeEvent } from "react";
 import { ShareEventModal } from "../ShareEventModal";
+import { useAddEvent } from "@/hooks/events/useAddEvent";
+import { toast } from "react-hot-toast";
 
 interface CreateEventModalProps {
   open: boolean;
@@ -28,15 +30,21 @@ interface CreateEventModalProps {
   onCreateEvent: (eventData: CreateEventFormData) => void;
 }
 
+// type CreateEventResponse = {
+//   message: string;
+//   data: {
+//     slug: string;
+//     [key: string]: any;
+//   };
+// };
+
 export function CreateEventModal({
   open,
   onClose,
   onCreateEvent,
 }: Readonly<CreateEventModalProps>) {
-  const methods = useForm({
+  const methods = useForm<CreateEventFormData>({
     defaultValues: {
-      eventImage: "",
-      eventName: "",
       eventType: "",
       clientName: "",
       phoneNumber: "",
@@ -53,12 +61,15 @@ export function CreateEventModal({
       equityDivision: "",
     },
   });
-  const role = useSelector((state: RootState) => state.userRole.role);
-  const { handleSubmit, reset, getValues, setValue, watch } = methods;
-  const [showShareModal, setShowShareModal] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const eventImage = watch("eventImage");
+  const role = useSelector((state: RootState) => state.userRole.role);
+  const { handleSubmit, reset, getValues } = methods;
+  const [showShareModal, setShowShareModal] = useState(false);
+  const [slug, setSlug] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [eventImage, setEventImage] = useState<string | null>(null);
+
+  const { mutate: addEvent, isPending } = useAddEvent();
 
   const handleAddStop = () => {
     const stop = getValues("addStops").trim();
@@ -73,13 +84,48 @@ export function CreateEventModal({
   };
 
   const onSubmit = (data: CreateEventFormData) => {
-    onCreateEvent(data);
-    if (role === "admin") {
-      onClose();
-      setShowShareModal(true);
-    } else {
-      handleCancel();
-    }
+    const payload = {
+      eventDetails: {
+        eventType: data.eventType,
+        clientName: data.clientName,
+        phoneNumber: data.phoneNumber,
+        pickupDate: data.pickupDate,
+        dropOffDate: data.dropoffDate,
+        pickupTime: data.pickupTime,
+        location: data.location,
+        stops: data.addStops ? [data.addStops] : [],
+      },
+      vehicleInfo: {
+        vehicleName: data.chooseVehicle,
+        numberOfPassengers: Number(data.numberOfPassenger),
+        hoursReserved: Number(data.hoursReserved),
+      },
+      paymentDetails: {
+        totalAmount: Number(data.totalAmount),
+        depositAmount: 100,
+        pendingAmount: Number(data.pendingAmount),
+        equityDivision: Number(data.equityDivision),
+      },
+    };
+
+    addEvent(payload, {
+      onSuccess: (response) => {
+        toast.success("Event created!");
+        setSlug(response?.data?.slug ?? null);
+        onCreateEvent(data);
+        reset();
+        if (role === "admin") {
+          onClose();
+          setShowShareModal(true);
+        } else {
+          handleCancel();
+        }
+      },
+      onError: (err: unknown) => {
+        console.error(err);
+        toast.error("Failed to create event");
+      },
+    });
   };
 
   const handleCloseShareModal = () => {
@@ -96,7 +142,7 @@ export function CreateEventModal({
       const reader = new FileReader();
       reader.onload = (event) => {
         if (event.target?.result) {
-          setValue("eventImage", event.target.result as string);
+          setEventImage(event.target.result as string);
         }
       };
       reader.readAsDataURL(file);
@@ -121,7 +167,6 @@ export function CreateEventModal({
             },
           }}
         >
-          {/* Header */}
           <DialogTitle
             sx={{
               display: "flex",
@@ -145,7 +190,6 @@ export function CreateEventModal({
           </DialogTitle>
 
           <DialogContent sx={{ padding: 0, overflow: "visible" }}>
-            {/* Add Event Image Section */}
             <Box
               sx={{
                 display: "flex",
@@ -154,10 +198,7 @@ export function CreateEventModal({
                 marginBottom: "24px",
               }}
             >
-               <Typography
-                variant="body2"
-                sx={{ color: "#000000",fontSize:"20px" }}
-              >
+              <Typography variant="body2" sx={{ color: "#000000", fontSize: "20px" }}>
                 {eventImage ? "Change Image" : "Add Event Image"}
               </Typography>
               <input
@@ -168,7 +209,7 @@ export function CreateEventModal({
                 style={{ display: "none" }}
               />
               <Avatar
-                src={eventImage}
+                src={eventImage ?? undefined}
                 sx={{
                   width: 100,
                   height: 100,
@@ -180,13 +221,12 @@ export function CreateEventModal({
               >
                 {!eventImage && (
                   <div className="flex flex-col justify-center items-center">
-                  <div><User className="w-10 h-10 text-gray-600" /></div>
-                  <div><Typography
-                    variant="body2"
-                    sx={{ color: "#6B7280", textAlign: "center" }}
-                  >
-                    Add Image
-                  </Typography></div>
+                    <div><User className="w-10 h-10 text-gray-600" /></div>
+                    <div>
+                      <Typography variant="body2" sx={{ color: "#6B7280", textAlign: "center" }}>
+                        Add Image
+                      </Typography>
+                    </div>
                   </div>
                 )}
               </Avatar>
@@ -215,8 +255,9 @@ export function CreateEventModal({
                 }}
               />
               <CustomButton
-                label="+ Create Event"
+                label={isPending ? "Creating..." : "+ Create Event"}
                 onClick={handleSubmit(onSubmit)}
+                disabled={isPending}
                 sx={{
                   minWidth: { xs: "100%", sm: "180px" },
                   height: 44,
@@ -226,7 +267,11 @@ export function CreateEventModal({
           </DialogContent>
         </Dialog>
       </FormProvider>
-      <ShareEventModal open={showShareModal} onClose={handleCloseShareModal} />
+      <ShareEventModal
+        open={showShareModal}
+        onClose={handleCloseShareModal}
+        slug={slug || ""}
+      />
     </>
   );
 }

@@ -8,7 +8,10 @@ import { useFormContext } from "react-hook-form";
 import { useSelector } from "react-redux";
 
 export function SectionPaymentDetails() {
-  const { register } = useFormContext();
+  const {
+    register,
+    formState: { errors },
+  } = useFormContext();
   const role = useSelector((state: RootState) => state.userRole.role);
   const isUser = role === "user";
 
@@ -28,7 +31,12 @@ export function SectionPaymentDetails() {
             placeholder="Enter Amount"
             type="number"
             disabled={isUser}
-            {...register("totalAmount")}
+            error={!!errors.totalAmount}
+            helperText={errors.totalAmount?.message as string}
+            {...register("totalAmount", {
+              required: "Total amount is required",
+              min: { value: 0, message: "Cannot be negative" },
+            })}
           />
         </Box>
 
@@ -38,7 +46,12 @@ export function SectionPaymentDetails() {
             placeholder="Enter Amount"
             type="number"
             disabled={isUser}
-            {...register("pendingAmount")}
+            error={!!errors.pendingAmount}
+            helperText={errors.pendingAmount?.message as string}
+            {...register("pendingAmount", {
+              required: "Pending amount is required",
+              min: { value: 0, message: "Cannot be negative" },
+            })}
           />
         </Box>
 
@@ -47,7 +60,12 @@ export function SectionPaymentDetails() {
             label="Equity Division in Person"
             placeholder="Add Members"
             disabled={isUser}
-            {...register("equityDivision")}
+            error={!!errors.equityDivision}
+            helperText={errors.equityDivision?.message as string}
+            {...register("equityDivision", {
+              required: "Equity division is required",
+              min: { value: 1, message: "At least 1 person required" },
+            })}
           />
         </Box>
       </Box>
