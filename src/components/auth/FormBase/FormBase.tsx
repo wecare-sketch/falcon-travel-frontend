@@ -98,7 +98,7 @@ const FormBase = ({ type }: { type: FormType }) => {
             email,
             password: loginPassword,
           });
-          router.push("/auth/sign-in");
+          router.push("/personal-details");
         } catch (err: unknown) {
           const error = err as ApiError;
           toast.error(error?.response?.data?.message || "Sign up failed");

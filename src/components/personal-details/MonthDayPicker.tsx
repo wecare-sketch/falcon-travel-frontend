@@ -1,18 +1,24 @@
 "use client";
-import React, { useState } from "react";
+import React from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 
-const MonthDayPicker = () => {
-  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+interface MonthDayPickerProps {
+  value: string;
+  onChange: (value: string) => void;
+}
+
+const MonthDayPicker = ({ value, onChange }: MonthDayPickerProps) => {
+  const selectedDate = value ? new Date(value) : null;
 
   const handleChange = (date: Date | null) => {
     if (date) {
-      //will be required later
-      //   const mmdd = `${String(date.getMonth() + 1).padStart(2, "0")}/${String(
-      //     date.getDate()
-      //   ).padStart(2, "0")}`;
-      setSelectedDate(date);
+      const mmdd = `${String(date.getMonth() + 1).padStart(2, "0")}/${String(
+        date.getDate()
+      ).padStart(2, "0")}`;
+      onChange(mmdd);
+    } else {
+      onChange("");
     }
   };
 
