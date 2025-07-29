@@ -22,8 +22,7 @@ export const useRequestOtp = () => {
   return useMutation({
     mutationFn: requestOtp,
     onSuccess: (data) => {
-      console.log("OTP sent successfully:", data);
-      // toast.success(data.message);
+      console.log("OTP sent successfully:", data); 
     },
     onError: (error: unknown) => {
       if (isAxiosError(error)) {
