@@ -1,10 +1,24 @@
+"use client";
+
 import React from "react";
 import EmailInput from "./EmailInput";
 import PasswordInput from "./PasswordInput";
 import RememberMeAndForgot from "./RememberMeAndForgot";
 import SocialLoginButtons from "./SocialLoginButtons";
 
-const SignInUpSection = ({ type }: { type: "sign-in" | "sign-up" }) => {
+const SignInUpSection = ({
+  type,
+  email,
+  setEmail,
+  password,
+  setPassword,
+}: {
+  type: "sign-in" | "sign-up";
+  email: string;
+  setEmail: (val: string) => void;
+  password: string;
+  setPassword: (val: string) => void;
+}) => {
   const isSignUp = type === "sign-up";
 
   return (
@@ -17,8 +31,8 @@ const SignInUpSection = ({ type }: { type: "sign-in" | "sign-up" }) => {
         </span>
         <div className="flex-1 h-px bg-[#E0E0E0]" />
       </div>
-      <EmailInput />
-      <PasswordInput />
+      <EmailInput value={email} onChange={setEmail} />
+      <PasswordInput value={password} onChange={setPassword} />
       {!isSignUp && <RememberMeAndForgot />}
     </>
   );
