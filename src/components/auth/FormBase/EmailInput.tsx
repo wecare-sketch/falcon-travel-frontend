@@ -2,7 +2,12 @@
 import { TextField } from "@mui/material";
 import Image from "next/image";
 
-const EmailInput = () => (
+interface EmailInputProps {
+  value: string;
+  onChange: (value: string) => void;
+}
+
+const EmailInput = ({ value, onChange }: EmailInputProps) => (
   <>
     <label
       htmlFor="email"
@@ -12,6 +17,8 @@ const EmailInput = () => (
     </label>
     <TextField
       id="email"
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
       placeholder="Enter Your Email"
       variant="outlined"
       fullWidth

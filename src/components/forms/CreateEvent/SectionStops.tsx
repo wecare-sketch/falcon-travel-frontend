@@ -24,7 +24,10 @@ export function SectionStops({
     <FormSection title="Add Stops">
       <Box sx={{ display: "flex", gap: 2, alignItems: "flex-end" }}>
         <Box sx={{ width: "300px" }}>
-          <FormInput placeholder="Add Location" {...register("addStops")} />
+          <FormInput
+            placeholder="Add Location"
+            {...register("addStops")}
+          />
         </Box>
         <CustomButton
           onClick={handleAdd}

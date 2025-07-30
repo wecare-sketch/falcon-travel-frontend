@@ -3,15 +3,18 @@
 import React from "react";
 import PasswordInputWithToggle from "./PasswordInputWithToggle";
 
-const PasswordInput = () => {
-  const [password, setPassword] = React.useState("");
+interface PasswordInputProps {
+  value: string;
+  onChange: (value: string) => void;
+}
 
+const PasswordInput = ({ value, onChange }: PasswordInputProps) => {
   return (
     <PasswordInputWithToggle
       label="Password"
       placeholder="Enter Your Password"
-      value={password}
-      onChange={setPassword}
+      value={value}
+      onChange={onChange}
     />
   );
 };
