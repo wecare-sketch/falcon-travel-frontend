@@ -111,7 +111,7 @@ const FormBase = ({
               password: loginPassword,
             }
           );
-          router.push("/auth/sign-in");
+          router.push("/personal-details");
         } catch (err: unknown) {
           const error = err as ApiError;
           toast.error(error?.response?.data?.message || "Sign up failed");
@@ -197,7 +197,7 @@ const FormBase = ({
           localStorage.removeItem("reset_token");
           localStorage.removeItem("emailForOtp");
 
-          router.push("/user/dashboard");
+          router.push("/auth/sign-in");
         } catch (err: unknown) {
           const error = err as { response?: { data?: { message?: string } } };
           toast.error(
