@@ -1,5 +1,10 @@
 import { DashboardLayout } from "@/components/dashboard/layout/DashboardLayout";
+import RouteGuard from "@/components/RouteGuard";
 
 export default function AdminDashboardPage() {
-  return <DashboardLayout role="admin" />;
+  return (
+    <RouteGuard allowedRoles={["admin"]}>
+      <DashboardLayout role="admin" />
+    </RouteGuard>
+  );
 }
