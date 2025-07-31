@@ -2,14 +2,20 @@
 import { TextField } from "@mui/material";
 import React from "react";
 
-const InputField = ({
-  id,
-  placeholder,
-  label,
-}: {
+interface InputFieldProps {
   id: string;
   placeholder: string;
   label: string;
+  value: string;
+  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+}
+
+const InputField: React.FC<InputFieldProps> = ({
+  id,
+  placeholder,
+  label,
+  value,
+  onChange,
 }) => (
   <>
     <label
@@ -23,6 +29,8 @@ const InputField = ({
       placeholder={placeholder}
       variant="outlined"
       fullWidth
+      value={value}
+      onChange={onChange}
       InputProps={{
         style: {
           borderRadius: "0.375rem",
