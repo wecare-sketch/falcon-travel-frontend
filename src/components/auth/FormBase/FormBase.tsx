@@ -11,7 +11,7 @@ import Link from "next/link";
 import axiosInstance from "@/lib/axios";
 import { useVerifyOtp } from "@/hooks/useVerifyOtp";
 import { toast } from "react-hot-toast";
-
+import { jwtDecode } from "jwt-decode";
 
 
 export type FormType =
@@ -29,9 +29,9 @@ interface ApiError {
   };
 }
 
-const FormBase = ({ type }: { type: FormType }) => {
+const FormBase = ({ type, inviteToken }: { type: FormType; inviteToken?: string  }) => {
   const router = useRouter();
-  const { mutate: verifyOtpMutation} = useVerifyOtp();
+  const { mutate: verifyOtpMutation } = useVerifyOtp();
   const [otp, setOtp] = useState<string[]>(["", "", "", "", "", ""]);
   const [timer, setTimer] = useState<number>(60);
   const [password, setPassword] = useState<string>("");
@@ -75,10 +75,13 @@ const FormBase = ({ type }: { type: FormType }) => {
 
           if (accessToken) {
             localStorage.setItem("access_token", accessToken);
-            router.push("/user/dashboard");
+            const decoded = jwtDecode<{ role: string }>(accessToken);
+            const role = decoded.role.toLowerCase(); 
+            router.push(`/${role}/dashboard`);
           } else {
             toast.error("Login failed: Invalid response");
           }
+
         } catch (err: unknown) {
           const error = err as ApiError;
           toast.error(error?.response?.data?.message || "Login failed");
@@ -94,10 +97,10 @@ const FormBase = ({ type }: { type: FormType }) => {
         }
         try {
           setLoading(true);
-          await axiosInstance.post("/auth/sign-up", {
+          await axiosInstance.post(`/auth/register${inviteToken ? `/${inviteToken}` : ""}`, {
             email,
             password: loginPassword,
-          });
+          });          
           router.push("/auth/sign-in");
         } catch (err: unknown) {
           const error = err as ApiError;
@@ -149,49 +152,49 @@ const FormBase = ({ type }: { type: FormType }) => {
         break;
 
 
-        case "reset-password":
-          if (!password || !confirmPassword) {
-            toast.error("Both fields are required.");
+      case "reset-password":
+        if (!password || !confirmPassword) {
+          toast.error("Both fields are required.");
+          return;
+        }
+        if (password !== confirmPassword) {
+          toast.error("Passwords do not match.");
+          return;
+        }
+
+        try {
+          setLoading(true);
+          const token = localStorage.getItem("access_token");
+
+          if (!token) {
+            toast.error("Token not found. Please request OTP again.");
             return;
           }
-          if (password !== confirmPassword) {
-            toast.error("Passwords do not match.");
-            return;
-          }
-        
-          try {
-            setLoading(true);
-            const token = localStorage.getItem("access_token");
-        
-            if (!token) {
-              toast.error("Token not found. Please request OTP again.");
-              return;
+
+          const res = await axiosInstance.post<{ message: string }>(
+            "/user/reset-password",
+            { newPassword: password },
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
             }
-        
-            const res = await axiosInstance.post<{ message: string }>(
-              "/user/reset-password",
-              { newPassword: password },
-              {
-                headers: {
-                  Authorization: `Bearer ${token}`,
-                },
-              }
-            );
-        
-            toast.success(res.data?.message || "Password reset successful");
-        
-            localStorage.removeItem("reset_token");
-            localStorage.removeItem("emailForOtp");
-        
-            router.push("/user/dashboard");
-          } catch (err: unknown) {
-            const error = err as { response?: { data?: { message?: string } } };
-            toast.error(error?.response?.data?.message || "Password reset failed");
-          } finally {
-            setLoading(false);
-          }
-          break;
-        
+          );
+
+          toast.success(res.data?.message || "Password reset successful");
+
+          localStorage.removeItem("reset_token");
+          localStorage.removeItem("emailForOtp");
+
+          router.push("/user/dashboard");
+        } catch (err: unknown) {
+          const error = err as { response?: { data?: { message?: string } } };
+          toast.error(error?.response?.data?.message || "Password reset failed");
+        } finally {
+          setLoading(false);
+        }
+        break;
+
 
 
     }

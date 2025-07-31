@@ -1,9 +1,17 @@
 "use client";
 import Image from "next/image";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
 import axiosInstance from "@/lib/axios";
 import toast from "react-hot-toast";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+
+// Add this interface for API response
+interface ApiResponse {
+  data: {
+    token: string; // Or whatever your actual response structure is
+    // Add other properties if they exist in the response
+  };
+}
 
 declare global {
   interface Window {
@@ -17,6 +25,7 @@ declare global {
               access_token: string;
               expires_in: number;
               token_type: string;
+              id_token?: string;
             }) => void;
             error_callback?: (error: { type: string }) => void;
           }) => {
@@ -28,68 +37,81 @@ declare global {
   }
 }
 
-interface ApiResponse {
-  data: string;
-}
-
-interface AxiosApiResponse {
-  data: ApiResponse;
-}
-
-interface ApiError {
-  response?: {
-    data?: {
-      message?: string;
-    };
-  };
-  message?: string;
-}
-
 const SocialLoginButtons = () => {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const inviteToken = searchParams.get("inviteToken") || "";
+  const params = useParams();
+  const inviteToken = params?.inviteToken as string || "";
   const [isLoading, setIsLoading] = useState(false);
+
+  console.log("inviteToken from path:", inviteToken);
+
+  useEffect(() => {
+    const script = document.createElement("script");
+    script.src = "https://accounts.google.com/gsi/client";
+    script.async = true;
+    script.defer = true;
+    document.body.appendChild(script);
+
+    return () => {
+      document.body.removeChild(script);
+    };
+  }, []);
 
   const handleGoogleLogin = async () => {
     setIsLoading(true);
+
     try {
-      if (!window.google) {
-        toast.error("Google authentication service not available");
-        setIsLoading(false);
-        return;
+      if (!window.google?.accounts?.oauth2) {
+        throw new Error("Google authentication service not available");
+      }
+
+      const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
+      if (!clientId) {
+        throw new Error("Google client ID is not set");
       }
 
       const client = window.google.accounts.oauth2.initTokenClient({
-        client_id: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || "",
-        scope: 'profile email',
+        client_id: clientId,
+        scope: "openid profile email",
         callback: async (tokenResponse) => {
-          if (!tokenResponse?.access_token) {
-            toast.error("Failed to get Google access token");
-            setIsLoading(false);
-            return;
-          }
-
           try {
+            if (!tokenResponse?.access_token) {
+              throw new Error("Failed to get Google access token");
+            }
+
+            const userInfo = await fetch("https://www.googleapis.com/oauth2/v3/userinfo", {
+              headers: {
+                Authorization: `Bearer ${tokenResponse.access_token}`
+              }
+            }).then(res => res.json());
+
+            if (!userInfo?.email || !userInfo?.email_verified) {
+              throw new Error("Google email not verified");
+            }
+
             const endpoint = inviteToken
               ? `/auth/social/google/signup/${inviteToken}`
               : `/auth/social/google/login`;
 
-            const response = await axiosInstance.post<AxiosApiResponse>(endpoint, {
-              idToken: tokenResponse.access_token
-            });
+            console.log("Calling endpoint with inviteToken:", inviteToken);
+            
+            // Add type assertion here
+            const { data } = await axiosInstance.post<ApiResponse>(
+              endpoint,
+              { 
+                authToken: tokenResponse.access_token,
+                email: userInfo.email
+              }
+            );
 
-            if (!response.data.data) {
-              throw new Error("No data in response");
+            if (!data?.data) {
+              throw new Error("Invalid response from server");
             }
 
-            // localStorage.setItem("access_token", response.data.data);
             router.push("/user/dashboard");
-          } catch (error: unknown) {
-            const err = error as ApiError;
-            const errorMessage = err.response?.data?.message ||
-              err.message ||
-              "Google login failed";
+          } catch (error) {
+            console.error("Error:", error);
+            const errorMessage = error instanceof Error ? error.message : "Google login failed";
             toast.error(errorMessage);
           } finally {
             setIsLoading(false);
@@ -99,13 +121,14 @@ const SocialLoginButtons = () => {
           console.error("Google auth error:", error);
           toast.error("Google authentication failed");
           setIsLoading(false);
-        }
+        },
       });
+
       client.requestAccessToken();
-    } catch (error: unknown) {
-      console.error("Unexpected error:", error);
-      const err = error as ApiError;
-      toast.error(err.message || "An unexpected error occurred");
+    } catch (error) {
+      console.error("Initialization error:", error);
+      const errorMessage = error instanceof Error ? error.message : "An unexpected error occurred";
+      toast.error(errorMessage);
       setIsLoading(false);
     }
   };
