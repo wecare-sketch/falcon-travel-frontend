@@ -11,8 +11,7 @@ import Link from "next/link";
 import axiosInstance from "@/lib/axios";
 import { useVerifyOtp } from "@/hooks/useVerifyOtp";
 import { toast } from "react-hot-toast";
-
-
+import { jwtDecode } from "jwt-decode";
 
 export type FormType =
   | "sign-in"
@@ -29,9 +28,15 @@ interface ApiError {
   };
 }
 
-const FormBase = ({ type }: { type: FormType }) => {
+const FormBase = ({
+  type,
+  inviteToken,
+}: {
+  type: FormType;
+  inviteToken?: string;
+}) => {
   const router = useRouter();
-  const { mutate: verifyOtpMutation} = useVerifyOtp();
+  const { mutate: verifyOtpMutation } = useVerifyOtp();
   const [otp, setOtp] = useState<string[]>(["", "", "", "", "", ""]);
   const [timer, setTimer] = useState<number>(60);
   const [password, setPassword] = useState<string>("");
@@ -66,16 +71,21 @@ const FormBase = ({ type }: { type: FormType }) => {
         }
         try {
           setLoading(true);
-          const res = await axiosInstance.post<{ data?: string }>("/auth/login", {
-            email,
-            password: loginPassword,
-          });
+          const res = await axiosInstance.post<{ data?: string }>(
+            "/auth/login",
+            {
+              email,
+              password: loginPassword,
+            }
+          );
 
           const accessToken = res.data?.data;
 
           if (accessToken) {
             localStorage.setItem("access_token", accessToken);
-            router.push("/user/dashboard");
+            const decoded = jwtDecode<{ role: string }>(accessToken);
+            const role = decoded.role.toLowerCase();
+            router.push(`/${role}/dashboard`);
           } else {
             toast.error("Login failed: Invalid response");
           }
@@ -94,10 +104,13 @@ const FormBase = ({ type }: { type: FormType }) => {
         }
         try {
           setLoading(true);
-          await axiosInstance.post("/auth/sign-up", {
-            email,
-            password: loginPassword,
-          });
+          await axiosInstance.post(
+            `/auth/register${inviteToken ? `/${inviteToken}` : ""}`,
+            {
+              email,
+              password: loginPassword,
+            }
+          );
           router.push("/auth/sign-in");
         } catch (err: unknown) {
           const error = err as ApiError;
@@ -115,7 +128,7 @@ const FormBase = ({ type }: { type: FormType }) => {
         try {
           setLoading(true);
           const res = await axiosInstance.post("/otp/request", { email });
-          console.log(res)
+          console.log(res);
           localStorage.setItem("emailForOtp", email);
           router.push("/auth/otp");
         } catch (err: unknown) {
@@ -142,58 +155,58 @@ const FormBase = ({ type }: { type: FormType }) => {
           });
         } catch (err) {
           const error = err as ApiError;
-          toast.error(error?.response?.data?.message || "OTP verification failed");
+          toast.error(
+            error?.response?.data?.message || "OTP verification failed"
+          );
         } finally {
           setLoading(false);
         }
         break;
 
+      case "reset-password":
+        if (!password || !confirmPassword) {
+          toast.error("Both fields are required.");
+          return;
+        }
+        if (password !== confirmPassword) {
+          toast.error("Passwords do not match.");
+          return;
+        }
 
-        case "reset-password":
-          if (!password || !confirmPassword) {
-            toast.error("Both fields are required.");
+        try {
+          setLoading(true);
+          const token = localStorage.getItem("access_token");
+
+          if (!token) {
+            toast.error("Token not found. Please request OTP again.");
             return;
           }
-          if (password !== confirmPassword) {
-            toast.error("Passwords do not match.");
-            return;
-          }
-        
-          try {
-            setLoading(true);
-            const token = localStorage.getItem("access_token");
-        
-            if (!token) {
-              toast.error("Token not found. Please request OTP again.");
-              return;
+
+          const res = await axiosInstance.post<{ message: string }>(
+            "/user/reset-password",
+            { newPassword: password },
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
             }
-        
-            const res = await axiosInstance.post<{ message: string }>(
-              "/user/reset-password",
-              { newPassword: password },
-              {
-                headers: {
-                  Authorization: `Bearer ${token}`,
-                },
-              }
-            );
-        
-            toast.success(res.data?.message || "Password reset successful");
-        
-            localStorage.removeItem("reset_token");
-            localStorage.removeItem("emailForOtp");
-        
-            router.push("/user/dashboard");
-          } catch (err: unknown) {
-            const error = err as { response?: { data?: { message?: string } } };
-            toast.error(error?.response?.data?.message || "Password reset failed");
-          } finally {
-            setLoading(false);
-          }
-          break;
-        
+          );
 
+          toast.success(res.data?.message || "Password reset successful");
 
+          localStorage.removeItem("reset_token");
+          localStorage.removeItem("emailForOtp");
+
+          router.push("/user/dashboard");
+        } catch (err: unknown) {
+          const error = err as { response?: { data?: { message?: string } } };
+          toast.error(
+            error?.response?.data?.message || "Password reset failed"
+          );
+        } finally {
+          setLoading(false);
+        }
+        break;
     }
   };
 
@@ -201,7 +214,7 @@ const FormBase = ({ type }: { type: FormType }) => {
     "sign-in": "Sign In",
     "sign-up": "Sign Up",
     "forgot-password": "Forgot Password",
-    "otp": "Enter your OTP",
+    otp: "Enter your OTP",
     "reset-password": "Set New Password",
   };
 
@@ -209,15 +222,16 @@ const FormBase = ({ type }: { type: FormType }) => {
     "sign-in": "Access your Falcon Account",
     "sign-up": "Create your Falcon Account",
     "forgot-password": "Please send OTP to the email to reset new password",
-    "otp": "Enter your 6-digit OTP sent to your email",
-    "reset-password": "Set new password. Add same password in both the fields to confirm",
+    otp: "Enter your 6-digit OTP sent to your email",
+    "reset-password":
+      "Set new password. Add same password in both the fields to confirm",
   };
 
   const buttonLabelMap: Record<FormType, string> = {
     "sign-in": loading ? "Logging in..." : "Login",
     "sign-up": loading ? "Signing up..." : "Sign Up",
     "forgot-password": loading ? "Sending OTP..." : "Send OTP",
-    "otp": "Confirm",
+    otp: "Confirm",
     "reset-password": "Login",
   };
 

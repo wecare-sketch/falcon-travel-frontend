@@ -20,7 +20,11 @@ interface DashboardLayoutProps {
 
 export function DashboardLayout({ role }: Readonly<DashboardLayoutProps>) {
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
-  const [activeView, setActiveView] = useState("Upcoming Events");
+  const [activeView, setActiveView] = useState(() => {
+    if (role === "admin") return "Dashboard";
+    if (role === "user") return "Upcoming Events";
+    return "Unknown Role";
+  });
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const dispatch = useDispatch();
 
