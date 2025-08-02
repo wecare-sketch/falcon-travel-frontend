@@ -89,7 +89,13 @@ export function SectionEventDetails() {
             render={({ field, fieldState }) => (
               <DatePicker
                 value={field.value ? dayjs(field.value) : null}
-                onChange={(date) => field.onChange(date?.toISOString())}
+                onChange={(date) => {
+                  if (date && dayjs(date).isValid()) {
+                    field.onChange(dayjs(date).toISOString());
+                  } else {
+                    field.onChange(null);
+                  }
+                }}
                 slotProps={{
                   textField: {
                     fullWidth: true,

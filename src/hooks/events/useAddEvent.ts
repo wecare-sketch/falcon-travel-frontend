@@ -1,31 +1,5 @@
 import { useMutation } from "@tanstack/react-query";
 import axios from "@/lib/axios";
-
-interface CreateEventPayload {
-  eventDetails: {
-    eventType: string;
-    clientName: string;
-    phoneNumber: string;
-    pickupDate: string;
-    dropOffDate: string;
-    pickupTime: string;
-    location: string;
-    stops: string[];
-  };
-  vehicleInfo: {
-    vehicleName: string;
-    numberOfPassengers: number;
-    hoursReserved: number;
-  };
-  paymentDetails: {
-    totalAmount: number;
-    depositAmount: number;
-    pendingAmount: number;
-    equityDivision: number;
-  };
-}
-
-// ✅ Matches your API response structure
 interface CreateEventResponse {
   message: string;
   data: {
@@ -52,9 +26,17 @@ interface CreateEventResponse {
 }
 
 export const useAddEvent = () => {
-  return useMutation<CreateEventResponse, Error, CreateEventPayload>({
-    mutationFn: async (data: CreateEventPayload) => {
-      const response = await axios.post<CreateEventResponse>("/admin/event/add", data);
+  return useMutation<CreateEventResponse, Error, FormData>({
+    mutationFn: async (formData: FormData) => {
+      const response = await axios.post<CreateEventResponse>(
+        "/admin/event/add",
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
       return response.data;
     },
   });

@@ -1,4 +1,5 @@
 export interface CreateEventFormData {
+  eventName: string;
   eventType: string;
   clientName: string;
   phoneNumber: string;
