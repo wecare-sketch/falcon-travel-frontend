@@ -68,6 +68,7 @@ export function CreateEventModal({
   const [slug, setSlug] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [eventImage, setEventImage] = useState<string | null>(null);
+  const [eventFile, setEventFile] = useState<File | null>(null);
 
   const { mutate: addEvent, isPending } = useAddEvent();
 
@@ -84,8 +85,18 @@ export function CreateEventModal({
   };
 
   const onSubmit = (data: CreateEventFormData) => {
-    const payload = {
-      eventDetails: {
+    if (!eventFile) {
+      toast.error("Please upload an event image.");
+      return;
+    }
+    
+    const formData = new FormData();
+
+    formData.append("file", eventFile);
+    formData.append(
+      "eventDetails",
+      JSON.stringify({
+        name: data.eventName,
         eventType: data.eventType,
         clientName: data.clientName,
         phoneNumber: data.phoneNumber,
@@ -94,21 +105,27 @@ export function CreateEventModal({
         pickupTime: data.pickupTime,
         location: data.location,
         stops: data.addStops ? [data.addStops] : [],
-      },
-      vehicleInfo: {
+      })
+    );
+    formData.append(
+      "vehicleInfo",
+      JSON.stringify({
         vehicleName: data.chooseVehicle,
         numberOfPassengers: Number(data.numberOfPassenger),
         hoursReserved: Number(data.hoursReserved),
-      },
-      paymentDetails: {
+      })
+    );
+    formData.append(
+      "paymentDetails",
+      JSON.stringify({
         totalAmount: Number(data.totalAmount),
         depositAmount: 100,
         pendingAmount: Number(data.pendingAmount),
         equityDivision: Number(data.equityDivision),
-      },
-    };
+      })
+    );
 
-    addEvent(payload, {
+    addEvent(formData, {
       onSuccess: (response) => {
         toast.success("Event created!");
         setSlug(response?.data?.slug ?? null);
@@ -138,6 +155,7 @@ export function CreateEventModal({
   const handleImageChange = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      setEventFile(file);
       const reader = new FileReader();
       reader.onload = (event) => {
         if (event.target?.result) {
@@ -197,7 +215,10 @@ export function CreateEventModal({
                 marginBottom: "24px",
               }}
             >
-              <Typography variant="body2" sx={{ color: "#000000", fontSize: "20px" }}>
+              <Typography
+                variant="body2"
+                sx={{ color: "#000000", fontSize: "20px" }}
+              >
                 {eventImage ? "Change Image" : "Add Event Image"}
               </Typography>
               <input
@@ -220,9 +241,14 @@ export function CreateEventModal({
               >
                 {!eventImage && (
                   <div className="flex flex-col justify-center items-center">
-                    <div><User className="w-10 h-10 text-gray-600" /></div>
                     <div>
-                      <Typography variant="body2" sx={{ color: "#6B7280", textAlign: "center" }}>
+                      <User className="w-10 h-10 text-gray-600" />
+                    </div>
+                    <div>
+                      <Typography
+                        variant="body2"
+                        sx={{ color: "#6B7280", textAlign: "center" }}
+                      >
                         Add Image
                       </Typography>
                     </div>

@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import axiosInstance from "@/lib/axios";
+import {toast} from "react-hot-toast";
 
 interface EditEventData {
   eventDetails: {
@@ -38,6 +39,7 @@ export const useEditEvent = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin-events"] });
+      toast.success("Event updated successfully!");
     },
   });
 };
