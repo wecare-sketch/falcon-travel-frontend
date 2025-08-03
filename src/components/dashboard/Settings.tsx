@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import {
   Drawer,
@@ -11,31 +11,64 @@ import {
   ListItem,
   ListItemIcon,
   ListItemText,
-} from "@mui/material"
-import { ChevronRight, Bell, ChevronLeft } from "lucide-react"
-import Image from "next/image"
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  DialogContentText,
+  DialogActions,
+  Button,
+} from "@mui/material";
+import { ChevronRight, Bell, ChevronLeft, LogOut } from "lucide-react";
+import Image from "next/image";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 
 interface SettingsDrawerProps {
-  open: boolean
-  onClose: () => void
-  userName: string
-  userEmail: string
-  userAvatar?: string
+  open: boolean;
+  onClose: () => void;
+  userName: string;
+  userEmail: string;
+  userAvatar?: string;
 }
 
-export function SettingsDrawer({ open, onClose, userName, userEmail, userAvatar }: SettingsDrawerProps) {
+export function SettingsDrawer({
+  open,
+  onClose,
+  userName,
+  userEmail,
+  userAvatar,
+}: SettingsDrawerProps) {
+  const [logoutDialogOpen, setLogoutDialogOpen] = useState(false);
+  const router = useRouter();
+
   const handleAccountSettings = () => {
-    console.log("Navigate to Account Settings")
-  }
+    console.log("Navigate to Account Settings");
+  };
 
   const handleSecuritySettings = () => {
-    console.log("Navigate to Security Settings")
-  }
+    console.log("Navigate to Security Settings");
+  };
 
   const handlePushNotificationsToggle = () => {
-    console.log("Toggle Push Notifications")
-  }
+    console.log("Toggle Push Notifications");
+  };
 
+  const handleLogoutClick = () => {
+    setLogoutDialogOpen(true);
+  };
+
+  const handleCancelLogout = () => {
+    setLogoutDialogOpen(false);
+  };
+
+  const handleConfirmLogout = () => {
+    setLogoutDialogOpen(false);
+    handleLogout();
+  };
+  const handleLogout = () => {
+    localStorage.clear();
+    router.push("/auth/sign-in");
+  };
   return (
     <Drawer
       anchor="right"
@@ -127,7 +160,12 @@ export function SettingsDrawer({ open, onClose, userName, userEmail, userAvatar 
                 }}
               >
                 <ListItemIcon sx={{ minWidth: 40 }}>
-                  <Image src="/images/emptyprofile.png" width="24" height="24" alt="profile" />
+                  <Image
+                    src="/images/emptyprofile.png"
+                    width="24"
+                    height="24"
+                    alt="profile"
+                  />
                 </ListItemIcon>
                 <ListItemText
                   primary={
@@ -179,7 +217,12 @@ export function SettingsDrawer({ open, onClose, userName, userEmail, userAvatar 
                       justifyContent: "center",
                     }}
                   >
-                    <Image src="/images/lock.png" width="24" height="24" alt="profile" />
+                    <Image
+                      src="/images/lock.png"
+                      width="24"
+                      height="24"
+                      alt="profile"
+                    />
                   </Box>
                 </ListItemIcon>
                 <ListItemText
@@ -266,10 +309,69 @@ export function SettingsDrawer({ open, onClose, userName, userEmail, userAvatar 
                   }}
                 />
               </ListItem>
+              <ListItem
+                onClick={handleLogoutClick}
+                sx={{
+                  padding: "12px 0",
+                  borderRadius: "8px",
+                  backgroundColor: "#F9FAFB",
+                  cursor: "pointer",
+                }}
+              >
+                <ListItemIcon sx={{ minWidth: 40 }}>
+                  <Box
+                    sx={{
+                      width: 32,
+                      height: 32,
+                      borderRadius: "8px",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                  >
+                    <LogOut className="w-5 h-5 text-red-600" />
+                  </Box>
+                  <ListItemText
+                    primary={
+                      <Typography
+                        sx={{
+                          fontSize: "14px",
+                          fontWeight: 500,
+                          color: "#333",
+                        }}
+                      >
+                        Logout
+                      </Typography>
+                    }
+                  />
+                </ListItemIcon>
+              </ListItem>
             </List>
           </Box>
         </Box>
       </Box>
+
+      <Dialog
+        open={logoutDialogOpen}
+        onClose={handleCancelLogout}
+        aria-labelledby="logout-dialog-title"
+        aria-describedby="logout-dialog-description"
+      >
+        <DialogTitle id="logout-dialog-title">Confirm Logout</DialogTitle>
+        <DialogContent>
+          <DialogContentText id="logout-dialog-description">
+            Are you sure you want to log out?
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCancelLogout} color="primary">
+            Cancel
+          </Button>
+          <Button onClick={handleConfirmLogout} color="error" autoFocus>
+            Confirm
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Drawer>
-  )
+  );
 }

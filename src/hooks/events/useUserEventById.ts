@@ -21,31 +21,25 @@ interface EventType {
   updatedAt: string;
   host: string;
   cohosts: string;
-  participants: unknown[]; 
+  participants: unknown[];
   name: string;
   imageUrl: string
 }
 
-interface ApiResponse {
-  total: number;
-  page: number;
-  limit: number;
-  events: EventType[];
-}
-
-interface ApiWrapper {
-  data: ApiResponse;
-}
-
-const fetchAdminEvents = async (): Promise<ApiResponse> => {
-  const response = await axiosInstance.get<ApiWrapper>("/admin/events");
+const fetchEventById = async (eventId: string): Promise<EventType> => {
+  const response = await axiosInstance.get<{ data: EventType }>("/user/events", {
+    params: { eventId },
+  });
   return response.data.data;
 };
 
-export const useAdminEvents = (options?: { enabled?: boolean }) => {
-  return useQuery<ApiResponse>({
-    queryKey: ["admin-events"],
-    queryFn: fetchAdminEvents,
-    enabled: options?.enabled ?? true,
+export const useUserEventById = (
+  eventId: string | null,
+  options?: { enabled?: boolean }
+) => {
+  return useQuery<EventType>({
+    queryKey: ["user-event", eventId],
+    queryFn: () => fetchEventById(eventId!),
+    enabled: !!eventId && (options?.enabled ?? true),
   });
 };

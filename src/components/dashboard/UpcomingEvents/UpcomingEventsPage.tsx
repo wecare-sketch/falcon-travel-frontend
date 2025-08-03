@@ -11,24 +11,9 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import DescriptionIcon from "@mui/icons-material/Description";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import { MobileEventListItem } from "../MobileListItem";
-import { useAdminEvents } from "@/hooks/events/useAdminEvents";
 import { useEditEvent } from "@/hooks/events/useEditEvent";
 import { useQueryClient } from "@tanstack/react-query";
-
-const events = [
-  {
-    id: 1,
-    title: "Annual Corporate Gala",
-    date: "Dec 15, 2023",
-    imageUrl: "/images/Clip path group.png?height=212&width=288",
-  },
-  {
-    id: 2,
-    title: "Annual Corporate Gala",
-    date: "Dec 15, 2023",
-    imageUrl: "/images/Clip path group.png?height=212&width=288",
-  },
-];
+import { useEventsByRole } from "@/hooks/events/useEventsByRole";
 
 const PAGE_SIZE = 4;
 
@@ -61,7 +46,8 @@ export function UpcomingEventsPage({
   const role = useSelector((state: RootState) => state.userRole.role);
   const [page, setPage] = useState(1);
   const isMobile = useIsMobile();
-  const { data: adminEventsData, isLoading, isError } = useAdminEvents();
+  const { data: eventsData, isLoading, isError } = useEventsByRole();
+
   const editMutation = useEditEvent();
   const queryClient = useQueryClient();
 
@@ -74,7 +60,7 @@ export function UpcomingEventsPage({
   };
 
   const handleEditClick = (eventId: number) => {
-    const originalEvent = adminEventsData?.events.find(e => e.id === eventId);
+    const originalEvent = eventsData?.events.find((e) => e.id === eventId);
     if (originalEvent) {
       setEditingEvent({
         id: originalEvent.id,
@@ -131,21 +117,25 @@ export function UpcomingEventsPage({
     }
   };
 
-  const mappedAdminEvents = adminEventsData?.events.map(event => ({
-    id: event.id,
-    title: event.eventType,
-    date: new Date(event.pickupDate).toLocaleDateString('en-US', { 
-      year: 'numeric', 
-      month: '2-digit', 
-      day: '2-digit' 
-    }),
-    passenger: event.passengerCount.toString(),
-    remainingAmount: `${event.pendingAmount}$`,
-    paymentStatus: event.status === 'pending' ? 'Pending' : 'Paid',
-    clientName: event.clientName
-  })) || [];
+  const mappedAdminEvents =
+    eventsData?.events.map((event) => ({
+      id: event.id,
+      title: event.eventType,
+      date: new Date(event.pickupDate).toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+      }),
+      passenger: event.passengerCount.toString(),
+      remainingAmount: `${event.pendingAmount}$`,
+      paymentStatus: event.status === "pending" ? "Pending" : "Paid",
+      clientName: event.clientName,
+    })) || [];
 
-  const paginatedEvents = mappedAdminEvents.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+  const paginatedEvents = mappedAdminEvents.slice(
+    (page - 1) * PAGE_SIZE,
+    page * PAGE_SIZE
+  );
   const totalPages = Math.ceil(mappedAdminEvents.length / PAGE_SIZE);
 
   if (isLoading) {
@@ -165,7 +155,7 @@ export function UpcomingEventsPage({
   }
 
   if (selectedEventId !== null) {
-    return <EventDetailsPage eventId={selectedEventId} />;
+    return <EventDetailsPage eventId={selectedEventId}/>;
   }
 
   return (
@@ -182,8 +172,12 @@ export function UpcomingEventsPage({
                 clientName={event.clientName}
                 passenger={parseInt(event.passenger, 10) || 0}
                 date={event.date}
-                remainingAmount={parseInt(event.remainingAmount.replace(/\$/g, ""), 10) || 0}
-                paymentStatus={event.paymentStatus as "Paid" | "Pending" | "Overdue"}
+                remainingAmount={
+                  parseInt(event.remainingAmount.replace(/\$/g, ""), 10) || 0
+                }
+                paymentStatus={
+                  event.paymentStatus as "Paid" | "Pending" | "Overdue"
+                }
                 onEdit={() => handleEditClick(event.id)}
                 onDelete={() => {}}
               />
@@ -235,14 +229,30 @@ export function UpcomingEventsPage({
                     <th className="py-3 px-2 font-semibold text-center border border-gray-300">
                       <input type="checkbox" />
                     </th>
-                    <th className="py-3 px-2 font-semibold text-center border border-gray-300">No.</th>
-                    <th className="py-3 px-2 font-semibold text-center border border-gray-300">Event Name</th>
-                    <th className="py-3 px-2 font-semibold text-center border border-gray-300">Date</th>
-                    <th className="py-3 px-2 font-semibold text-center border border-gray-300">Passenger</th>
-                    <th className="py-3 px-2 font-semibold text-center border border-gray-300">Remaining Amount</th>
-                    <th className="py-3 px-2 font-semibold text-center border border-gray-300">Payment Status</th>
-                    <th className="py-3 px-2 font-semibold text-center border border-gray-300">Client Name</th>
-                    <th className="py-3 px-2 font-semibold text-center border border-gray-300">Action</th>
+                    <th className="py-3 px-2 font-semibold text-center border border-gray-300">
+                      No.
+                    </th>
+                    <th className="py-3 px-2 font-semibold text-center border border-gray-300">
+                      Event Name
+                    </th>
+                    <th className="py-3 px-2 font-semibold text-center border border-gray-300">
+                      Date
+                    </th>
+                    <th className="py-3 px-2 font-semibold text-center border border-gray-300">
+                      Passenger
+                    </th>
+                    <th className="py-3 px-2 font-semibold text-center border border-gray-300">
+                      Remaining Amount
+                    </th>
+                    <th className="py-3 px-2 font-semibold text-center border border-gray-300">
+                      Payment Status
+                    </th>
+                    <th className="py-3 px-2 font-semibold text-center border border-gray-300">
+                      Client Name
+                    </th>
+                    <th className="py-3 px-2 font-semibold text-center border border-gray-300">
+                      Action
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
@@ -261,10 +271,18 @@ export function UpcomingEventsPage({
                       <td className="py-2 px-2 border border-gray-300">
                         {(page - 1) * PAGE_SIZE + idx + 1}
                       </td>
-                      <td className="py-2 px-2 border border-gray-300">{event.title}</td>
-                      <td className="py-2 px-2 border border-gray-300">{event.date}</td>
-                      <td className="py-2 px-2 border border-gray-300">{event.passenger}</td>
-                      <td className="py-2 px-2 border border-gray-300">{event.remainingAmount}</td>
+                      <td className="py-2 px-2 border border-gray-300">
+                        {event.title}
+                      </td>
+                      <td className="py-2 px-2 border border-gray-300">
+                        {event.date}
+                      </td>
+                      <td className="py-2 px-2 border border-gray-300">
+                        {event.passenger}
+                      </td>
+                      <td className="py-2 px-2 border border-gray-300">
+                        {event.remainingAmount}
+                      </td>
                       <td className="py-2 px-2 border border-gray-300">
                         <span
                           className={`px-4 py-1 rounded-lg font-semibold ${
@@ -276,15 +294,17 @@ export function UpcomingEventsPage({
                           {event.paymentStatus}
                         </span>
                       </td>
-                      <td className="py-2 px-2 border border-gray-300">{event.clientName}</td>
+                      <td className="py-2 px-2 border border-gray-300">
+                        {event.clientName}
+                      </td>
                       <td className="py-2 px-2 border border-gray-300">
                         <DescriptionIcon
                           className="cursor-pointer mr-2 text-[#C2C9D1]"
                           onClick={() => handleViewDetails(event.id)}
                         />
-                        <EditIcon 
-                          className="cursor-pointer mr-2 text-[#C2C9D1]" 
-                          onClick={() => handleEditClick(event.id)} 
+                        <EditIcon
+                          className="cursor-pointer mr-2 text-[#C2C9D1]"
+                          onClick={() => handleEditClick(event.id)}
                         />
                         <DeleteIcon className="cursor-pointer text-[#C2C9D1]" />
                       </td>
@@ -326,11 +346,11 @@ export function UpcomingEventsPage({
         )
       ) : (
         <div className="mt-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {events.map((event) => (
+          {eventsData?.events.map((event) => (
             <EventCard
               key={event.id}
-              title={event.title}
-              date={event.date}
+              title={event.name}
+              date={event.pickupDate}
               imageUrl={event.imageUrl}
               Label="View Details"
               onViewDetails={() => handleViewDetails(event.id)}
@@ -347,7 +367,7 @@ export function UpcomingEventsPage({
             <div className="p-6">
               <div className="flex justify-between items-center mb-4">
                 <h2 className="text-xl font-bold">Edit Event</h2>
-                <button 
+                <button
                   onClick={() => setEditingEvent(null)}
                   className="text-gray-500 hover:text-gray-700"
                 >
@@ -358,41 +378,69 @@ export function UpcomingEventsPage({
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Event Type</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Event Type
+                    </label>
                     <input
                       type="text"
                       value={editingEvent.eventType}
-                      onChange={(e) => setEditingEvent({...editingEvent, eventType: e.target.value})}
+                      onChange={(e) =>
+                        setEditingEvent({
+                          ...editingEvent,
+                          eventType: e.target.value,
+                        })
+                      }
                       className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Client Name</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Client Name
+                    </label>
                     <input
                       type="text"
                       value={editingEvent.clientName}
-                      onChange={(e) => setEditingEvent({...editingEvent, clientName: e.target.value})}
+                      onChange={(e) =>
+                        setEditingEvent({
+                          ...editingEvent,
+                          clientName: e.target.value,
+                        })
+                      }
                       className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Phone Number
+                    </label>
                     <input
                       type="text"
                       value={editingEvent.phoneNumber}
-                      onChange={(e) => setEditingEvent({...editingEvent, phoneNumber: e.target.value})}
+                      onChange={(e) =>
+                        setEditingEvent({
+                          ...editingEvent,
+                          phoneNumber: e.target.value,
+                        })
+                      }
                       className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Pickup Date</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Pickup Date
+                    </label>
                     <input
                       type="datetime-local"
                       value={editingEvent.pickupDate.slice(0, 16)}
-                      onChange={(e) => setEditingEvent({...editingEvent, pickupDate: e.target.value})}
+                      onChange={(e) =>
+                        setEditingEvent({
+                          ...editingEvent,
+                          pickupDate: e.target.value,
+                        })
+                      }
                       className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     />
                   </div>
@@ -400,40 +448,68 @@ export function UpcomingEventsPage({
 
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Location</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Location
+                    </label>
                     <input
                       type="text"
                       value={editingEvent.location}
-                      onChange={(e) => setEditingEvent({...editingEvent, location: e.target.value})}
+                      onChange={(e) =>
+                        setEditingEvent({
+                          ...editingEvent,
+                          location: e.target.value,
+                        })
+                      }
                       className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Passenger Count</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Passenger Count
+                    </label>
                     <input
                       type="number"
                       value={editingEvent.passengerCount}
-                      onChange={(e) => setEditingEvent({...editingEvent, passengerCount: parseInt(e.target.value) || 0})}
+                      onChange={(e) =>
+                        setEditingEvent({
+                          ...editingEvent,
+                          passengerCount: parseInt(e.target.value) || 0,
+                        })
+                      }
                       className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Vehicle</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Vehicle
+                    </label>
                     <input
                       type="text"
                       value={editingEvent.vehicle}
-                      onChange={(e) => setEditingEvent({...editingEvent, vehicle: e.target.value})}
+                      onChange={(e) =>
+                        setEditingEvent({
+                          ...editingEvent,
+                          vehicle: e.target.value,
+                        })
+                      }
                       className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Status
+                    </label>
                     <select
                       value={editingEvent.status}
-                      onChange={(e) => setEditingEvent({...editingEvent, status: e.target.value})}
+                      onChange={(e) =>
+                        setEditingEvent({
+                          ...editingEvent,
+                          status: e.target.value,
+                        })
+                      }
                       className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     >
                       <option value="pending">Pending</option>
@@ -456,7 +532,7 @@ export function UpcomingEventsPage({
                   disabled={editMutation.isPending}
                   className="px-4 py-2 bg-blue-600 text-white rounded-md text-sm font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
                 >
-                  {editMutation.isPending ? 'Saving...' : 'Save Changes'}
+                  {editMutation.isPending ? "Saving..." : "Save Changes"}
                 </button>
               </div>
             </div>

@@ -12,6 +12,8 @@ import axiosInstance from "@/lib/axios";
 import { useVerifyOtp } from "@/hooks/useVerifyOtp";
 import { toast } from "react-hot-toast";
 import { jwtDecode } from "jwt-decode";
+import { useDispatch } from "react-redux";
+import { setFormType } from "@/store/slices/formTypeSlice";
 
 export type FormType =
   | "sign-in"
@@ -44,7 +46,10 @@ const FormBase = ({
   const [email, setEmail] = useState<string>("");
   const [loginPassword, setLoginPassword] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
+  const dispatch = useDispatch();
 
+  dispatch(setFormType(type));
+  
   useEffect(() => {
     if (type === "otp" && timer > 0) {
       const interval = setTimeout(() => setTimer((t) => t - 1), 1000);
@@ -127,8 +132,7 @@ const FormBase = ({
         }
         try {
           setLoading(true);
-          const res = await axiosInstance.post("/otp/request", { email });
-          console.log(res);
+          await axiosInstance.post("/otp/request", { email });
           localStorage.setItem("emailForOtp", email);
           router.push("/auth/otp");
         } catch (err: unknown) {

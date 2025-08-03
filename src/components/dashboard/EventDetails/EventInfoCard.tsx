@@ -14,12 +14,12 @@ import { RootState } from "@/store";
 interface EventInfoCardProps {
   eventType: string;
   vehicle: string;
-  date: string;
+  pickupDate: string;
   phoneNumber: string;
   clientName: string;
   location: string;
   totalAmount: number;
-  remainingAmount: number;
+  pendingAmount: number;
   onDownloadInvoice?: () => void;
   onShareIt?: () => void;
   onPayNow?: () => void;
@@ -28,12 +28,12 @@ interface EventInfoCardProps {
 export function EventInfoCard({
   eventType,
   vehicle,
-  date,
+  pickupDate,
   phoneNumber,
   clientName,
   location,
   totalAmount,
-  remainingAmount,
+  pendingAmount,
   onDownloadInvoice,
   onShareIt,
   onPayNow,
@@ -60,7 +60,7 @@ export function EventInfoCard({
         {/* Left Column */}
         <Box sx={{ flex: 1 }}>
           <LabelValuePair label="Event Type" value={eventType} icon={<Image src="/images/eventcalendar.png" width={20} height={20} alt="Event Calendar"/>} />
-          <LabelValuePair label="Date" value={date} icon={<Image src="/images/date.png" width={20} height={20} alt="date"/>} />
+          <LabelValuePair label="Date" value={pickupDate} icon={<Image src="/images/date.png" width={20} height={20} alt="date"/>} />
           <LabelValuePair label="Client Name" value={clientName} icon={<Image src="/images/profile.png" width={20} height={20} alt="profile"/>} />
         </Box>
 
@@ -189,7 +189,7 @@ export function EventInfoCard({
         (
           <Box sx={{ flex: 1 }}>
           {/* Total Amount Box */}
-          <EventSummaryCard totalAmount={totalAmount} remainingAmount={remainingAmount} payableAmount={totalAmount - remainingAmount} />
+          <EventSummaryCard totalAmount={totalAmount} remainingAmount={pendingAmount} payableAmount={totalAmount - pendingAmount} />
 
           {/* Action Buttons */}
           <Box sx={{ display: "flex", gap: 2, marginBottom: 2 }}>

@@ -1,3 +1,4 @@
+
 import { useQuery } from "@tanstack/react-query";
 import axiosInstance from "@/lib/axios";
 
@@ -21,7 +22,7 @@ interface EventType {
   updatedAt: string;
   host: string;
   cohosts: string;
-  participants: unknown[]; 
+  participants: unknown[];
   name: string;
   imageUrl: string
 }
@@ -37,15 +38,15 @@ interface ApiWrapper {
   data: ApiResponse;
 }
 
-const fetchAdminEvents = async (): Promise<ApiResponse> => {
-  const response = await axiosInstance.get<ApiWrapper>("/admin/events");
+const fetchUserEvents = async (): Promise<ApiResponse> => {
+  const response = await axiosInstance.get<ApiWrapper>("/user/events");
   return response.data.data;
 };
 
-export const useAdminEvents = (options?: { enabled?: boolean }) => {
+export const useUserEvents = (options?: { enabled?: boolean }) => {
   return useQuery<ApiResponse>({
-    queryKey: ["admin-events"],
-    queryFn: fetchAdminEvents,
+    queryKey: ["user-events"],
+    queryFn: fetchUserEvents,
     enabled: options?.enabled ?? true,
   });
 };
