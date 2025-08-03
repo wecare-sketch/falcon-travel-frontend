@@ -1,44 +1,33 @@
 "use client"
 
+import { useUserEventById } from "@/hooks/events/useUserEventById";
 import { PageHeader } from "../PageHeader"
 import { EventInfoCard } from "./EventInfoCard"
 import { MembersTable } from "./MembersTable"
-
-const eventsData = [
-  {
-    id: 1,
-    eventType: "Newport Night Party",
-    vehicle: "Mercedes",
-    date: "21-12-2025",
-    phoneNumber: "+1-2345-424532",
-    clientName: "Ali Gul Pear",
-    location: "475 5th Ave, New York, NY, 10018, United States",
-    totalAmount: 3000,
-    remainingAmount: 800,
-  },
-  {
-    id: 2,
-    eventType: "Another Event",
-    vehicle: "Toyota",
-    date: "22-12-2025",
-    phoneNumber: "+1-2345-424533",
-    clientName: "Another Client",
-    location: "Another Location",
-    totalAmount: 2000,
-    remainingAmount: 500,
-  },
-  {
-    id: 3,
-    eventType: "Third Event",
-    vehicle: "Honda",
-    date: "23-12-2025",
-    phoneNumber: "+1-2345-424534",
-    clientName: "Third Client",
-    location: "Third Location",
-    totalAmount: 1500,
-    remainingAmount: 300,
-  },
-]
+// interface EventType {
+//   id: number;
+//   slug: string;
+//   eventType: string;
+//   clientName: string;
+//   phoneNumber: string;
+//   pickupDate: string;
+//   location: string;
+//   vehicle: string;
+//   totalAmount: number;
+//   passengerCount: number;
+//   pendingAmount: number;
+//   depositAmount: number;
+//   hoursReserved: number;
+//   equityDivision: number;
+//   status: string;
+//   createdAt: string;
+//   updatedAt: string;
+//   host: string;
+//   cohosts: string;
+//   participants: unknown[];
+//   name: string;
+//   imageUrl: string
+// }
 
 const membersData = [
   {
@@ -81,11 +70,13 @@ const membersData = [
 
 interface EventDetailsPageProps {
   onBack?: () => void;
-  eventId?:number 
+  eventId?: number;
 }
 
 export function EventDetailsPage({ onBack, eventId }: EventDetailsPageProps) {
-  const eventData = eventsData.find(event => event.id === eventId);
+  // const eventData = events?.find(event => event.id === eventId);
+  const stringEventId = eventId?.toString() ?? null;
+  const { data: eventData } = useUserEventById(stringEventId);
 
   if (!eventData) {
     return <div>Event not found.</div>;

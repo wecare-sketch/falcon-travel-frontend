@@ -1,9 +1,11 @@
 import { configureStore } from "@reduxjs/toolkit";
 import userRoleReducer from "./slices/userRoleSlice";
+import formTypeReducer from "./slices/formTypeSlice";
 
 export const store = configureStore({
   reducer: {
     userRole: userRoleReducer,
+    formType: formTypeReducer,
   },
 });
 

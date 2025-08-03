@@ -32,7 +32,6 @@ export function SearchFilters({ onSearch }: SearchFiltersProps) {
 
   const handleFilterClick = () => {
     setShowFilter(!showFilter);
-    console.log("Filter clicked");
   };
 
   const hostOptions = [

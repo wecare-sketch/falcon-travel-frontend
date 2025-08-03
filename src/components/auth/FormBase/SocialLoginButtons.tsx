@@ -4,47 +4,54 @@ import { useRouter, useParams } from "next/navigation";
 import axiosInstance from "@/lib/axios";
 import toast from "react-hot-toast";
 import { useState, useEffect } from "react";
+import { jwtDecode } from "jwt-decode";
+import { useSelector } from "react-redux";
+import { RootState } from "@/store";
 
 // Add this interface for API response
 interface ApiResponse {
-  data: {
-    token: string; // Or whatever your actual response structure is
-    // Add other properties if they exist in the response
-  };
+  data: string;
+  message: string;
 }
 
 declare global {
   interface Window {
     google?: {
       accounts: {
-        oauth2: {
-          initTokenClient: (config: {
+        id: {
+          initialize: (config: {
             client_id: string;
-            scope: string;
-            callback: (tokenResponse: {
-              access_token: string;
-              expires_in: number;
-              token_type: string;
-              id_token?: string;
-            }) => void;
-            error_callback?: (error: { type: string }) => void;
-          }) => {
-            requestAccessToken: () => void;
-          };
+            callback: (response: GoogleIdTokenResponse) => void;
+          }) => void;
+          renderButton: (
+            parent: HTMLElement,
+            options: {
+              theme?: "outline" | "filled_blue" | "filled_black";
+              size?: "small" | "medium" | "large";
+              width?: number | string;
+              shape: string;
+              text: string;
+            }
+          ) => void;
+          prompt: () => void;
         };
       };
     };
+  }
+
+  interface GoogleIdTokenResponse {
+    credential: string;
+    select_by: string;
+    clientId?: string;
   }
 }
 
 const SocialLoginButtons = () => {
   const router = useRouter();
   const params = useParams();
-  const inviteToken = params?.inviteToken as string || "";
+  const inviteToken = (params?.inviteToken as string) || "";
   const [isLoading, setIsLoading] = useState(false);
-
-  console.log("inviteToken from path:", inviteToken);
-
+  const formType = useSelector((state: RootState) => state.formType.type);
   useEffect(() => {
     const script = document.createElement("script");
     script.src = "https://accounts.google.com/gsi/client";
@@ -52,83 +59,67 @@ const SocialLoginButtons = () => {
     script.defer = true;
     document.body.appendChild(script);
 
+    script.onload = () => {
+      if (window.google) {
+        window.google.accounts.id.initialize({
+          client_id: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID!,
+          callback: handleCredentialResponse,
+        });
+
+        const element = document.getElementById("google-signin-button");
+        if (element) {
+          window.google.accounts.id.renderButton(element, {
+            theme: "outline",
+            size: "large",
+            width: "100%",
+            shape: "rectangular",
+            text: formType === "sign-up" ? "signup_with" : "signin_with",
+          });
+        }
+      }
+    };
+
     return () => {
       document.body.removeChild(script);
     };
   }, []);
 
-  const handleGoogleLogin = async () => {
+  const handleCredentialResponse = async (response: { credential: string }) => {
     setIsLoading(true);
-
     try {
-      if (!window.google?.accounts?.oauth2) {
-        throw new Error("Google authentication service not available");
+      const idToken = response.credential;
+
+      const payload = JSON.parse(atob(idToken.split(".")[1]));
+      const email = payload.email;
+      const email_verified = payload.email_verified;
+
+      if (!email || !email_verified) {
+        throw new Error("Google email not verified");
       }
 
-      const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
-      if (!clientId) {
-        throw new Error("Google client ID is not set");
-      }
+      const endpoint = inviteToken
+        ? `/auth/social/google/signup/${inviteToken}`
+        : `/auth/social/google/login`;
 
-      const client = window.google.accounts.oauth2.initTokenClient({
-        client_id: clientId,
-        scope: "openid profile email",
-        callback: async (tokenResponse) => {
-          try {
-            if (!tokenResponse?.access_token) {
-              throw new Error("Failed to get Google access token");
-            }
-
-            const userInfo = await fetch("https://www.googleapis.com/oauth2/v3/userinfo", {
-              headers: {
-                Authorization: `Bearer ${tokenResponse.access_token}`
-              }
-            }).then(res => res.json());
-
-            if (!userInfo?.email || !userInfo?.email_verified) {
-              throw new Error("Google email not verified");
-            }
-
-            const endpoint = inviteToken
-              ? `/auth/social/google/signup/${inviteToken}`
-              : `/auth/social/google/login`;
-
-            console.log("Calling endpoint with inviteToken:", inviteToken);
-            
-            // Add type assertion here
-            const { data } = await axiosInstance.post<ApiResponse>(
-              endpoint,
-              { 
-                authToken: tokenResponse.access_token,
-                email: userInfo.email
-              }
-            );
-
-            if (!data?.data) {
-              throw new Error("Invalid response from server");
-            }
-
-            router.push("/user/dashboard");
-          } catch (error) {
-            console.error("Error:", error);
-            const errorMessage = error instanceof Error ? error.message : "Google login failed";
-            toast.error(errorMessage);
-          } finally {
-            setIsLoading(false);
-          }
-        },
-        error_callback: (error) => {
-          console.error("Google auth error:", error);
-          toast.error("Google authentication failed");
-          setIsLoading(false);
-        },
+      const { data } = await axiosInstance.post<ApiResponse>(endpoint, {
+        authToken: idToken,
+        email,
       });
 
-      client.requestAccessToken();
+      if (!data?.data) {
+        throw new Error("Invalid response from server");
+      }
+      if (data?.data) {
+        localStorage.setItem("access_token", data?.data);
+        const decoded = jwtDecode<{ role: string }>(data?.data);
+        const role = decoded.role.toLowerCase();
+        router.push(`/${role}/dashboard`);
+      }
     } catch (error) {
-      console.error("Initialization error:", error);
-      const errorMessage = error instanceof Error ? error.message : "An unexpected error occurred";
-      toast.error(errorMessage);
+      console.error("Google login error:", error);
+      const message = error instanceof Error ? error.message : "Login failed";
+      toast.error(message);
+    } finally {
       setIsLoading(false);
     }
   };
@@ -138,17 +129,14 @@ const SocialLoginButtons = () => {
       <button className="flex-1 bg-[#F5F5F5] rounded-lg h-12 flex items-center justify-center cursor-pointer">
         <Image src="/images/apple.png" alt="Apple" width={28} height={28} />
       </button>
-      <button
-        className="flex-1 bg-[#F5F5F5] rounded-lg h-12 flex items-center justify-center cursor-pointer"
-        onClick={handleGoogleLogin}
-        disabled={isLoading}
+      <div
+        id="google-signin-button"
+        className="flex-1 h-12 flex items-center justify-center"
       >
-        {isLoading ? (
+        {isLoading && (
           <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-        ) : (
-          <Image src="/images/google.png" alt="Google" width={28} height={28} />
         )}
-      </button>
+      </div>
     </div>
   );
 };
