@@ -14,4 +14,7 @@ export interface CreateEventFormData {
   totalAmount: string;
   pendingAmount: string;
   equityDivision: string;
+  imageUrl: string;
+  name: string;
+  slug: string;
 }

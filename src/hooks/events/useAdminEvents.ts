@@ -25,6 +25,9 @@ interface EventType {
   expiresAt: string;
   host: string;
   cohosts: string[];
+  dropoffDate: string;
+  pickupTime: string;
+  addStops: string;
 }
 
 interface ApiResponse {

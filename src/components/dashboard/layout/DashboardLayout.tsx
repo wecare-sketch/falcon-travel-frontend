@@ -9,7 +9,6 @@ import { MediaGalleryPage } from "@/components/dashboard/Media/MediaGalleryPage"
 import { CreateEventModal } from "@/components/forms/CreateEvent/CreateEventModal";
 import { useDispatch } from "react-redux";
 import { setUserRole } from "@/store/slices/userRoleSlice";
-import { CreateEventFormData } from "@/types/form";
 import { FeedBackPage } from "../Feedback/FeedBackPage";
 import { DashboardPage } from "../dashboard view/DashboardPage";
 import { UserRequestsPage } from "../UserRequests/UserRequestsPage";
@@ -42,10 +41,6 @@ export function DashboardLayout({ role }: Readonly<DashboardLayoutProps>) {
 
   const handleCloseModal = () => {
     setIsCreateModalOpen(false);
-  };
-
-  const handleSubmitEvent = (eventData: CreateEventFormData) => {
-    console.log("Creating new event:", eventData);
   };
   const renderView = () => {
     switch (activeView) {
@@ -91,7 +86,7 @@ export function DashboardLayout({ role }: Readonly<DashboardLayoutProps>) {
       <CreateEventModal
         open={isCreateModalOpen}
         onClose={handleCloseModal}
-        onCreateEvent={handleSubmitEvent}
+        isEditMode={false}
       />
     </div>
   );

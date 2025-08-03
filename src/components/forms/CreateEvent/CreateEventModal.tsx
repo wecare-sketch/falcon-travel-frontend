@@ -15,19 +15,46 @@ import { SectionEventDetails } from "./SectionEventDetails";
 import { SectionStops } from "./SectionStops";
 import { SectionVehicleInfo } from "./SectionVehicleInfo";
 import { SectionPaymentDetails } from "./SectionPaymentDetails";
-import { CreateEventFormData } from "@/types/form";
 import { CustomButton } from "@/components/shared/CustomButton";
 import { useSelector } from "react-redux";
 import { RootState } from "@/store";
-import { useState, useRef, ChangeEvent } from "react";
+import { useState, useRef, ChangeEvent, useEffect } from "react";
 import { ShareEventModal } from "../ShareEventModal";
 import { useAddEvent } from "@/hooks/events/useAddEvent";
 import { toast } from "react-hot-toast";
+import { useUpdateEvent } from "@/hooks/events/useUpdateEvent";
+
+interface EventFormData {
+  eventType: string;
+  clientName: string;
+  phoneNumber: string;
+  pickupDate: string;
+  dropoffDate: string;
+  pickupTime: string;
+  location: string;
+  addStops: string;
+  hoursReserved: number;
+  totalAmount: number;
+  pendingAmount: number;
+  equityDivision: number;
+  imageUrl: string;
+  name: string;
+  slug: string;
+  id: string;
+  passengerCount: number;
+  paymentStatus: string;
+  depositAmount: number;
+  vehicle: string;
+}
 
 interface CreateEventModalProps {
   open: boolean;
   onClose: () => void;
-  onCreateEvent: (eventData: CreateEventFormData) => void;
+  onCreateEvent?: (eventData: EventFormData) => void;
+  onUpdateEvent?: (eventData: EventFormData) => void;
+  isEditMode?: boolean;
+  initialData?: EventFormData;
+  eventId?: string;
 }
 
 // type CreateEventResponse = {
@@ -41,10 +68,13 @@ interface CreateEventModalProps {
 export function CreateEventModal({
   open,
   onClose,
-  onCreateEvent,
+  initialData,
+  isEditMode,
+  eventId,
 }: Readonly<CreateEventModalProps>) {
-  const methods = useForm<CreateEventFormData>({
-    defaultValues: {
+  console.log("intial data", initialData);
+  const methods = useForm<EventFormData>({
+    defaultValues: initialData ?? {
       eventType: "",
       clientName: "",
       phoneNumber: "",
@@ -53,12 +83,13 @@ export function CreateEventModal({
       pickupTime: "",
       location: "",
       addStops: "",
-      chooseVehicle: "",
-      numberOfPassenger: "",
-      hoursReserved: "",
-      totalAmount: "",
-      pendingAmount: "",
-      equityDivision: "",
+      vehicle: "",
+      passengerCount: 0,
+      hoursReserved: 0,
+      totalAmount: 0,
+      pendingAmount: 0,
+      equityDivision: 0,
+      name: "",
     },
   });
 
@@ -71,6 +102,16 @@ export function CreateEventModal({
   const [eventFile, setEventFile] = useState<File | null>(null);
 
   const { mutate: addEvent, isPending } = useAddEvent();
+  const { mutate: updateEvent, isPending: isUpdating } = useUpdateEvent();
+
+  useEffect(() => {
+    if (initialData) {
+      reset(initialData);
+      if (initialData?.imageUrl) {
+        setEventImage(initialData.imageUrl);
+      }
+    }
+  }, [initialData, reset]);
 
   const handleAddStop = () => {
     const stop = getValues("addStops").trim();
@@ -84,19 +125,22 @@ export function CreateEventModal({
     onClose();
   };
 
-  const onSubmit = (data: CreateEventFormData) => {
-    if (!eventFile) {
+  const onSubmit = (data: EventFormData) => {
+    if (!eventFile && !isEditMode) {
       toast.error("Please upload an event image.");
       return;
     }
-    
+
     const formData = new FormData();
 
-    formData.append("file", eventFile);
+    if (eventFile) {
+      formData.append("file", eventFile);
+    }
+
     formData.append(
       "eventDetails",
       JSON.stringify({
-        name: data.eventName,
+        name: data.name,
         eventType: data.eventType,
         clientName: data.clientName,
         phoneNumber: data.phoneNumber,
@@ -107,14 +151,16 @@ export function CreateEventModal({
         stops: data.addStops ? [data.addStops] : [],
       })
     );
+
     formData.append(
       "vehicleInfo",
       JSON.stringify({
-        vehicleName: data.chooseVehicle,
-        numberOfPassengers: Number(data.numberOfPassenger),
+        vehicleName: data.vehicle,
+        numberOfPassengers: Number(data.passengerCount),
         hoursReserved: Number(data.hoursReserved),
       })
     );
+
     formData.append(
       "paymentDetails",
       JSON.stringify({
@@ -125,23 +171,36 @@ export function CreateEventModal({
       })
     );
 
-    addEvent(formData, {
-      onSuccess: (response) => {
-        toast.success("Event created!");
-        setSlug(response?.data?.slug ?? null);
-        onCreateEvent(data);
-        reset();
-        if (role === "admin") {
-          onClose();
-          setShowShareModal(true);
-        } else {
-          handleCancel();
+    if (isEditMode && eventId) {
+      updateEvent(
+        { slug: eventId, formData },
+        {
+          onSuccess: () => {
+            toast.success("Event updated!");
+            reset();
+            onClose();
+          },
+          onError: () => toast.error("Failed to update event"),
         }
-      },
-      onError: () => {
-        toast.error("Failed to create event");
-      },
-    });
+      );
+    } else {
+      addEvent(formData, {
+        onSuccess: (response) => {
+          toast.success("Event created!");
+          setSlug(response?.data?.slug ?? null);
+          reset();
+          if (role === "admin") {
+            onClose();
+            setShowShareModal(true);
+          } else {
+            handleCancel();
+          }
+        },
+        onError: () => {
+          toast.error("Failed to create event");
+        },
+      });
+    }
   };
 
   const handleCloseShareModal = () => {
@@ -280,7 +339,15 @@ export function CreateEventModal({
                 }}
               />
               <CustomButton
-                label={isPending ? "Creating..." : "+ Create Event"}
+                label={
+                  isPending || isUpdating
+                    ? isEditMode
+                      ? "Updating..."
+                      : "Creating..."
+                    : isEditMode
+                    ? "Update Event"
+                    : "+ Create Event"
+                }
                 onClick={handleSubmit(onSubmit)}
                 disabled={isPending}
                 sx={{
