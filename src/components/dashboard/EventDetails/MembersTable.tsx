@@ -18,13 +18,12 @@ import { StatusChip } from "./ui/StatusChip"
 import { useIsMobile } from "@/hooks/useIsMobile"
 import { CustomDivider } from "@/components/shared/CustomDivider"
 
-interface Member {
+export interface Member {
   id: string
   name: string
   phoneNumber: string
   email: string
   dueAmount: number
-  userStatus: "Host" | "Co-Host" | "Guest"
   paymentStatus: "Paid" | "Pending" | "Overdue"
 }
 

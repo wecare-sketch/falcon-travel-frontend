@@ -76,22 +76,22 @@ export interface EventResponse {
   };
 }
 
-const fetchEventById = async (
+const fetchAdminEventById = async (
   eventId: string
 ): Promise<EventResponse["data"]> => {
-  const response = await axiosInstance.get<EventResponse>(`/user/events`, {
+  const response = await axiosInstance.get<EventResponse>(`/admin/events`, {
     params: { eventId },
   });
   return response.data.data;
 };
 
-export const useUserEventById = (
+export const useAdminEventById = (
   eventId: string | null,
   options?: { enabled?: boolean }
 ) => {
   return useQuery<EventResponse["data"]>({
-    queryKey: ["user-event", eventId],
-    queryFn: () => fetchEventById(eventId!),
+    queryKey: ["admin-event", eventId],
+    queryFn: () => fetchAdminEventById(eventId!),
     enabled: !!eventId && (options?.enabled ?? true),
   });
 };
