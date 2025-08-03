@@ -12,14 +12,14 @@ import { RootState } from "@/store";
 
 
 interface EventInfoCardProps {
-  eventType: string;
-  vehicle: string;
-  pickupDate: string;
-  phoneNumber: string;
-  clientName: string;
-  location: string;
-  totalAmount: number;
-  pendingAmount: number;
+  eventType: string | undefined;
+  vehicle: string | undefined;
+  pickupDate: string | undefined;
+  phoneNumber: string | undefined;
+  clientName: string | undefined;
+  location: string | undefined;
+  totalAmount: number | undefined;
+  pendingAmount: number | undefined;
   onDownloadInvoice?: () => void;
   onShareIt?: () => void;
   onPayNow?: () => void;
@@ -189,7 +189,7 @@ export function EventInfoCard({
         (
           <Box sx={{ flex: 1 }}>
           {/* Total Amount Box */}
-          <EventSummaryCard totalAmount={totalAmount} remainingAmount={pendingAmount} payableAmount={totalAmount - pendingAmount} />
+          <EventSummaryCard totalAmount={totalAmount} remainingAmount={pendingAmount} payableAmount={totalAmount! - pendingAmount!} />
 
           {/* Action Buttons */}
           <Box sx={{ display: "flex", gap: 2, marginBottom: 2 }}>
@@ -253,9 +253,9 @@ export function EventInfoCard({
 }
 
 type EventSummaryCardProps = {
-  totalAmount: number;
-  remainingAmount: number;
-  payableAmount: number;
+  totalAmount: number | undefined;
+  remainingAmount: number | undefined;
+  payableAmount: number | undefined;
 };
 
 function EventSummaryCard({ totalAmount, remainingAmount, payableAmount }: EventSummaryCardProps) {

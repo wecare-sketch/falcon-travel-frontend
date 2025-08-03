@@ -1,5 +1,5 @@
-import { useSelector } from "react-redux";
-import { useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { useEffect, useState } from "react";
 import { PageHeader } from "../PageHeader";
 import { EventCard } from "./EventCard";
 import { SearchFilters } from "../SearchFilter";
@@ -14,6 +14,7 @@ import { MobileEventListItem } from "../MobileListItem";
 import { useEditEvent } from "@/hooks/events/useEditEvent";
 import { useQueryClient } from "@tanstack/react-query";
 import { useEventsByRole } from "@/hooks/events/useEventsByRole";
+import { setEvents } from "@/store/slices/eventsSlice";
 
 const PAGE_SIZE = 4;
 
@@ -24,9 +25,9 @@ interface UpcomingEventsPageProps {
 export function UpcomingEventsPage({
   setIsCreateModalOpen,
 }: Readonly<UpcomingEventsPageProps>) {
-  const [selectedEventId, setSelectedEventId] = useState<number | null>(null);
+  const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
   const [editingEvent, setEditingEvent] = useState<null | {
-    id: number;
+    id: string;
     slug: string;
     eventType: string;
     clientName: string;
@@ -36,7 +37,7 @@ export function UpcomingEventsPage({
     passengerCount: number;
     hoursReserved: number;
     equityDivision: number;
-    status: string;
+    paymentStatus: string;
     totalAmount: number;
     pendingAmount: number;
     depositAmount: number;
@@ -48,10 +49,18 @@ export function UpcomingEventsPage({
   const isMobile = useIsMobile();
   const { data: eventsData, isLoading, isError } = useEventsByRole();
 
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    if (eventsData) {
+      dispatch(setEvents(eventsData));
+    }
+  }, [eventsData]);
+
   const editMutation = useEditEvent();
   const queryClient = useQueryClient();
 
-  const handleViewDetails = (eventId: number) => {
+  const handleViewDetails = (eventId: string) => {
     setSelectedEventId(eventId);
   };
 
@@ -59,7 +68,7 @@ export function UpcomingEventsPage({
     setIsCreateModalOpen(true);
   };
 
-  const handleEditClick = (eventId: number) => {
+  const handleEditClick = (eventId: string) => {
     const originalEvent = eventsData?.events.find((e) => e.id === eventId);
     if (originalEvent) {
       setEditingEvent({
@@ -73,7 +82,7 @@ export function UpcomingEventsPage({
         passengerCount: originalEvent.passengerCount,
         hoursReserved: originalEvent.hoursReserved,
         equityDivision: originalEvent.equityDivision,
-        status: originalEvent.status,
+        paymentStatus: originalEvent.paymentStatus,
         totalAmount: originalEvent.totalAmount,
         pendingAmount: originalEvent.pendingAmount,
         depositAmount: originalEvent.depositAmount,
@@ -98,7 +107,7 @@ export function UpcomingEventsPage({
             passengerCount: editingEvent.passengerCount,
             hoursReserved: editingEvent.hoursReserved,
             equityDivision: editingEvent.equityDivision,
-            status: editingEvent.status,
+            paymentStatus: editingEvent.paymentStatus,
           },
           vehicleInfo: {
             vehicle: editingEvent.vehicle,
@@ -127,8 +136,8 @@ export function UpcomingEventsPage({
         day: "2-digit",
       }),
       passenger: event.passengerCount.toString(),
+      paymentStatus: event.paymentStatus,
       remainingAmount: `${event.pendingAmount}$`,
-      paymentStatus: event.status === "pending" ? "Pending" : "Paid",
       clientName: event.clientName,
     })) || [];
 
@@ -155,7 +164,7 @@ export function UpcomingEventsPage({
   }
 
   if (selectedEventId !== null) {
-    return <EventDetailsPage eventId={selectedEventId}/>;
+    return <EventDetailsPage eventId={selectedEventId} />;
   }
 
   return (
@@ -497,17 +506,16 @@ export function UpcomingEventsPage({
                       className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     />
                   </div>
-
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                       Status
                     </label>
                     <select
-                      value={editingEvent.status}
+                      value={editingEvent.paymentStatus}
                       onChange={(e) =>
                         setEditingEvent({
                           ...editingEvent,
-                          status: e.target.value,
+                          paymentStatus: e.target.value,
                         })
                       }
                       className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"

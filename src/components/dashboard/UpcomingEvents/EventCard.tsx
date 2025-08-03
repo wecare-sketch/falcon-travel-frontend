@@ -1,10 +1,10 @@
 "use client";
 
 import Image from "next/image";
-import { Box, Card, CardContent, CardMedia, Typography, Rating } from "@mui/material";
+import { Box, Card, CardContent, CardMedia, Typography } from "@mui/material";
 import { CustomButton } from "@/components/shared/CustomButton";
-import { RootState } from "@/store";
-import { useSelector } from "react-redux";
+// import { RootState } from "@/store";
+// import { useSelector } from "react-redux";
 
 interface EventCardProps {
   title: string;
@@ -21,13 +21,13 @@ export function EventCard({
   title,
   date,
   imageUrl,
-  rating,
-  totalReviews,
-  lastReviewDate,
+  // rating,
+  // totalReviews,
+  // lastReviewDate,
   onViewDetails,
   Label,
 }: Readonly<EventCardProps>) {
-  const role = useSelector((state: RootState) => state.userRole.role);
+  // const role = useSelector((state: RootState) => state.userRole.role);
 
   return (
     <Card
@@ -82,7 +82,7 @@ export function EventCard({
           {date}
         </Typography>
         {/* Rating Row */}
-        {role==="admin"?
+        {/* {role==="admin"?
         (<Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
           <Typography variant="h3" sx={{ fontWeight: 600, mr: 2, fontSize: "2.5rem" }}>
             {rating}
@@ -105,7 +105,7 @@ export function EventCard({
         </Box>)
         :
         (<></>)
-        }
+        } */}
         
         <CustomButton
           label={Label}

@@ -12,7 +12,7 @@ interface EditEventData {
     passengerCount?: number;
     hoursReserved?: number;
     equityDivision?: number;
-    status?: string;
+    paymentStatus?: string;
   };
   vehicleInfo?: {
     vehicle?: string;

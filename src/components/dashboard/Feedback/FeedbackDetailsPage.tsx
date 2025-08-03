@@ -1,301 +1,294 @@
-"use client"
+"use client";
 
-import { Box, Typography } from "@mui/material"
-import { Star, StarBorder } from "@mui/icons-material"
-import { PageHeader } from "../PageHeader"
+import { Box, Typography } from "@mui/material";
+import { Star, StarBorder } from "@mui/icons-material";
+import { PageHeader } from "../PageHeader";
 
-interface FeedbackQuestion {
-    id: string
-    question: string
-    rating: number
-    maxRating: number
+interface Feedback {
+  id: number;
+  Q1: number;
+  Q2: number;
+  Q3: number;
+  Q4: number;
+  Q5: number;
+  description: string;
+  averageRating: number;
+  createdAt: string;
 }
+
+interface EventUser {
+  id: string;
+  fullName: string;
+  phoneNumber: string;
+  dateOfBirth: string;
+  email: string;
+  password: string;
+  role: "user";
+  createdAt: string;
+  updatedAt: string;
+  appleSubId: string | null;
+}
+
+interface EventParticipant {
+  id: number;
+  email: string;
+  equityAmount: number;
+  depositedAmount: number;
+  paymentStatus: "paid" | "pending";
+  role: "host" | "cohost" | "guest";
+  createdAt: string;
+  updatedAt: string;
+  user: EventUser;
+}
+interface Event {
+  id: string;
+  slug: string;
+  name: string;
+  imageUrl: string;
+  eventType: string;
+  clientName: string;
+  phoneNumber: string;
+  pickupDate: string;
+  location: string;
+  vehicle: string;
+  totalAmount: number;
+  passengerCount: number;
+  pendingAmount: number;
+  depositAmount: number;
+  hoursReserved: number;
+  equityDivision: number;
+  eventStatus: string;
+  paymentStatus: string;
+  createdAt: string;
+  updatedAt: string;
+  expiresAt: string;
+  host: string;
+  cohosts: string[];
+  participants: EventParticipant[];
+  feedbacks: Feedback[];
+  media: unknown[];
+  messages: unknown[];
+  transactions: unknown[];
+}
+
 
 interface FeedbackDetailsPageProps {
-    eventId: number
-    onBack?: () => void
+  onBack?: () => void;
+  event: Event | undefined;
 }
 
-const feedbackDetailsDummyData = [
-    {
-        eventId: 1,
-        eventTitle: "Annual Corporate Gala",
-        overallRating: 3.7,
-        totalReviews: 10,
-        lastReviewDate: "Feb 26, 2025",
-    },
-    {
-        eventId: 2,
-        eventTitle: "Annual Corporate Gala",
-        overallRating: 3.7,
-        totalReviews: 15,
-        lastReviewDate: "Mar 01, 2025",
-    },
-];
+export function FeedbackDetailsPage({
+  onBack,
+  event,
+}: FeedbackDetailsPageProps) {
+  const feedback = event?.feedbacks?.[0];
 
-const feedbackQuestions: FeedbackQuestion[] = [
-    {
-        id: "1",
-        question: "How would you rate the quality of their work in terms of accuracy and attention to detail?",
-        rating: 3.5,
-        maxRating: 5,
-    },
-    {
-        id: "2",
-        question: "Did the employee consistently meet deadlines and project goals?",
-        rating: 2.5,
-        maxRating: 5,
-    },
-    {
-        id: "3",
-        question: "How would you rate their communication?",
-        rating: 4.0,
-        maxRating: 5,
-    },
-    {
-        id: "4",
-        question: "How would you rate the employee's ability to identify and solve problems?",
-        rating: 3.0,
-        maxRating: 5,
-    },
-    {
-        id: "5",
-        question: "How well did the employee handle challenges or unexpected issues?",
-        rating: 4.5,
-        maxRating: 5,
-    },
-]
-
-export function FeedbackDetailsPage({ eventId, onBack }: FeedbackDetailsPageProps) {
-    const eventDetails = feedbackDetailsDummyData.find(e => e.eventId === eventId);
-    if (!eventDetails) return null;
-    const { overallRating, lastReviewDate } = eventDetails;
-
-    const renderStars = (rating: number) => {
-        const stars = []
-        const fullStars = Math.floor(rating)
-        const hasHalfStar = rating % 1 !== 0
-
-        // Add full stars
-        for (let i = 0; i < fullStars; i++) {
-            stars.push(
-                <Star
-                    key={`full-${i}`}
-                    sx={{
-                        color: "#345794",
-                        fontSize: "16px",
-                    }}
-                />,
-            )
-        }
-
-        // Add half star if needed
-        if (hasHalfStar) {
-            stars.push(
-                <Star
-                    key="half"
-                    sx={{
-                        color: "#345794",
-                        fontSize: "16px",
-                    }}
-                />,
-            )
-        }
-
-        // Add empty stars
-        const remainingStars = 5 - Math.ceil(rating)
-        for (let i = 0; i < remainingStars; i++) {
-            stars.push(
-                <StarBorder
-                    key={`empty-${i}`}
-                    sx={{
-                        color: "#E0E0E0",
-                        borderColor: "#345794",
-                        fontSize: "16px",
-                    }}
-                />,
-            )
-        }
-
-        return stars
-    }
-
-    const renderRatingBar = (rating: number, maxRating: number) => {
-        const segments = []
-        const segmentWidth = 50 // Fixed width for each segment
-        const segmentHeight = 8
-
-        for (let i = 1; i <= maxRating; i++) {
-            // const isActive = i <= Math.ceil(rating)
-            const isFilled = i <= rating
-
-            segments.push(
-                <Box
-                    key={i}
-                    sx={{
-                        width: `${segmentWidth}px`,
-                        height: `${segmentHeight}px`,
-                        backgroundColor: isFilled ? "#345794" : "#E8E8E8",
-                        marginRight: i < maxRating ? "4px" : "0",
-                        borderRadius: "5px",
-                    }}
-                />,
-            )
-        }
-
-        return (
-            <Box
-                sx={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "0px",
-                }}
-            >
-                {segments}
-            </Box>
-        )
-    }
-
+  if (!event || !feedback) {
     return (
-        <>
-            <PageHeader title="clients Feedback" onBack={onBack} />
+      <Box sx={{ padding: 4, textAlign: "center", color: "#666" }}>
+        <Typography variant="h6" sx={{ fontWeight: 500, fontSize: "18px" }}>
+          This event does not have any feedback yet.
+        </Typography>
+        <Typography variant="body2" sx={{ marginTop: 1, fontSize: "14px" }}>
+          Once feedback is submitted, it will appear here.
+        </Typography>
+      </Box>
+    );
+  }
 
+  const feedbackQuestions = [
+    {
+      id: "1",
+      question:
+        "How would you rate the quality of their work in terms of accuracy and attention to detail?",
+      rating: feedback.Q1,
+      maxRating: 5,
+    },
+    {
+      id: "2",
+      question:
+        "Did the employee consistently meet deadlines and project goals?",
+      rating: feedback.Q2,
+      maxRating: 5,
+    },
+    {
+      id: "3",
+      question: "How would you rate their communication?",
+      rating: feedback.Q3,
+      maxRating: 5,
+    },
+    {
+      id: "4",
+      question:
+        "How would you rate the employee's ability to identify and solve problems?",
+      rating: feedback.Q4,
+      maxRating: 5,
+    },
+    {
+      id: "5",
+      question:
+        "How well did the employee handle challenges or unexpected issues?",
+      rating: feedback.Q5,
+      maxRating: 5,
+    },
+  ];
+
+  const renderStars = (rating: number) => {
+    const stars = [];
+    const fullStars = Math.floor(rating);
+    const hasHalfStar = rating % 1 !== 0;
+
+    for (let i = 0; i < fullStars; i++) {
+      stars.push(
+        <Star key={`full-${i}`} sx={{ color: "#345794", fontSize: "16px" }} />
+      );
+    }
+
+    if (hasHalfStar) {
+      stars.push(
+        <Star key="half" sx={{ color: "#345794", fontSize: "16px" }} />
+      );
+    }
+
+    const remainingStars = 5 - Math.ceil(rating);
+    for (let i = 0; i < remainingStars; i++) {
+      stars.push(
+        <StarBorder
+          key={`empty-${i}`}
+          sx={{ color: "#E0E0E0", fontSize: "16px" }}
+        />
+      );
+    }
+
+    return stars;
+  };
+
+  const renderRatingBar = (rating: number, maxRating: number) => {
+    const segments = [];
+
+    for (let i = 1; i <= maxRating; i++) {
+      segments.push(
+        <Box
+          key={i}
+          sx={{
+            width: `50px`,
+            height: `8px`,
+            backgroundColor: i <= rating ? "#345794" : "#E8E8E8",
+            marginRight: i < maxRating ? "4px" : "0",
+            borderRadius: "5px",
+          }}
+        />
+      );
+    }
+
+    return <Box sx={{ display: "flex" }}>{segments}</Box>;
+  };
+
+  return (
+    <>
+      <PageHeader title="Client Feedback" onBack={onBack} />
+
+      <Box
+        sx={{
+          padding: { xs: "10px", sm: "20px" },
+          maxWidth: "800px",
+          width: "100%",
+        }}
+      >
+        {/* Overall Rating */}
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: { xs: "column", sm: "row" },
+            alignItems: { xs: "stretch", sm: "flex-start" },
+            gap: { xs: "10px", sm: "16px" },
+            marginBottom: { xs: "20px", sm: "30px" },
+          }}
+        >
+          <Typography
+            sx={{
+              fontSize: { xs: "32px", sm: "48px" },
+              fontWeight: 700,
+              color: "#333",
+            }}
+          >
+            {feedback.averageRating.toFixed(1)}
+          </Typography>
+
+          <Box
+            sx={{ display: "flex", flexDirection: "column", paddingTop: "4px" }}
+          >
             <Box
-                sx={{
-                    padding: { xs: "10px", sm: "20px" },
-                    maxWidth: "800px",
-                    width: "100%",
-                }}
+              sx={{
+                display: "flex",
+                flexDirection: { xs: "column", sm: "row" },
+                alignItems: { xs: "flex-start", sm: "center" },
+                gap: "8px",
+              }}
             >
-                {/* Overall Rating Section */}
-                <Box
-                    sx={{
-                        display: "flex",
-                        flexDirection: { xs: "column", sm: "row" },
-                        alignItems: { xs: "stretch", sm: "flex-start" },
-                        gap: { xs: "10px", sm: "16px" },
-                        marginBottom: { xs: "20px", sm: "30px" }
-                    }}
-                >
-                    {/* Large Rating Number */}
-                    <Typography
-                        variant="h1"
-                        sx={{
-                            fontSize: { xs: "32px", sm: "48px" },
-                            fontWeight: 700,
-                            color: "#333",
-                            lineHeight: "1",
-                            marginRight: "8px",
-                        }}
-                    >
-                        {overallRating.toFixed(1)}
-                    </Typography>
-
-                    {/* Stars and Text */}
-                    <Box sx={{ display: "flex", flexDirection: "column", paddingTop: "4px", width: "100%" }}>
-                        <Box
-                            sx={{
-                                display: "flex",
-                                flexDirection: { xs: "column", sm: "row" },
-                                alignItems: { xs: "flex-start", sm: "center" },
-                                gap: { xs: "4px", sm: "10px" },
-                                marginBottom: { xs: "4px", sm: 0 },
-                            }}
-                        >
-                            <Typography
-                                variant="body2"
-                                sx={{
-                                    color: "black",
-                                    fontSize: { xs: "11px", sm: "12px" },
-                                    marginBottom: { xs: "2px", sm: 0 },
-                                    lineHeight: "1.2",
-                                }}
-                            >
-                                Based on all reviews
-                            </Typography>
-                            <Box sx={{ display: "flex", alignItems: "center", gap: "2px", marginLeft: { xs: 0, sm: "10px" } }}>
-                                {renderStars(overallRating)}
-                            </Box>
-                        </Box>
-                        <Typography
-                            variant="body2"
-                            sx={{
-                                color: "black",
-                                fontSize: { xs: "11px", sm: "12px" },
-                                lineHeight: "1.2",
-                            }}
-                        >
-                            Last till {lastReviewDate}
-                        </Typography>
-                    </Box>
-                </Box>
-
-                {/* Rating Questions with Bars on Right */}
-                <Box sx={{ marginBottom: { xs: "24px", sm: "40px" } }}>
-                    {feedbackQuestions.map((question) => (
-                        <Box
-                            key={question.id}
-                            sx={{
-                                display: "flex",
-                                flexDirection: { xs: "column", sm: "row" },
-                                alignItems: { xs: "flex-start", sm: "center" },
-                                justifyContent: "space-between",
-                                marginBottom: { xs: "16px", sm: "16px" },
-                                "&:last-child": {
-                                    marginBottom: 0,
-                                },
-                            }}
-                        >
-                            {/* Question Text - Left Side */}
-                            <Box sx={{ flex: 1, paddingRight: { xs: 0, sm: "24px" }, marginBottom: { xs: "8px", sm: 0 } }}>
-                                <Typography
-                                    variant="body1"
-                                    sx={{
-                                        color: "#333",
-                                        fontSize: { xs: "13px", sm: "14px" },
-                                        lineHeight: "1.4",
-                                        fontWeight: 400,
-                                    }}
-                                >
-                                    {question.question}
-                                </Typography>
-                            </Box>
-
-                            {/* Rating Bar - Right Side */}
-                            <Box sx={{ flexShrink: 0 }}>{renderRatingBar(question.rating, question.maxRating)}</Box>
-                        </Box>
-                    ))}
-                </Box>
-
-                {/* Add Description Section */}
-                <Box>
-                    <Typography
-                        variant="h6"
-                        sx={{
-                            color: "#333",
-                            fontSize: { xs: "16px", sm: "18px" },
-                            fontWeight: 600,
-                            marginBottom: "16px",
-                        }}
-                    >
-                        Add Description
-                    </Typography>
-
-                    <Typography
-                        variant="body1"
-                        sx={{
-                            color: "#666",
-                            fontSize: { xs: "13px", sm: "14px" },
-                            lineHeight: "1.6",
-                            textAlign: "justify",
-                        }}
-                    >
-                        There are many variations of passages of Lorem Ipsum available, but the majority have suffered alteration in
-                        some form, by injected humour, or randomised words which don&apos;t look even slightly believable. If you are
-                        going to use a passage of Lorem Ipsum, you need to be sure there isn&apos;t anything embarrassing.
-                    </Typography>
-                </Box>
+              <Typography sx={{ fontSize: "12px", color: "black" }}>
+                Based on feedback
+              </Typography>
+              <Box sx={{ display: "flex" }}>
+                {renderStars(feedback.averageRating)}
+              </Box>
             </Box>
-        </>
-    )
+            <Typography sx={{ fontSize: "12px", color: "black" }}>
+              Submitted on {new Date(feedback.createdAt).toLocaleDateString()}
+            </Typography>
+          </Box>
+        </Box>
+
+        {/* Feedback Questions */}
+        <Box sx={{ marginBottom: "40px" }}>
+          {feedbackQuestions.map((question) => (
+            <Box
+              key={question.id}
+              sx={{
+                display: "flex",
+                flexDirection: { xs: "column", sm: "row" },
+                alignItems: { xs: "flex-start", sm: "center" },
+                justifyContent: "space-between",
+                marginBottom: "16px",
+              }}
+            >
+              <Box sx={{ flex: 1, paddingRight: { sm: "24px" } }}>
+                <Typography sx={{ fontSize: "14px", color: "#333" }}>
+                  {question.question}
+                </Typography>
+              </Box>
+
+              <Box sx={{ flexShrink: 0 }}>
+                {renderRatingBar(question.rating, question.maxRating)}
+              </Box>
+            </Box>
+          ))}
+        </Box>
+
+        {/* Description */}
+        <Box>
+          <Typography
+            sx={{
+              fontSize: { xs: "16px", sm: "18px" },
+              fontWeight: 600,
+              marginBottom: "16px",
+              color: "#333",
+            }}
+          >
+            Description
+          </Typography>
+          <Typography
+            sx={{
+              fontSize: { xs: "13px", sm: "14px" },
+              color: "#666",
+              lineHeight: "1.6",
+              textAlign: "justify",
+            }}
+          >
+            {feedback.description}
+          </Typography>
+        </Box>
+      </Box>
+    </>
+  );
 }

@@ -2,8 +2,10 @@ import { useQuery } from "@tanstack/react-query";
 import axiosInstance from "@/lib/axios";
 
 interface EventType {
-  id: number;
+  id: string;
   slug: string;
+  name: string;
+  imageUrl: string;
   eventType: string;
   clientName: string;
   phoneNumber: string;
@@ -16,14 +18,13 @@ interface EventType {
   depositAmount: number;
   hoursReserved: number;
   equityDivision: number;
-  status: string;
+  eventStatus: string;
+  paymentStatus: string;
   createdAt: string;
   updatedAt: string;
+  expiresAt: string;
   host: string;
-  cohosts: string;
-  participants: unknown[]; 
-  name: string;
-  imageUrl: string
+  cohosts: string[];
 }
 
 interface ApiResponse {

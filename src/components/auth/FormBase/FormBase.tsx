@@ -30,6 +30,11 @@ interface ApiError {
   };
 }
 
+interface ApiResponse {
+  data: string;
+  message: string;
+}
+
 const FormBase = ({
   type,
   inviteToken,
@@ -49,7 +54,7 @@ const FormBase = ({
   const dispatch = useDispatch();
 
   dispatch(setFormType(type));
-  
+
   useEffect(() => {
     if (type === "otp" && timer > 0) {
       const interval = setTimeout(() => setTimer((t) => t - 1), 1000);
@@ -109,14 +114,18 @@ const FormBase = ({
         }
         try {
           setLoading(true);
-          await axiosInstance.post(
+          const response = await axiosInstance.post<ApiResponse>(
             `/auth/register${inviteToken ? `/${inviteToken}` : ""}`,
             {
               email,
               password: loginPassword,
             }
           );
-          router.push("/personal-details");
+
+          if (response?.data?.data) {
+            localStorage.setItem("access_token", response?.data?.data);
+            router.push("/personal-details");
+          }
         } catch (err: unknown) {
           const error = err as ApiError;
           toast.error(error?.response?.data?.message || "Sign up failed");

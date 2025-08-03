@@ -1,14 +1,23 @@
-import React, { useState, useEffect } from "react";
-import { Box, Typography,TextField} from "@mui/material";
-import SentimentVeryDissatisfiedIcon from '@mui/icons-material/SentimentVeryDissatisfied';
-import SentimentDissatisfiedIcon from '@mui/icons-material/SentimentDissatisfied';
-import SentimentNeutralIcon from '@mui/icons-material/SentimentNeutral';
-import SentimentSatisfiedIcon from '@mui/icons-material/SentimentSatisfied';
-import SentimentVerySatisfiedIcon from '@mui/icons-material/SentimentVerySatisfied';
+"use client";
+
+import React, { useState } from "react";
+import {
+  Box,
+  Typography,
+  TextField
+} from "@mui/material";
+import {
+  SentimentVeryDissatisfied as VeryDissatisfied,
+  SentimentDissatisfied as Dissatisfied,
+  SentimentNeutral as Neutral,
+  SentimentSatisfied as Satisfied,
+  SentimentVerySatisfied as VerySatisfied
+} from "@mui/icons-material";
+
 import { PageHeader } from "../PageHeader";
 import { CustomButton } from "@/components/shared/CustomButton";
 import { FeedbackSuccessDialog } from "./FeedbackSuccessDialog";
-
+import { useSubmitFeedback } from "@/hooks/events/useSubmitFeedback";
 
 const feedbackQuestions = [
   "long established fact that a reader will be distracted by the readable content of a page",
@@ -19,46 +28,56 @@ const feedbackQuestions = [
 ];
 
 const emojiIcons = [
-  <SentimentVeryDissatisfiedIcon key="very-dissatisfied" fontSize="large" sx={{ color: "black" }}/>,
-  <SentimentDissatisfiedIcon key="dissatisfied" fontSize="large" sx={{ color: "black" }}/>,
-  <SentimentNeutralIcon key="neutral" fontSize="large" sx={{ color: "black" }}/>,
-  <SentimentSatisfiedIcon key="satisfied" fontSize="large" sx={{ color: "black" }}/>,
-  <SentimentVerySatisfiedIcon key="very-satisfied" fontSize="large" sx={{ color: "black" }}/>
+  <VeryDissatisfied key="very-dissatisfied" fontSize="large" sx={{ color: "black" }} />,
+  <Dissatisfied key="dissatisfied" fontSize="large" sx={{ color: "black" }} />,
+  <Neutral key="neutral" fontSize="large" sx={{ color: "black" }} />,
+  <Satisfied key="satisfied" fontSize="large" sx={{ color: "black" }} />,
+  <VerySatisfied key="very-satisfied" fontSize="large" sx={{ color: "black" }} />
 ];
 
 interface AddFeedbackProps {
-  eventId: number;
+  eventId: string;
 }
 
 export default function AddFeedback({ eventId }: AddFeedbackProps) {
-  const [feedback, setFeedback] = useState<{ eventId: number; text: string } | null>(null);
-  const [loading, setLoading] = useState(true);
   const [ratings, setRatings] = useState<number[]>(Array(feedbackQuestions.length).fill(0));
   const [description, setDescription] = useState("");
   const [open, setOpen] = useState(false);
 
+  const { mutate: submitFeedback, isPending } = useSubmitFeedback(eventId);
 
-  useEffect(() => {
-    async function fetchFeedbackForEvent(id: number) {
-      setTimeout(() => {
-        setFeedback({ eventId: id, text: "Sample feedback for event " + id });
-        console.log("Loaded feedback:", feedback);
-        setLoading(false);
-      }, 500);
-    }
-
-    fetchFeedbackForEvent(eventId);
-  }, [eventId]);
-
-  
- 
   const handleRating = (questionIdx: number, value: number) => {
     const newRatings = [...ratings];
     newRatings[questionIdx] = value;
     setRatings(newRatings);
   };
 
-  if (loading) return <div>Loading feedback...</div>;
+  const handleSubmit = () => {
+    const avg =
+      ratings.reduce((acc, cur) => acc + cur, 0) / feedbackQuestions.length;
+
+    const payload = {
+      Q1: ratings[0],
+      Q2: ratings[1],
+      Q3: ratings[2],
+      Q4: ratings[3],
+      Q5: ratings[4],
+      avg: parseFloat(avg.toFixed(2)),
+      description
+    };
+
+    submitFeedback(payload, {
+      onSuccess: () => {
+        setOpen(true);
+        setDescription("");
+        setRatings(Array(feedbackQuestions.length).fill(0));
+      },
+      onError: (err) => {
+        console.error("Feedback submission failed", err);
+        alert("Something went wrong. Please try again.");
+      }
+    });
+  };
 
   return (
     <>
@@ -106,7 +125,7 @@ export default function AddFeedback({ eventId }: AddFeedbackProps) {
                     flex: 1,
                     fontSize: 15,
                     mb: { xs: 1, sm: 0 },
-                    color:"black",
+                    color: "black",
                     textAlign: { xs: "left", sm: "inherit" }
                   }}
                 >
@@ -127,7 +146,8 @@ export default function AddFeedback({ eventId }: AddFeedbackProps) {
                       sx={{
                         width: 35,
                         height: 35,
-                        background: ratings[idx] >= val ? "#23407c" : "#e0e3ea",
+                        background:
+                          ratings[idx] >= val ? "#23407c" : "#e0e3ea",
                         borderRadius: 1,
                         cursor: "pointer",
                         transition: "background 0.2s"
@@ -141,7 +161,15 @@ export default function AddFeedback({ eventId }: AddFeedbackProps) {
         </ul>
       </Box>
 
-      <Typography sx={{ mt: 3, mb: 1, fontWeight: 400, color: "#212121", fontSize: "20px" }}>
+      <Typography
+        sx={{
+          mt: 3,
+          mb: 1,
+          fontWeight: 400,
+          color: "#212121",
+          fontSize: "20px"
+        }}
+      >
         Add Description
       </Typography>
       <TextField
@@ -166,23 +194,32 @@ export default function AddFeedback({ eventId }: AddFeedbackProps) {
         <CustomButton
           label="Cancel"
           inverted
-          width={typeof window !== 'undefined' && window.innerWidth < 600 ? "100%" : "150px"}
+          width={
+            typeof window !== "undefined" && window.innerWidth < 600
+              ? "100%"
+              : "150px"
+          }
           sx={{
             border: "1px solid #00000029",
             color: "#345794"
           }}
         />
         <CustomButton
-          label="Submit Feedback"
-          width={typeof window !== 'undefined' && window.innerWidth < 600 ? "100%" : "230px"}
+          label={isPending ? "Submitting..." : "Submit Feedback"}
+          disabled={isPending}
+          width={
+            typeof window !== "undefined" && window.innerWidth < 600
+              ? "100%"
+              : "230px"
+          }
           sx={{
             background: "#345794"
           }}
-          onClick={()=>setOpen(true)}
+          onClick={handleSubmit}
         />
       </Box>
-    <FeedbackSuccessDialog open={open} onClose={()=>setOpen(false)}/>
-      
+
+      <FeedbackSuccessDialog open={open} onClose={() => setOpen(false)} />
     </>
   );
 }

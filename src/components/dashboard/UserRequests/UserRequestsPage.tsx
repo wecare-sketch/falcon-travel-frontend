@@ -249,10 +249,10 @@ function UserRequestMobileListItem({
 export function UserRequestsPage({
     setIsCreateModalOpen,
 }: Readonly<UserRequestsPage>) {
-    const [selectedEventId, setSelectedEventId] = useState<number | null>(null);
+    const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
     const [page, setPage] = useState(1);
   const isMobile = useIsMobile()
-    const handleViewDetails = (eventId: number) => {
+    const handleViewDetails = (eventId: string) => {
         setSelectedEventId(eventId);
     };
 
@@ -356,7 +356,7 @@ export function UserRequestsPage({
                                     <td className="py-2 px-2 border border-gray-300">
                                         <DescriptionIcon
                                             className="cursor-pointer mr-2 text-[#C2C9D1]"
-                                            onClick={() => handleViewDetails(event.id)}
+                                            onClick={() => handleViewDetails(event.id.toString())}
                                         />
                                         <EditIcon className="cursor-pointer mr-2 text-[#C2C9D1]" onClick={handleCreateEvent}/>
                                         <DeleteIcon className="cursor-pointer text-[#C2C9D1]" />
