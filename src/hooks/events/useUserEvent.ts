@@ -1,4 +1,3 @@
-
 import { useQuery } from "@tanstack/react-query";
 import axiosInstance from "@/lib/axios";
 
@@ -26,6 +25,9 @@ interface EventType {
   expiresAt: string;
   host: string;
   cohosts: string[];
+  dropoffDate: string;
+  pickupTime: string;
+  addStops: string;
 }
 
 interface ApiResponse {

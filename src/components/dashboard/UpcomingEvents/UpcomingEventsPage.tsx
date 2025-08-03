@@ -11,10 +11,9 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import DescriptionIcon from "@mui/icons-material/Description";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import { MobileEventListItem } from "../MobileListItem";
-import { useEditEvent } from "@/hooks/events/useEditEvent";
-import { useQueryClient } from "@tanstack/react-query";
 import { useEventsByRole } from "@/hooks/events/useEventsByRole";
 import { setEvents } from "@/store/slices/eventsSlice";
+import { CreateEventModal } from "@/components/forms/CreateEvent/CreateEventModal";
 
 const PAGE_SIZE = 4;
 
@@ -22,27 +21,35 @@ interface UpcomingEventsPageProps {
   setIsCreateModalOpen: (isOpen: boolean) => void;
 }
 
+interface EventFormData {
+  eventType: string;
+  clientName: string;
+  phoneNumber: string;
+  pickupDate: string;
+  dropoffDate: string;
+  pickupTime: string;
+  location: string;
+  addStops: string;
+  hoursReserved: number;
+  totalAmount: number;
+  pendingAmount: number;
+  equityDivision: number;
+  imageUrl: string;
+  name: string;
+  slug: string;
+  id: string;
+  passengerCount: number;
+  paymentStatus: string;
+  depositAmount: number;
+  vehicle: string;
+}
+
 export function UpcomingEventsPage({
   setIsCreateModalOpen,
 }: Readonly<UpcomingEventsPageProps>) {
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
-  const [editingEvent, setEditingEvent] = useState<null | {
-    id: string;
-    slug: string;
-    eventType: string;
-    clientName: string;
-    phoneNumber: string;
-    pickupDate: string;
-    location: string;
-    passengerCount: number;
-    hoursReserved: number;
-    equityDivision: number;
-    paymentStatus: string;
-    totalAmount: number;
-    pendingAmount: number;
-    depositAmount: number;
-    vehicle: string;
-  }>(null);
+  const [openEditModal, setOpenEditModal] = useState(false);
+  const [editingEvent, setEditingEvent] = useState<EventFormData>();
 
   const role = useSelector((state: RootState) => state.userRole.role);
   const [page, setPage] = useState(1);
@@ -57,9 +64,6 @@ export function UpcomingEventsPage({
     }
   }, [eventsData]);
 
-  const editMutation = useEditEvent();
-  const queryClient = useQueryClient();
-
   const handleViewDetails = (eventId: string) => {
     setSelectedEventId(eventId);
   };
@@ -68,62 +72,16 @@ export function UpcomingEventsPage({
     setIsCreateModalOpen(true);
   };
 
+  const handleClose = () => {
+    setOpenEditModal(false);
+  };
   const handleEditClick = (eventId: string) => {
     const originalEvent = eventsData?.events.find((e) => e.id === eventId);
+    console.log("originalEvent", originalEvent);
     if (originalEvent) {
-      setEditingEvent({
-        id: originalEvent.id,
-        slug: originalEvent.slug,
-        eventType: originalEvent.eventType,
-        clientName: originalEvent.clientName,
-        phoneNumber: originalEvent.phoneNumber,
-        pickupDate: originalEvent.pickupDate,
-        location: originalEvent.location,
-        passengerCount: originalEvent.passengerCount,
-        hoursReserved: originalEvent.hoursReserved,
-        equityDivision: originalEvent.equityDivision,
-        paymentStatus: originalEvent.paymentStatus,
-        totalAmount: originalEvent.totalAmount,
-        pendingAmount: originalEvent.pendingAmount,
-        depositAmount: originalEvent.depositAmount,
-        vehicle: originalEvent.vehicle,
-      });
+      setEditingEvent(originalEvent);
     }
-  };
-
-  const handleSaveEdit = async () => {
-    if (!editingEvent) return;
-
-    try {
-      await editMutation.mutateAsync({
-        eventId: editingEvent.slug,
-        data: {
-          eventDetails: {
-            eventType: editingEvent.eventType,
-            clientName: editingEvent.clientName,
-            phoneNumber: editingEvent.phoneNumber,
-            pickupDate: editingEvent.pickupDate,
-            location: editingEvent.location,
-            passengerCount: editingEvent.passengerCount,
-            hoursReserved: editingEvent.hoursReserved,
-            equityDivision: editingEvent.equityDivision,
-            paymentStatus: editingEvent.paymentStatus,
-          },
-          vehicleInfo: {
-            vehicle: editingEvent.vehicle,
-          },
-          paymentDetails: {
-            totalAmount: editingEvent.totalAmount,
-            depositAmount: editingEvent.depositAmount,
-            pendingAmount: editingEvent.pendingAmount,
-          },
-        },
-      });
-      setEditingEvent(null);
-      queryClient.invalidateQueries({ queryKey: ["admin-events"] });
-    } catch (error) {
-      console.error("Error updating event:", error);
-    }
+    setOpenEditModal(true);
   };
 
   const mappedAdminEvents =
@@ -370,183 +328,13 @@ export function UpcomingEventsPage({
       )}
 
       {/* Edit Event Modal */}
-      {editingEvent && (
-        <div className="fixed inset-0 bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-            <div className="p-6">
-              <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl font-bold">Edit Event</h2>
-                <button
-                  onClick={() => setEditingEvent(null)}
-                  className="text-gray-500 hover:text-gray-700"
-                >
-                  ✕
-                </button>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Event Type
-                    </label>
-                    <input
-                      type="text"
-                      value={editingEvent.eventType}
-                      onChange={(e) =>
-                        setEditingEvent({
-                          ...editingEvent,
-                          eventType: e.target.value,
-                        })
-                      }
-                      className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Client Name
-                    </label>
-                    <input
-                      type="text"
-                      value={editingEvent.clientName}
-                      onChange={(e) =>
-                        setEditingEvent({
-                          ...editingEvent,
-                          clientName: e.target.value,
-                        })
-                      }
-                      className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Phone Number
-                    </label>
-                    <input
-                      type="text"
-                      value={editingEvent.phoneNumber}
-                      onChange={(e) =>
-                        setEditingEvent({
-                          ...editingEvent,
-                          phoneNumber: e.target.value,
-                        })
-                      }
-                      className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Pickup Date
-                    </label>
-                    <input
-                      type="datetime-local"
-                      value={editingEvent.pickupDate.slice(0, 16)}
-                      onChange={(e) =>
-                        setEditingEvent({
-                          ...editingEvent,
-                          pickupDate: e.target.value,
-                        })
-                      }
-                      className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Location
-                    </label>
-                    <input
-                      type="text"
-                      value={editingEvent.location}
-                      onChange={(e) =>
-                        setEditingEvent({
-                          ...editingEvent,
-                          location: e.target.value,
-                        })
-                      }
-                      className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Passenger Count
-                    </label>
-                    <input
-                      type="number"
-                      value={editingEvent.passengerCount}
-                      onChange={(e) =>
-                        setEditingEvent({
-                          ...editingEvent,
-                          passengerCount: parseInt(e.target.value) || 0,
-                        })
-                      }
-                      className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Vehicle
-                    </label>
-                    <input
-                      type="text"
-                      value={editingEvent.vehicle}
-                      onChange={(e) =>
-                        setEditingEvent({
-                          ...editingEvent,
-                          vehicle: e.target.value,
-                        })
-                      }
-                      className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Status
-                    </label>
-                    <select
-                      value={editingEvent.paymentStatus}
-                      onChange={(e) =>
-                        setEditingEvent({
-                          ...editingEvent,
-                          paymentStatus: e.target.value,
-                        })
-                      }
-                      className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    >
-                      <option value="pending">Pending</option>
-                      <option value="confirmed">Confirmed</option>
-                      <option value="cancelled">Cancelled</option>
-                    </select>
-                  </div>
-                </div>
-              </div>
-
-              <div className="mt-6 pt-4 border-t flex justify-end gap-3">
-                <button
-                  onClick={() => setEditingEvent(null)}
-                  className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleSaveEdit}
-                  disabled={editMutation.isPending}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-md text-sm font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
-                >
-                  {editMutation.isPending ? "Saving..." : "Save Changes"}
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      <CreateEventModal
+        open={openEditModal}
+        onClose={handleClose}
+        isEditMode={true}
+        initialData={editingEvent}
+        eventId={editingEvent?.slug}
+      />
     </div>
   );
 }

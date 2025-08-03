@@ -19,9 +19,9 @@ export function SectionEventDetails() {
         <FormInput
           label="Event Name"
           placeholder="Enter Event Name"
-          error={!!errors.eventName}
-          helperText={errors.eventName?.message as string}
-          {...register("eventName", { required: "Event name is required" })}
+          error={!!errors.name}
+          helperText={errors.name?.message as string}
+          {...register("name", { required: "Event name is required" })}
         />
       </Box>
 

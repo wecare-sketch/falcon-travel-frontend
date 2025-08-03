@@ -25,9 +25,9 @@ export function SectionVehicleInfo() {
           <FormInput
             label="Choose Vehicle"
             placeholder="Vehicle Name"
-            error={!!errors.chooseVehicle}
-            helperText={errors.chooseVehicle?.message as string}
-            {...register("chooseVehicle", {
+            error={!!errors.vehicle}
+            helperText={errors.vehicle?.message as string}
+            {...register("vehicle", {
               required: "Vehicle name is required",
             })}
           />
@@ -38,9 +38,9 @@ export function SectionVehicleInfo() {
             label="Number of Passengers"
             placeholder="Add number"
             type="number"
-            error={!!errors.numberOfPassenger}
-            helperText={errors.numberOfPassenger?.message as string}
-            {...register("numberOfPassenger", {
+            error={!!errors.passengerCount}
+            helperText={errors.passengerCount?.message as string}
+            {...register("passengerCount", {
               required: "Number of passengers is required",
               min: { value: 1, message: "At least one passenger required" },
             })}
