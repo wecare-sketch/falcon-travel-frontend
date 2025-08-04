@@ -44,18 +44,14 @@ export function FeedBackPage() {
   const role = useSelector((state: RootState) => state.userRole.role);
   const eventsState = useSelector((state: RootState) => state.events);
   const events = eventsState.events;
-  const isFeedbackSubmitted = data?.event.feedbacks.length;
   const handleViewDetails = (event: Event) => {
     setSelectedEventSlug(event.slug);
     setSelectedEventId(event.id);
   };
 
   if (role === "user") {
-    if (selectedEventSlug !== null && isFeedbackSubmitted === 0) {
+    if (selectedEventSlug !== null) {
       return <AddFeedback eventId={selectedEventSlug} />;
-    }
-    if (selectedEventSlug !== null && isFeedbackSubmitted !== 0) {
-      return <FeedbackDetailsPage event={data?.event} />;
     }
   } else {
     if (selectedEventSlug !== null) {

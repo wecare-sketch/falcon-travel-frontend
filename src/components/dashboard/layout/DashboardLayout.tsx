@@ -17,6 +17,29 @@ interface DashboardLayoutProps {
   role: "user" | "admin";
 }
 
+interface EventRequest {
+  eventType: string;
+  clientName: string;
+  phoneNumber: string;
+  pickupDate: string;
+  dropoffDate: string;
+  pickupTime: string;
+  location: string;
+  addStops: string;
+  hoursReserved: number;
+  totalAmount: number;
+  pendingAmount: number;
+  equityDivision: number;
+  imageUrl: string;
+  name: string;
+  slug: string;
+  id: string;
+  passengerCount: number;
+  paymentStatus: string;
+  depositAmount: number;
+  vehicle: string;
+}
+
 export function DashboardLayout({ role }: Readonly<DashboardLayoutProps>) {
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const [activeView, setActiveView] = useState(() => {
@@ -25,12 +48,14 @@ export function DashboardLayout({ role }: Readonly<DashboardLayoutProps>) {
     return "Unknown Role";
   });
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editingEvent, setEditingEvent] = useState<EventRequest>();
+
   const dispatch = useDispatch();
 
   useEffect(() => {
     dispatch(setUserRole(role));
   }, [dispatch, role]);
-
 
   const toggleSidebar = () => setIsMobileSidebarOpen((prev) => !prev);
   const closeSidebar = () => setIsMobileSidebarOpen(false);
@@ -42,6 +67,10 @@ export function DashboardLayout({ role }: Readonly<DashboardLayoutProps>) {
   const handleCloseModal = () => {
     setIsCreateModalOpen(false);
   };
+
+  const handleCloseEditModal = () => {
+    setIsEditModalOpen(false);
+  };
   const renderView = () => {
     switch (activeView) {
       case "Upcoming Events":
@@ -49,15 +78,20 @@ export function DashboardLayout({ role }: Readonly<DashboardLayoutProps>) {
           <UpcomingEventsPage setIsCreateModalOpen={setIsCreateModalOpen} />
         );
       case "Dashboard":
-        return <DashboardPage/>
+        return <DashboardPage />;
       case "Music Library":
         return <MusicLibraryPage />;
       case "Media":
         return <MediaGalleryPage />;
       case "Feedback":
-        return <FeedBackPage/>
+        return <FeedBackPage />;
       case "User Requests":
-          return <UserRequestsPage setIsCreateModalOpen={setIsCreateModalOpen}/>
+        return (
+          <UserRequestsPage
+            setIsCreateModalOpen={setIsEditModalOpen}
+            setEditingEvent={setEditingEvent}
+          />
+        );
       default:
         return <div className="p-4">Select a view</div>;
     }
@@ -87,6 +121,15 @@ export function DashboardLayout({ role }: Readonly<DashboardLayoutProps>) {
         open={isCreateModalOpen}
         onClose={handleCloseModal}
         isEditMode={false}
+      />
+
+      {/* Edit Event Modal */}
+      <CreateEventModal
+        open={isEditModalOpen}
+        onClose={handleCloseEditModal}
+        isEditMode={true}
+        initialData={editingEvent}
+        eventId={editingEvent?.slug}
       />
     </div>
   );

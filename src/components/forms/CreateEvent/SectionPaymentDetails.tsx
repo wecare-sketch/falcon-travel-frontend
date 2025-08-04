@@ -62,10 +62,15 @@ export function SectionPaymentDetails() {
             disabled={isUser}
             error={!!errors.equityDivision}
             helperText={errors.equityDivision?.message as string}
-            {...register("equityDivision", {
-              required: "Equity division is required",
-              min: { value: 1, message: "At least 1 person required" },
-            })}
+            {...register(
+              "equityDivision",
+              isUser
+                ? {}
+                : {
+                    required: "Equity division is required",
+                    min: { value: 1, message: "At least 1 person required" },
+                  }
+            )}
           />
         </Box>
       </Box>
