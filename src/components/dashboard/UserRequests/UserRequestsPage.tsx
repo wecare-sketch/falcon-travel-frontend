@@ -271,7 +271,7 @@ export function UserRequestsPage({
     );
 
   if (selectedEventId !== null) {
-    return <EventDetailsPage eventId={selectedEventId} />;
+    return <EventDetailsPage eventId={selectedEventId} isUserRequestPage={true}/>;
   }
 
   return (

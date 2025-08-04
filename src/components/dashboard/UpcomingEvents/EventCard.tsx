@@ -3,8 +3,9 @@
 import Image from "next/image";
 import { Box, Card, CardContent, CardMedia, Typography } from "@mui/material";
 import { CustomButton } from "@/components/shared/CustomButton";
-// import { RootState } from "@/store";
-// import { useSelector } from "react-redux";
+import { Star, StarBorder } from "@mui/icons-material";
+import { RootState } from "@/store";
+import { useSelector } from "react-redux";
 
 interface EventCardProps {
   title: string;
@@ -15,20 +16,51 @@ interface EventCardProps {
   lastReviewDate?: string;
   Label?: string;
   onViewDetails?: () => void;
+  averageRating?: number;
+  createdAt?: string;
 }
 
 export function EventCard({
   title,
   date,
   imageUrl,
-  // rating,
-  // totalReviews,
-  // lastReviewDate,
+  averageRating,
+  createdAt,
   onViewDetails,
   Label,
 }: Readonly<EventCardProps>) {
-  // const role = useSelector((state: RootState) => state.userRole.role);
+  const role = useSelector((state: RootState) => state.userRole.role);
+  const rating = averageRating ?? 0;
 
+  const renderStars = (rating: number) => {
+    const stars = [];
+    const fullStars = Math.floor(rating);
+    const hasHalfStar = rating % 1 !== 0;
+
+    for (let i = 0; i < fullStars; i++) {
+      stars.push(
+        <Star key={`full-${i}`} sx={{ color: "#345794", fontSize: "16px" }} />
+      );
+    }
+
+    if (hasHalfStar) {
+      stars.push(
+        <Star key="half" sx={{ color: "#345794", fontSize: "16px" }} />
+      );
+    }
+
+    const remainingStars = 5 - Math.ceil(rating);
+    for (let i = 0; i < remainingStars; i++) {
+      stars.push(
+        <StarBorder
+          key={`empty-${i}`}
+          sx={{ color: "#E0E0E0", fontSize: "16px" }}
+        />
+      );
+    }
+
+    return stars;
+  };
   return (
     <Card
       sx={{
@@ -82,31 +114,57 @@ export function EventCard({
           {date}
         </Typography>
         {/* Rating Row */}
-        {/* {role==="admin"?
-        (<Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
-          <Typography variant="h3" sx={{ fontWeight: 600, mr: 2, fontSize: "2.5rem" }}>
-            {rating}
-          </Typography>
-          <Box>
-            <Box sx={{ display: "flex", alignItems: "center" }}>
-              <Typography variant="caption" color="text.secondary" sx={{ mr: 1 }}>
-                Based on {totalReviews} reviews
-              </Typography>
-              <Rating value={rating} precision={0.1} readOnly size="small" sx={{
-                '& .MuiRating-iconFilled': {
-                  color: '#345794',
-                }
-              }} />
-            </Box>
-            <Typography variant="caption" color="text.secondary" sx={{ display: "block" }}>
-              Last till: {lastReviewDate}
+        {role === "admin" ? (
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: { xs: "column", sm: "row" },
+              alignItems: { xs: "stretch", sm: "flex-start" },
+              gap: { xs: "10px", sm: "16px" },
+              marginBottom: { xs: "20px", sm: "30px" },
+            }}
+          >
+            <Typography
+              sx={{
+                fontSize: { xs: "32px", sm: "48px" },
+                fontWeight: 700,
+                color: "#333",
+              }}
+            >
+              {rating.toFixed(1)}
             </Typography>
+
+            <Box
+              sx={{
+                display: "flex",
+                flexDirection: "column",
+                paddingTop: "20px",
+              }}
+            >
+              <Box
+                sx={{
+                  display: "flex",
+                  flexDirection: { xs: "column", sm: "row" },
+                  alignItems: { xs: "flex-start", sm: "center" },
+                  gap: "8px",
+                }}
+              >
+                <Typography sx={{ fontSize: "12px", color: "black" }}>
+                  Based on all reviews
+                </Typography>
+                <Box sx={{ display: "flex" }}>{renderStars(rating)}</Box>
+              </Box>
+              {createdAt && Number(createdAt) !== 0 && (
+                <Typography sx={{ fontSize: "12px", color: "black" }}>
+                  Last till: {new Date(createdAt).toLocaleDateString()}
+                </Typography>
+              )}
+            </Box>
           </Box>
-        </Box>)
-        :
-        (<></>)
-        } */}
-        
+        ) : (
+          <></>
+        )}
+
         <CustomButton
           label={Label}
           onClick={onViewDetails}

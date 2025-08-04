@@ -1,6 +1,18 @@
 import { useQuery } from "@tanstack/react-query";
 import axiosInstance from "@/lib/axios";
 
+interface Feedback {
+  id: number;
+  Q1: number;
+  Q2: number;
+  Q3: number;
+  Q4: number;
+  Q5: number;
+  description: string;
+  averageRating: number;
+  createdAt: string;
+}
+
 interface EventType {
   id: string;
   slug: string;
@@ -28,6 +40,7 @@ interface EventType {
   dropoffDate: string;
   pickupTime: string;
   addStops: string;
+  feedbacks: Feedback[];
 }
 
 interface ApiResponse {

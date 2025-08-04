@@ -28,7 +28,7 @@ export interface Member {
 }
 
 interface MembersTableProps {
-  members: Member[]
+  members: Member[] | undefined;
 }
 
 export function MembersTable({ members }: MembersTableProps) {
@@ -52,7 +52,7 @@ export function MembersTable({ members }: MembersTableProps) {
       <Typography variant="h6" fontWeight={500} mb={2} color="#101010">
         Members of Event
       </Typography>
-      {members.map((member) => (
+      {members?.map((member) => (
         <Box
           key={member.id}
           sx={{
@@ -159,7 +159,7 @@ export function MembersTable({ members }: MembersTableProps) {
             </TableRow>
           </TableHead>
           <TableBody>
-            {members.map((member) => (
+            {members?.map((member) => (
               <TableRow
                 key={member.id}
                 sx={{ "&:hover": { backgroundColor: "#F8F9FA" } }}

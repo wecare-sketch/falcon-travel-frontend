@@ -3,81 +3,43 @@
 import { PageHeader } from "../PageHeader";
 import { EventInfoCard } from "./EventInfoCard";
 import { MembersTable } from "./MembersTable";
-import { useGetEventByIdByRole } from "@/hooks/events/useGetEventByIdByRole";
+import { useEventDetailsByPageType } from "@/hooks/events/useEventDetailsByPageType";
 
 interface EventDetailsPageProps {
   onBack?: () => void;
   eventId?: string;
+  isUserRequestPage?: boolean;
 }
 
-type PaymentStatus = "paid" | "pending";
-type UserRole = "host" | "cohost" | "guest";
-
-interface EventUser {
+export interface Member {
   id: string;
-  fullName: string;
-  phoneNumber: string;
-  dateOfBirth: string;
-  email: string;
-  password: string;
-  role: "user";
-  createdAt: string;
-  updatedAt: string;
-  appleSubId: string | null;
-}
-
-interface EventParticipant {
-  id: number;
-  email: string;
-  equityAmount: number;
-  depositedAmount: number;
-  paymentStatus: PaymentStatus;
-  role: UserRole;
-  createdAt: string;
-  updatedAt: string;
-  user: EventUser;
-}
-
-interface Events {
-  id: string;
-  slug: string;
   name: string;
-  imageUrl: string;
-  eventType: string;
-  clientName: string;
   phoneNumber: string;
-  pickupDate: string;
-  location: string;
-  vehicle: string;
-  totalAmount: number;
-  passengerCount: number;
-  pendingAmount: number;
-  depositAmount: number;
-  hoursReserved: number;
-  equityDivision: number;
-  eventStatus: string;
-  paymentStatus: string;
-  createdAt: string;
-  updatedAt: string;
-  expiresAt: string;
-  host: string;
-  cohosts: string[];
-  participants: EventParticipant[];
+  email: string;
+  dueAmount: number;
+  paymentStatus: "Paid" | "Pending" | "Overdue";
 }
 
-interface EventData {
-  event: Events;
-}
-export function EventDetailsPage({ onBack, eventId }: EventDetailsPageProps) {
-  const stringEventId = eventId?.toString() ?? null;
-  const { data: eventData } = useGetEventByIdByRole(stringEventId) as {
-    data: EventData | undefined;
-  };
+export function EventDetailsPage({
+  onBack,
+  eventId,
+  isUserRequestPage,
+}: EventDetailsPageProps) {
+  const { event, isLoading, isError } = useEventDetailsByPageType(
+    eventId,
+    isUserRequestPage ?? false
+  );
 
-  const event = eventData?.event;
+  console.log("event", event);
 
-  if (!eventData) {
-    return <div>Event not found.</div>;
+  if (isLoading) {
+    return <div className="text-center mt-6">Loading event...</div>;
+  }
+
+  if (isError || !event) {
+    return (
+      <div className="text-center mt-6 text-red-500">Failed to load event.</div>
+    );
   }
 
   const handleDownloadInvoice = () => {
@@ -92,19 +54,22 @@ export function EventDetailsPage({ onBack, eventId }: EventDetailsPageProps) {
     console.log("Pay Now");
   };
 
-  const membersData = eventData.event.participants.map((participant) => ({
-    id: participant.id.toString(),
-    name: participant.user?.fullName ?? "Unknown",
-    phoneNumber: participant.user?.phoneNumber ?? "N/A",
-    email: participant.email,
-    dueAmount: participant.equityAmount - participant.depositedAmount,
-    userStatus: participant.role === "host" ? "Host" : "Co-Host",
-    paymentStatus: (participant.paymentStatus === "paid"
-      ? "Paid"
-      : participant.paymentStatus === "pending"
-      ? "Pending"
-      : "Overdue") as "Paid" | "Pending" | "Overdue",
-  }));
+  const membersData: Member[] | undefined =
+    !isUserRequestPage && "participants" in event
+      ? event.participants.map((participant) => ({
+          id: participant.id.toString(),
+          name: participant.user?.fullName ?? "Unknown",
+          phoneNumber: participant.user?.phoneNumber ?? "N/A",
+          email: participant.email,
+          dueAmount: participant.equityAmount - participant.depositedAmount,
+          userStatus: participant.role === "host" ? "Host" : "Co-Host",
+          paymentStatus: (participant.paymentStatus === "paid"
+            ? "Paid"
+            : participant.paymentStatus === "pending"
+            ? "Pending"
+            : "Overdue") as "Paid" | "Pending" | "Overdue",
+        }))
+      : undefined;
 
   return (
     <>
@@ -124,7 +89,9 @@ export function EventDetailsPage({ onBack, eventId }: EventDetailsPageProps) {
         onPayNow={handlePay}
       />
 
-      <MembersTable members={membersData} />
+      {!isUserRequestPage && "participants" in event && (
+        <MembersTable members={membersData} />
+      )}
     </>
   );
 }
