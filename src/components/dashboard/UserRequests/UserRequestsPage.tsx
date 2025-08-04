@@ -6,10 +6,23 @@ import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import DescriptionIcon from "@mui/icons-material/Description";
 import { useIsMobile } from "@/hooks/useIsMobile";
-import { Box, Typography, Chip, IconButton } from "@mui/material";
+import {
+  Box,
+  Typography,
+  Chip,
+  IconButton,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions,
+  Button,
+} from "@mui/material";
 import { Edit, Trash2 } from "lucide-react";
 import { CustomDivider } from "@/components/shared/CustomDivider";
 import { useGetEventRequestsForAdmin } from "@/hooks/events/useGetEventRequestsForAdmin";
+import { useDeleteEventRequest } from "@/hooks/events/useDeleteEventRequest";
+import toast from "react-hot-toast";
 
 interface EventRequest {
   eventType: string;
@@ -38,7 +51,9 @@ const PAGE_SIZE = 4;
 
 interface UserRequestsPage {
   setIsCreateModalOpen: (isOpen: boolean) => void;
-  setEditingEvent: React.Dispatch<React.SetStateAction<EventRequest | undefined>>
+  setEditingEvent: React.Dispatch<
+    React.SetStateAction<EventRequest | undefined>
+  >;
 }
 
 function UserRequestMobileListItem({
@@ -247,6 +262,10 @@ export function UserRequestsPage({
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
   const [page, setPage] = useState(1);
   const isMobile = useIsMobile();
+  const { mutate: deleteRequest } = useDeleteEventRequest();
+
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [eventToDelete, setEventToDelete] = useState<string | null>(null);
   const handleViewDetails = (eventId: string) => {
     setSelectedEventId(eventId);
   };
@@ -254,6 +273,31 @@ export function UserRequestsPage({
   const handleCreateEvent = (event: EventRequest) => {
     setEditingEvent(event);
     setIsCreateModalOpen(true);
+  };
+
+  const handleDeleteClick = (event: EventRequest) => {
+    setEventToDelete(event?.slug);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleCancelDelete = () => {
+    setDeleteDialogOpen(false);
+    setEventToDelete(null);
+  };
+
+  const handleConfirmDelete = () => {
+    if (eventToDelete) {
+      deleteRequest(eventToDelete, {
+        onSuccess: () => {
+          toast.success("Event deleted!");
+          setDeleteDialogOpen(false);
+          setEventToDelete(null);
+        },
+        onError: () => {
+          toast.error("Failed to delete event.");
+        },
+      });
+    }
   };
 
   const { data, isLoading, isError } = useGetEventRequestsForAdmin();
@@ -271,7 +315,9 @@ export function UserRequestsPage({
     );
 
   if (selectedEventId !== null) {
-    return <EventDetailsPage eventId={selectedEventId} isUserRequestPage={true}/>;
+    return (
+      <EventDetailsPage eventId={selectedEventId} isUserRequestPage={true} />
+    );
   }
 
   return (
@@ -288,8 +334,8 @@ export function UserRequestsPage({
               passenger={event.passengerCount || 0}
               date={new Date(event?.createdAt)?.toLocaleDateString()}
               location={event.location}
-              onEdit={()=> handleCreateEvent(event)}
-              onDelete={() => {}}
+              onEdit={() => handleCreateEvent(event)}
+              onDelete={() => handleDeleteClick(event)}
             />
           ))}
           {/* Pagination for mobile */}
@@ -395,7 +441,10 @@ export function UserRequestsPage({
                         className="cursor-pointer mr-2 text-[#C2C9D1]"
                         onClick={() => handleCreateEvent(event)}
                       />
-                      <DeleteIcon className="cursor-pointer text-[#C2C9D1]" />
+                      <DeleteIcon
+                        className="cursor-pointer text-[#C2C9D1]"
+                        onClick={() => handleDeleteClick(event)}
+                      />
                     </td>
                   </tr>
                 ))}
@@ -434,6 +483,29 @@ export function UserRequestsPage({
           </div>
         </div>
       )}
+
+      <Dialog
+        open={deleteDialogOpen}
+        onClose={handleCancelDelete}
+        aria-labelledby="delete-dialog-title"
+        aria-describedby="delete-dialog-description"
+      >
+        <DialogTitle id="delete-dialog-title">Confirm Delete</DialogTitle>
+        <DialogContent>
+          <DialogContentText id="delete-dialog-description">
+            Are you sure you want to delete this request? This action cannot be
+            undone.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCancelDelete} color="primary">
+            Cancel
+          </Button>
+          <Button onClick={handleConfirmDelete} color="error" autoFocus>
+            Confirm
+          </Button>
+        </DialogActions>
+      </Dialog>
     </div>
   );
 }

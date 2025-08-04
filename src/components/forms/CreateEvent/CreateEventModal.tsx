@@ -21,8 +21,8 @@ import { RootState } from "@/store";
 import { useState, useRef, ChangeEvent, useEffect } from "react";
 import { ShareEventModal } from "../ShareEventModal";
 import { toast } from "react-hot-toast";
-import { useUpdateEvent } from "@/hooks/events/useUpdateEvent";
 import { useEventMutationByRole } from "@/hooks/events/useCreateEventMutationByRole";
+import { useUpdateEventByPageType } from "@/hooks/events/useUpdateEventByPageType";
 
 interface EventFormData {
   eventType: string;
@@ -55,6 +55,7 @@ interface CreateEventModalProps {
   isEditMode?: boolean;
   initialData?: EventFormData;
   eventId?: string;
+  isUserRequestPage?: boolean;
 }
 
 export function CreateEventModal({
@@ -63,6 +64,7 @@ export function CreateEventModal({
   initialData,
   isEditMode,
   eventId,
+  isUserRequestPage
 }: Readonly<CreateEventModalProps>) {
   const methods = useForm<EventFormData>({
     defaultValues: initialData ?? {
@@ -93,7 +95,10 @@ export function CreateEventModal({
   const [eventFile, setEventFile] = useState<File | null>(null);
 
   const { mutate: submitEvent, status } = useEventMutationByRole();
-  const { mutate: updateEvent, isPending: isUpdating } = useUpdateEvent();
+  const { mutate: updateEvent, isPending: isUpdating } =
+    useUpdateEventByPageType({
+      isUserRequestPage,
+    });
   const isPending = status === "loading";
 
   useEffect(() => {
