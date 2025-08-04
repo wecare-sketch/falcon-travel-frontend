@@ -20,9 +20,9 @@ import { useSelector } from "react-redux";
 import { RootState } from "@/store";
 import { useState, useRef, ChangeEvent, useEffect } from "react";
 import { ShareEventModal } from "../ShareEventModal";
-import { useAddEvent } from "@/hooks/events/useAddEvent";
 import { toast } from "react-hot-toast";
 import { useUpdateEvent } from "@/hooks/events/useUpdateEvent";
+import { useEventMutationByRole } from "@/hooks/events/useCreateEventMutationByRole";
 
 interface EventFormData {
   eventType: string;
@@ -56,14 +56,6 @@ interface CreateEventModalProps {
   initialData?: EventFormData;
   eventId?: string;
 }
-
-// type CreateEventResponse = {
-//   message: string;
-//   data: {
-//     slug: string;
-//     [key: string]: any;
-//   };
-// };
 
 export function CreateEventModal({
   open,
@@ -100,8 +92,9 @@ export function CreateEventModal({
   const [eventImage, setEventImage] = useState<string | null>(null);
   const [eventFile, setEventFile] = useState<File | null>(null);
 
-  const { mutate: addEvent, isPending } = useAddEvent();
+  const { mutate: submitEvent, status } = useEventMutationByRole();
   const { mutate: updateEvent, isPending: isUpdating } = useUpdateEvent();
+  const isPending = status === "loading";
 
   useEffect(() => {
     if (initialData) {
@@ -183,7 +176,7 @@ export function CreateEventModal({
         }
       );
     } else {
-      addEvent(formData, {
+      submitEvent(formData, {
         onSuccess: (response) => {
           toast.success("Event created!");
           setSlug(response?.data?.slug ?? null);
