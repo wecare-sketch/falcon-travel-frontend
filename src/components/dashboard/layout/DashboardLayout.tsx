@@ -130,6 +130,7 @@ export function DashboardLayout({ role }: Readonly<DashboardLayoutProps>) {
         isEditMode={true}
         initialData={editingEvent}
         eventId={editingEvent?.slug}
+        isUserRequestPage={true}
       />
     </div>
   );
