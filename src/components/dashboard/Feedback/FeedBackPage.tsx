@@ -58,7 +58,7 @@ export function FeedBackPage() {
       return <FeedbackDetailsPage event={data?.event} />;
     }
   } else {
-    if (selectedEventSlug !== null && isFeedbackSubmitted !== 0) {
+    if (selectedEventSlug !== null) {
       return <FeedbackDetailsPage event={data?.event} />;
     }
   }
