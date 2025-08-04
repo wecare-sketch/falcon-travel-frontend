@@ -1,5 +1,5 @@
-import { useDispatch, useSelector } from "react-redux";
-import { useEffect, useState } from "react";
+import { useSelector } from "react-redux";
+import { useState } from "react";
 import { PageHeader } from "../PageHeader";
 import { EventCard } from "./EventCard";
 import { SearchFilters } from "../SearchFilter";
@@ -12,7 +12,6 @@ import DescriptionIcon from "@mui/icons-material/Description";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import { MobileEventListItem } from "../MobileListItem";
 import { useEventsByRole } from "@/hooks/events/useEventsByRole";
-import { setEvents } from "@/store/slices/eventsSlice";
 import { CreateEventModal } from "@/components/forms/CreateEvent/CreateEventModal";
 import { useDeleteEvent } from "@/hooks/events/useDeleteEvent";
 import toast from "react-hot-toast";
@@ -65,17 +64,10 @@ export function UpcomingEventsPage({
   const [page, setPage] = useState(1);
   const isMobile = useIsMobile();
   const { data: eventsData, isLoading, isError } = useEventsByRole();
-  const dispatch = useDispatch();
   const { mutate: deleteEvent } = useDeleteEvent();
 
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [eventToDelete, setEventToDelete] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (eventsData) {
-      dispatch(setEvents(eventsData));
-    }
-  }, [eventsData]);
 
   const handleViewDetails = (eventId: string) => {
     setSelectedEventId(eventId);

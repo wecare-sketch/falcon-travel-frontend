@@ -7,6 +7,19 @@ import { RootState } from "@/store";
 import { useSelector } from "react-redux";
 import { FeedbackDetailsPage } from "./FeedbackDetailsPage";
 import { useGetEventByIdByRole } from "@/hooks/events/useGetEventByIdByRole";
+import { useEventsByRole } from "@/hooks/events/useEventsByRole";
+
+interface Feedback {
+  id: number;
+  Q1: number;
+  Q2: number;
+  Q3: number;
+  Q4: number;
+  Q5: number;
+  description: string;
+  averageRating: number;
+  createdAt: string;
+}
 
 interface Event {
   id: string;
@@ -32,6 +45,7 @@ interface Event {
   expiresAt: string;
   host: string;
   cohosts: string[];
+  feedbacks: Feedback[];
 }
 
 export function FeedBackPage() {
@@ -42,8 +56,10 @@ export function FeedBackPage() {
   const { data } = useGetEventByIdByRole(selectedEventId);
 
   const role = useSelector((state: RootState) => state.userRole.role);
-  const eventsState = useSelector((state: RootState) => state.events);
-  const events = eventsState.events;
+  const { data: eventsData, isLoading, isError } = useEventsByRole();
+
+  const events = eventsData?.events;
+
   const handleViewDetails = (event: Event) => {
     setSelectedEventSlug(event.slug);
     setSelectedEventId(event.id);
@@ -63,16 +79,36 @@ export function FeedBackPage() {
     <>
       <PageHeader title="Add Event FeedBack" />
       <SearchFilters />
+      {/* Loading State */}
+      {isLoading && (
+        <div className="mt-8 text-center text-blue-600 font-semibold">
+          Loading events...
+        </div>
+      )}
+
+      {/* Error State */}
+      {isError && (
+        <div className="mt-8 text-center text-red-500 font-semibold">
+          Failed to load events. Please try again later.
+        </div>
+      )}
+
+      {/* Empty State */}
+      {!isLoading && !isError && events?.length === 0 && (
+        <div className="mt-8 text-center text-gray-500">
+          No events available for feedback.
+        </div>
+      )}
+
       <div className="mt-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {events.map((event) => (
+        {events?.map((event) => (
           <EventCard
             key={event.id}
             title={event.name}
             date={event.pickupDate}
             imageUrl={event.imageUrl}
-            // rating={event.rating}
-            // totalReviews={event.totalReviews}
-            // lastReviewDate={event.lastReviewDate}
+            averageRating={event?.feedbacks?.[0]?.averageRating}
+            createdAt={event?.feedbacks?.[0]?.createdAt}
             onViewDetails={() => handleViewDetails(event)}
             Label={role === "user" ? "Add Your Feedback" : "View Details"}
           />
