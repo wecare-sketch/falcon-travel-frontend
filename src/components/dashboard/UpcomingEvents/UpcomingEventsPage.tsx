@@ -14,6 +14,16 @@ import { MobileEventListItem } from "../MobileListItem";
 import { useEventsByRole } from "@/hooks/events/useEventsByRole";
 import { setEvents } from "@/store/slices/eventsSlice";
 import { CreateEventModal } from "@/components/forms/CreateEvent/CreateEventModal";
+import { useDeleteEvent } from "@/hooks/events/useDeleteEvent";
+import toast from "react-hot-toast";
+import {
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+} from "@mui/material";
 
 const PAGE_SIZE = 4;
 
@@ -55,8 +65,11 @@ export function UpcomingEventsPage({
   const [page, setPage] = useState(1);
   const isMobile = useIsMobile();
   const { data: eventsData, isLoading, isError } = useEventsByRole();
-
   const dispatch = useDispatch();
+  const { mutate: deleteEvent } = useDeleteEvent();
+
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [eventToDelete, setEventToDelete] = useState<string | null>(null);
 
   useEffect(() => {
     if (eventsData) {
@@ -77,11 +90,35 @@ export function UpcomingEventsPage({
   };
   const handleEditClick = (eventId: string) => {
     const originalEvent = eventsData?.events.find((e) => e.id === eventId);
-    console.log("originalEvent", originalEvent);
     if (originalEvent) {
       setEditingEvent(originalEvent);
     }
     setOpenEditModal(true);
+  };
+
+  const handleDeleteClick = (slug: string) => {
+    setEventToDelete(slug);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleCancelDelete = () => {
+    setDeleteDialogOpen(false);
+    setEventToDelete(null);
+  };
+
+  const handleConfirmDelete = () => {
+    if (eventToDelete) {
+      deleteEvent(eventToDelete, {
+        onSuccess: () => {
+          toast.success("Event deleted!");
+          setDeleteDialogOpen(false);
+          setEventToDelete(null);
+        },
+        onError: () => {
+          toast.error("Failed to delete event.");
+        },
+      });
+    }
   };
 
   const mappedAdminEvents =
@@ -97,6 +134,7 @@ export function UpcomingEventsPage({
       paymentStatus: event.paymentStatus,
       remainingAmount: `${event.pendingAmount}$`,
       clientName: event.clientName,
+      slug: event.slug,
     })) || [];
 
   const paginatedEvents = mappedAdminEvents.slice(
@@ -146,7 +184,7 @@ export function UpcomingEventsPage({
                   event.paymentStatus as "Paid" | "Pending" | "Overdue"
                 }
                 onEdit={() => handleEditClick(event.id)}
-                onDelete={() => {}}
+                onDelete={() => handleDeleteClick(event.slug)}
               />
             ))}
             <div className="flex justify-end mt-4 gap-2">
@@ -273,7 +311,10 @@ export function UpcomingEventsPage({
                           className="cursor-pointer mr-2 text-[#C2C9D1]"
                           onClick={() => handleEditClick(event.id)}
                         />
-                        <DeleteIcon className="cursor-pointer text-[#C2C9D1]" />
+                        <DeleteIcon
+                          className="cursor-pointer text-[#C2C9D1]"
+                          onClick={() => handleDeleteClick(event.slug)}
+                        />
                       </td>
                     </tr>
                   ))}
@@ -335,6 +376,29 @@ export function UpcomingEventsPage({
         initialData={editingEvent}
         eventId={editingEvent?.slug}
       />
+
+      <Dialog
+        open={deleteDialogOpen}
+        onClose={handleCancelDelete}
+        aria-labelledby="delete-dialog-title"
+        aria-describedby="delete-dialog-description"
+      >
+        <DialogTitle id="delete-dialog-title">Confirm Delete</DialogTitle>
+        <DialogContent>
+          <DialogContentText id="delete-dialog-description">
+            Are you sure you want to delete this event? This action cannot be
+            undone.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCancelDelete} color="primary">
+            Cancel
+          </Button>
+          <Button onClick={handleConfirmDelete} color="error" autoFocus>
+            Confirm
+          </Button>
+        </DialogActions>
+      </Dialog>
     </div>
   );
 }

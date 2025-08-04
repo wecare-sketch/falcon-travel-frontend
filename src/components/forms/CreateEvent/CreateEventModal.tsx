@@ -72,7 +72,6 @@ export function CreateEventModal({
   isEditMode,
   eventId,
 }: Readonly<CreateEventModalProps>) {
-  console.log("intial data", initialData);
   const methods = useForm<EventFormData>({
     defaultValues: initialData ?? {
       eventType: "",
