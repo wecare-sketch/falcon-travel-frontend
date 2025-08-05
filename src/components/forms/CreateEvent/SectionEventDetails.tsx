@@ -14,7 +14,7 @@ export function SectionEventDetails() {
   } = useFormContext();
 
   return (
-    <FormSection title="Event Details=" >
+    <FormSection title="Event Details" >
       <Box sx={{ marginBottom: "16px" }}>
         <FormInput
           label="Event Name"
