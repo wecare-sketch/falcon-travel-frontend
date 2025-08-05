@@ -1,9 +1,9 @@
-"use client"
+"use client";
 
-import { PageHeader } from "../PageHeader"
-import { SearchFilters } from "../SearchFilter"
-import { Box } from "@mui/material"
-import { MusicEventCard } from "./MusicEventCard"
+import { PageHeader } from "../PageHeader";
+import { SearchFilters } from "../SearchFilter";
+import { Box } from "@mui/material";
+import { MusicEventCard } from "./MusicEventCard";
 
 const musicEvents = [
   {
@@ -57,32 +57,41 @@ const musicEvents = [
       { id: "15", title: "Midnight Dreams", artist: "Luna" },
     ],
   },
-]
-
-export function MusicLibraryPage() {
+];
+interface MusicLibraryPageProps {
+  setActiveView: (view: string) => void;
+  setActiveSubItem: (subItem: string | null) => void;
+}
+export function MusicLibraryPage({
+  setActiveView,
+  setActiveSubItem,
+}: MusicLibraryPageProps) {
   const handleSearch = (query: string, host: string, eventType: string) => {
-    console.log("Music search:", { query, host, eventType })
-  }
+    console.log("Music search:", { query, host, eventType });
+  };
 
   const handleAddToMusicList = (eventId: number) => {
-    console.log("Add to music list for event:", eventId)
-  }
+    console.log("Add to music list for event:", eventId);
+  };
 
   const handleAddToPersonalMessages = (eventId: number) => {
-    console.log("Add to personal messages for event:", eventId)
-  }
+    console.log("Add to personal messages for event:", eventId);
+  };
 
   const handlePlaySong = (songId: string, listType: "music" | "personal") => {
-    console.log("Play song:", songId, "from", listType)
-  }
+    console.log("Play song:", songId, "from", listType);
+  };
 
   const handleLikeSong = (songId: string, listType: "music" | "personal") => {
-    console.log("Like song:", songId, "from", listType)
-  }
-
+    console.log("Like song:", songId, "from", listType);
+  };
+  const handleBack = () => {
+    setActiveView("Dashboard");
+    setActiveSubItem(null);
+  };
   return (
     <div>
-      <PageHeader title="Add Music into Specific event" />
+      <PageHeader onBack={handleBack} title="Add Music into Specific event" />
       <SearchFilters onSearch={handleSearch} />
       <Box
         sx={{
@@ -108,12 +117,14 @@ export function MusicLibraryPage() {
             musicList={event.musicList}
             personalMessages={event.personalMessages}
             onAddToMusicList={() => handleAddToMusicList(event.id)}
-            onAddToPersonalMessages={() => handleAddToPersonalMessages(event.id)}
+            onAddToPersonalMessages={() =>
+              handleAddToPersonalMessages(event.id)
+            }
             onPlaySong={handlePlaySong}
             onLikeSong={handleLikeSong}
           />
         ))}
       </Box>
     </div>
-  )
+  );
 }

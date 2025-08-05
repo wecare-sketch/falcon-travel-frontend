@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type FC } from "react";
+import { FC } from "react";
 import { Drawer, Box, IconButton } from "@mui/material";
 import { X } from "lucide-react";
 import { SidebarNavItem } from "./SidebarNavItem";
@@ -11,6 +11,8 @@ interface SidebarProps {
   onClose: () => void;
   onNavigate: (view: string) => void;
   role?: "admin" | "user";
+  setActiveSubItem: (subItem: string | null) => void;
+  activeSubItem: string | null;
 }
 
 interface SubNavItem {
@@ -72,13 +74,20 @@ const NAV_ITEMS: {
       view: "Feedback",
     },
   ],
-  admin_end_items:[
+  admin_end_items: [
     {
       label: "User Requests",
-      icon: (<Image src="/images/feedback.png" alt="User Requests" width={20} height={20} />),
+      icon: (
+        <Image
+          src="/images/feedback.png"
+          alt="User Requests"
+          width={20}
+          height={20}
+        />
+      ),
       view: "User Requests",
     },
-  ]
+  ],
 };
 
 export const Sidebar: FC<Readonly<SidebarProps>> = ({
@@ -86,9 +95,9 @@ export const Sidebar: FC<Readonly<SidebarProps>> = ({
   onClose,
   onNavigate,
   role = "user",
+  setActiveSubItem,
+  activeSubItem,
 }) => {
-  const [activeSubItem, setActiveSubItem] = useState<string | null>(null);
-
   const handleNavClick = (view: string, subItems?: SubNavItem[]) => {
     if (subItems?.length) {
       const firstSub = subItems[0];
@@ -112,7 +121,7 @@ export const Sidebar: FC<Readonly<SidebarProps>> = ({
     const items = [
       ...(role === "admin" ? NAV_ITEMS.admin : []),
       ...NAV_ITEMS.common,
-      ...(role === "admin" ? NAV_ITEMS.admin_end_items : [])
+      ...(role === "admin" ? NAV_ITEMS.admin_end_items : []),
     ];
 
     return items.map(({ label, icon, view, subItems }) => (

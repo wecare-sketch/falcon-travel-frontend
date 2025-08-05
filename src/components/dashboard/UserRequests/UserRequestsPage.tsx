@@ -54,6 +54,7 @@ interface UserRequestsPage {
   setEditingEvent: React.Dispatch<
     React.SetStateAction<EventRequest | undefined>
   >;
+  setActiveView: (view: string) => void;
 }
 
 function UserRequestMobileListItem({
@@ -256,6 +257,7 @@ function UserRequestMobileListItem({
 }
 
 export function UserRequestsPage({
+  setActiveView,
   setIsCreateModalOpen,
   setEditingEvent,
 }: Readonly<UserRequestsPage>) {
@@ -266,6 +268,14 @@ export function UserRequestsPage({
 
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [eventToDelete, setEventToDelete] = useState<string | null>(null);
+
+  const { data, isLoading, isError, refetch } = useGetEventRequestsForAdmin();
+  const eventRequests = data?.data?.requests ?? [];
+  const totalPages = Math.ceil((data?.data?.total ?? 0) / PAGE_SIZE);
+  const paginatedEvents = eventRequests.slice(
+    (page - 1) * PAGE_SIZE,
+    page * PAGE_SIZE
+  );
   const handleViewDetails = (eventId: string) => {
     setSelectedEventId(eventId);
   };
@@ -292,6 +302,7 @@ export function UserRequestsPage({
           toast.success("Event deleted!");
           setDeleteDialogOpen(false);
           setEventToDelete(null);
+          refetch();
         },
         onError: () => {
           toast.error("Failed to delete event.");
@@ -300,14 +311,10 @@ export function UserRequestsPage({
     }
   };
 
-  const { data, isLoading, isError } = useGetEventRequestsForAdmin();
-  const eventRequests = data?.data?.requests ?? [];
-  const totalPages = Math.ceil((data?.data?.total ?? 0) / PAGE_SIZE);
-  const paginatedEvents = eventRequests.slice(
-    (page - 1) * PAGE_SIZE,
-    page * PAGE_SIZE
-  );
-
+  const onBackhandler = () => {
+    setSelectedEventId(null);
+    setActiveView("User Requests");
+  };
   if (isLoading) return <p className="text-center mt-8">Loading requests...</p>;
   if (isError)
     return (
@@ -316,13 +323,20 @@ export function UserRequestsPage({
 
   if (selectedEventId !== null) {
     return (
-      <EventDetailsPage eventId={selectedEventId} isUserRequestPage={true} />
+      <EventDetailsPage
+        eventId={selectedEventId}
+        isUserRequestPage={true}
+        onBack={onBackhandler}
+      />
     );
   }
 
   return (
     <div>
-      <PageHeader title="List of Events" />
+      <PageHeader
+        onBack={() => setActiveView("Dashboard")}
+        title="List of Events"
+      />
       <SearchFilters />
       {isMobile ? (
         <div>

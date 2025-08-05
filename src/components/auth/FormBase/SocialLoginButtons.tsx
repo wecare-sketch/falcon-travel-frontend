@@ -52,37 +52,6 @@ const SocialLoginButtons = () => {
   const inviteToken = (params?.inviteToken as string) || "";
   const [isLoading, setIsLoading] = useState(false);
   const formType = useSelector((state: RootState) => state.formType.type);
-  useEffect(() => {
-    const script = document.createElement("script");
-    script.src = "https://accounts.google.com/gsi/client";
-    script.async = true;
-    script.defer = true;
-    document.body.appendChild(script);
-
-    script.onload = () => {
-      if (window.google) {
-        window.google.accounts.id.initialize({
-          client_id: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID!,
-          callback: handleCredentialResponse,
-        });
-
-        const element = document.getElementById("google-signin-button");
-        if (element) {
-          window.google.accounts.id.renderButton(element, {
-            theme: "outline",
-            size: "large",
-            width: "100%",
-            shape: "rectangular",
-            text: formType === "sign-up" ? "signup_with" : "signin_with",
-          });
-        }
-      }
-    };
-
-    return () => {
-      document.body.removeChild(script);
-    };
-  }, []);
 
   const handleCredentialResponse = async (response: { credential: string }) => {
     setIsLoading(true);
@@ -123,6 +92,37 @@ const SocialLoginButtons = () => {
       setIsLoading(false);
     }
   };
+  useEffect(() => {
+    const script = document.createElement("script");
+    script.src = "https://accounts.google.com/gsi/client";
+    script.async = true;
+    script.defer = true;
+    document.body.appendChild(script);
+
+    script.onload = () => {
+      if (window.google) {
+        window.google.accounts.id.initialize({
+          client_id: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID!,
+          callback: handleCredentialResponse,
+        });
+
+        const element = document.getElementById("google-signin-button");
+        if (element) {
+          window.google.accounts.id.renderButton(element, {
+            theme: "outline",
+            size: "large",
+            width: "100%",
+            shape: "rectangular",
+            text: formType === "sign-up" ? "signup_with" : "signin_with",
+          });
+        }
+      }
+    };
+
+    return () => {
+      document.body.removeChild(script);
+    };
+  }, []);
 
   return (
     <div className="flex w-full gap-4 mb-6">

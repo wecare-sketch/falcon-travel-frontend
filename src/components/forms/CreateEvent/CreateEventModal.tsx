@@ -56,6 +56,8 @@ interface CreateEventModalProps {
   initialData?: EventFormData;
   eventId?: string;
   isUserRequestPage?: boolean;
+  refetch?: () => void;
+  setActiveView: (view: string) => void;
 }
 
 export function CreateEventModal({
@@ -64,7 +66,8 @@ export function CreateEventModal({
   initialData,
   isEditMode,
   eventId,
-  isUserRequestPage
+  isUserRequestPage,
+  refetch,
 }: Readonly<CreateEventModalProps>) {
   const methods = useForm<EventFormData>({
     defaultValues: initialData ?? {
@@ -176,6 +179,7 @@ export function CreateEventModal({
             toast.success("Event updated!");
             reset();
             onClose();
+            refetch?.();
           },
           onError: () => toast.error("Failed to update event"),
         }
@@ -221,7 +225,7 @@ export function CreateEventModal({
       reader.readAsDataURL(file);
     }
   };
-
+ 
   return (
     <>
       <FormProvider {...methods}>
@@ -313,7 +317,7 @@ export function CreateEventModal({
               </Avatar>
             </Box>
 
-            <SectionEventDetails />
+            <SectionEventDetails/>
             <SectionStops onAddStop={handleAddStop} />
             <SectionVehicleInfo />
             <SectionPaymentDetails />

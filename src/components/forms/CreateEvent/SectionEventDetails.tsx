@@ -5,6 +5,7 @@ import { Box } from "@mui/material";
 import { DatePicker, TimePicker } from "@mui/x-date-pickers";
 import dayjs from "dayjs";
 
+
 export function SectionEventDetails() {
   const {
     register,
@@ -13,8 +14,7 @@ export function SectionEventDetails() {
   } = useFormContext();
 
   return (
-    <FormSection title="Event Details">
-      {/* Event Name (Full Width) */}
+    <FormSection title="Event Details=" >
       <Box sx={{ marginBottom: "16px" }}>
         <FormInput
           label="Event Name"

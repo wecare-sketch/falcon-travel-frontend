@@ -71,7 +71,6 @@ interface Event {
   transactions: unknown[];
 }
 
-
 interface FeedbackDetailsPageProps {
   onBack?: () => void;
   event: Event | undefined;
@@ -85,14 +84,17 @@ export function FeedbackDetailsPage({
 
   if (!event || !feedback) {
     return (
-      <Box sx={{ padding: 4, textAlign: "center", color: "#666" }}>
-        <Typography variant="h6" sx={{ fontWeight: 500, fontSize: "18px" }}>
-          This event does not have any feedback yet.
-        </Typography>
-        <Typography variant="body2" sx={{ marginTop: 1, fontSize: "14px" }}>
-          Once feedback is submitted, it will appear here.
-        </Typography>
-      </Box>
+      <>
+        <PageHeader onBack={onBack} title="Client FeedBack" />
+        <Box sx={{ padding: 4, textAlign: "center", color: "#666" }}>
+          <Typography variant="h6" sx={{ fontWeight: 500, fontSize: "18px" }}>
+            This event does not have any feedback yet.
+          </Typography>
+          <Typography variant="body2" sx={{ marginTop: 1, fontSize: "14px" }}>
+            Once feedback is submitted, it will appear here.
+          </Typography>
+        </Box>
+      </>
     );
   }
 

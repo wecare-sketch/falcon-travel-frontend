@@ -1,10 +1,9 @@
-"use client"
-import { useState } from "react"
-import { PageHeader } from "../PageHeader"
-import { MediaEventCard } from "./MediaEventCard"
-import { Box } from "@mui/material"
-import { MediaUploadPage } from "./AddMedia"
-
+"use client";
+import { useState } from "react";
+import { PageHeader } from "../PageHeader";
+import { MediaEventCard } from "./MediaEventCard";
+import { Box } from "@mui/material";
+import { MediaUploadPage } from "./AddMedia";
 
 const mediaEvents = [
   {
@@ -34,27 +33,37 @@ const mediaEvents = [
     videoCount: 4,
     badgeCount: 18,
   },
-]
-
-export function MediaGalleryPage() {
+];
+interface MediaGalleryPageProps {
+  setActiveSubItem: (subItem: string | null) => void; 
+  setActiveView: (view: string) => void; 
+}
+export function MediaGalleryPage({
+  setActiveSubItem,
+  setActiveView,
+}: MediaGalleryPageProps) {
   const [selectedEventId, setSelectedEventId] = useState<number | null>(null);
 
   const handleFileUpload = (eventId: number, files: FileList) => {
-    console.log(`Uploading ${files.length} files for event ${eventId}`)
+    console.log(`Uploading ${files.length} files for event ${eventId}`);
     // Handle file upload logic here
-  }
+  };
 
   const handleAddMedia = (eventId: number) => {
-    setSelectedEventId(eventId)
-    console.log("Add media for event:", eventId)
+    setSelectedEventId(eventId);
+    console.log("Add media for event:", eventId);
+  };
+  if (selectedEventId !== null) {
+    return <MediaUploadPage />;
   }
-  if(selectedEventId!== null)
-    {
-      return <MediaUploadPage />
-    }
+  const handleBack = () => {
+    setActiveView("Dashboard");
+    setActiveSubItem(null); 
+  };
+
   return (
     <>
-      <PageHeader title="Media Gallery" />
+      <PageHeader onBack={handleBack} title="Media Gallery" />
       <Box
         sx={{
           marginTop: "24px",
@@ -83,5 +92,5 @@ export function MediaGalleryPage() {
         ))}
       </Box>
     </>
-  )
+  );
 }
