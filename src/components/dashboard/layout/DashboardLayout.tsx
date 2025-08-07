@@ -59,7 +59,7 @@ export function DashboardLayout({ role }: Readonly<DashboardLayoutProps>) {
   useEffect(() => {
     dispatch(setUserRole(role));
   }, [dispatch, role]);
-
+  
   const toggleSidebar = () => setIsMobileSidebarOpen((prev) => !prev);
   const closeSidebar = () => setIsMobileSidebarOpen(false);
   const handleSidebarNavigation = (view: string) => {

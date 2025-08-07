@@ -162,7 +162,7 @@ function UserRequestMobileListItem({
             <Typography
               sx={{ color: "#787878", fontSize: "16px", fontWeight: 400 }}
             >
-              $ {location}
+              ${location}
             </Typography>
           </Box>
         </Box>

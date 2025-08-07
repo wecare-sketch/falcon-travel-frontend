@@ -1,40 +1,82 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import { Card, CardContent, Typography, Box, Button } from "@mui/material";
 import { Video } from "lucide-react";
-import { MediaUploadArea } from "./MediaUploadArea";
 import { RootState } from "@/store";
 import { useSelector } from "react-redux";
-
+import axiosInstance from "@/lib/axios";
 
 interface MediaEventCardProps {
-  title: string;
-  date: string;
+  eventId: string;
+  name: string;
+  pickupDate: string | number;
   imageUrl: string;
-  photoCount: number;
-  videoCount: number;
   badgeCount?: number;
-  onFileUpload?: (files: FileList) => void;
   onAddMedia?: () => void;
 }
-
+interface EventMediaResponse {
+  data: {
+    event: {
+      media: [];
+    };
+    media: [];
+  };
+}
 export function MediaEventCard({
-  title,
-  date,
+  eventId,
+  name,
+  pickupDate,
   imageUrl,
-  photoCount,
-  videoCount,
   badgeCount,
-  onFileUpload,
   onAddMedia,
 }: MediaEventCardProps) {
-  const handleFileUpload = (files: FileList) => {
-    console.log(`Uploading ${files.length} files for ${title}`);
-    onFileUpload?.(files);
-  };
   const role = useSelector((state: RootState) => state.userRole.role);
+  interface MediaItem {
+    url: string;
+  }
+  const [UserMedia, setUserMedia] = useState<MediaItem[]>([]);
+  const [photoCount, setPhotoCount] = useState(0);
+  const [videoCount, setVideoCount] = useState(0);
+  const isPhoto = (url: string): boolean => {
+    return /\.(jpg|jpeg|png|gif|bmp)$/i.test(url);
+  };
 
+  const isVideo = (url: string): boolean => {
+    return /\.(mp4|mov|avi|webm)$/i.test(url);
+  };
+
+  const fetchUservents = async () => {
+    try {
+      const endpoint =
+        role === "user"
+          ? `/user/event/media/${eventId}`
+          : `/admin/event/media/${eventId}`;
+      const response = await axiosInstance.get<EventMediaResponse>(endpoint);
+      let media;
+      if (role === "user") {
+        media = response?.data?.data?.event?.media;
+      } else if (role === "admin") {
+        media = response?.data?.data?.media;
+      }
+      setUserMedia(media || []);
+    } catch (error) {
+      console.error("Error fetching event media:", error);
+    }
+  };
+
+  useEffect(() => {
+    const photos = UserMedia.filter((item) => isPhoto(item.url)).length;
+    const videos = UserMedia.filter((item) => isVideo(item.url)).length;
+
+    setPhotoCount(photos);
+    setVideoCount(videos);
+  }, [UserMedia]);
+
+  useEffect(() => {
+    fetchUservents();
+  }, [eventId, role]);
   return (
     <Card
       sx={{
@@ -46,14 +88,15 @@ export function MediaEventCard({
         overflow: "visible",
       }}
     >
-      {/* Event Image with Badge */}
-      <Box sx={{ position: "relative", height: 200, margin: 2 }}>
+      <Box sx={{ position: "relative", height: 250, margin: 2 }}>
         <Image
           src={imageUrl || "/placeholder.svg"}
-          alt={title}
+          alt="img"
           fill
           style={{ objectFit: "cover", borderRadius: "8px" }}
+          sizes="(max-width: 600px) 100vw, (max-width: 1024px) 50vw, 33vw"
         />
+
         {badgeCount && (
           <Box
             sx={{
@@ -76,7 +119,6 @@ export function MediaEventCard({
       </Box>
 
       <CardContent sx={{ padding: "16px" }}>
-        {/* Event Info */}
         <Typography
           variant="h6"
           sx={{
@@ -86,7 +128,7 @@ export function MediaEventCard({
             color: "#333",
           }}
         >
-          {title}
+          {name}
         </Typography>
 
         <Typography
@@ -97,13 +139,12 @@ export function MediaEventCard({
             marginBottom: "16px",
           }}
         >
-          {date}
+          <strong>Pickup date:</strong>{" "}
+          {typeof pickupDate === "string"
+            ? pickupDate.split("-").reverse().join("-")
+            : pickupDate}
         </Typography>
 
-        {/* Upload Area */}
-        {role ==="user"?(<MediaUploadArea onFileUpload={handleFileUpload} />):(<></>)}
-
-        {/* Media Stats */}
         <Box
           sx={{
             display: "flex",
@@ -112,7 +153,7 @@ export function MediaEventCard({
             justifyContent: "space-between",
             rowGap: "12px",
             columnGap: "16px",
-            marginBottom: "16px",
+            marginBottom: "0px",
           }}
         >
           <Box
@@ -176,7 +217,7 @@ export function MediaEventCard({
               },
             }}
           >
-            {role==="user"?"Add Media":"Download"}
+            {role === "user" ? "Add Media" : "Download"}
           </Button>
         </Box>
       </CardContent>

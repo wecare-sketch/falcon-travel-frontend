@@ -56,6 +56,7 @@ export function MusicEventCard({
           alt={title}
           fill
           style={{ objectFit: "cover", borderRadius: "8px" }}
+          sizes="(max-width: 600px) 100vw, (max-width: 1024px) 50vw, 33vw"
         />
       </Box>
 
@@ -120,7 +121,9 @@ export function MusicEventCard({
               fontWeight: "bold",
             }}
           >
-            <HeadphonesIcon sx={{ fontSize: 15,color:"black",backgroundColor:"white" }} />
+            <HeadphonesIcon
+              sx={{ fontSize: 15, color: "black", backgroundColor: "white" }}
+            />
           </Box>
           {trackCount} tracks
         </Typography>
