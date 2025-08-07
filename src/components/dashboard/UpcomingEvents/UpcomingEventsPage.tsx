@@ -23,6 +23,8 @@ import {
   DialogContentText,
   DialogTitle,
 } from "@mui/material";
+import Image from "next/image";
+
 
 const PAGE_SIZE = 4;
 
@@ -201,23 +203,26 @@ export function UpcomingEventsPage({
         isMobile ? (
           <div>
             {paginatedEvents.map((event: MappedEvent) => (
-              <MobileEventListItem
-                key={event.id}
-                eventName={event.title}
-                clientName={event.clientName}
-                passenger={parseInt(event.passenger, 10) || 0}
-                date={event.date}
-                remainingAmount={
-                  parseInt(event.remainingAmount.replace(/\$/g, ""), 10) || 0
-                }
-                paymentStatus={
-                  event.paymentStatus as "Paid" | "Pending" | "Overdue"
-                }
-                onEdit={() => handleEditClick(event.id)}
-                onDelete={() => handleDeleteClick(event.slug)}
-              />
+              <>
+                <MobileEventListItem
+                  key={event.id}
+                  eventName={event.name}
+                  clientName={event.clientName}
+                  passenger={parseInt(event.passenger, 10) || 0}
+                  date={event.date}
+                  remainingAmount={
+                    parseInt(event.remainingAmount.replace(/\$/g, ""), 10) || 0
+                  }
+                  paymentStatus={
+                    event.paymentStatus as "Paid" | "Pending" | "Overdue"
+                  }
+                  onEdit={() => handleEditClick(event.id)}
+                  onDelete={() => handleDeleteClick(event.slug)}
+                />
+              </>
             ))}
-            <div className="flex justify-end mt-4 gap-2">
+
+            <div className="flex justify-start mt-4 gap-2">
               <button
                 onClick={() => setPage((p) => Math.max(1, p - 1))}
                 disabled={page === 1}
@@ -245,6 +250,21 @@ export function UpcomingEventsPage({
               >
                 {">"}
               </button>
+            </div>
+            <div className="fixed bottom-4 right-7" onClick={handleCreateEvent}>
+              <Image
+                src="/images/Ellipsee.svg"
+                alt="Events"
+                width={80}
+                height={80}
+              />
+              <Image
+              className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2"
+                src="/images/plus.png"
+                alt="Events"
+                width={26}
+                height={26}
+              />
             </div>
           </div>
         ) : (

@@ -14,7 +14,7 @@ export function SectionEventDetails() {
   } = useFormContext();
 
   return (
-    <FormSection title="Event Details" >
+    <FormSection title="Event Details">
       <Box sx={{ marginBottom: "16px" }}>
         <FormInput
           label="Event Name"
@@ -132,7 +132,14 @@ export function SectionEventDetails() {
         </Box>
 
         {/* Pickup Time */}
-        <Box sx={{ flex: { xs: "1 1 100%", md: "1 1 calc(25% - 12px)" } }}>
+        <Box
+          sx={{
+            flex: { xs: "1 1 100%", md: "1 1 calc(25% - 12px)" }, 
+            display: "flex",
+            flexDirection: "column",
+            gap: 2, 
+          }}
+        >
           <Controller
             name="pickupTime"
             control={control}
@@ -142,9 +149,11 @@ export function SectionEventDetails() {
                 onChange={(time) => field.onChange(time?.toISOString())}
                 slotProps={{
                   textField: {
-                    fullWidth: true,
+                    fullWidth: true, 
                     label: "Pickup Time",
                     placeholder: "Enter Time",
+                    sx: {
+                    },
                   },
                 }}
               />

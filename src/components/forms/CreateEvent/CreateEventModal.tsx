@@ -189,6 +189,7 @@ export function CreateEventModal({
         onSuccess: (response) => {
           toast.success("Event created!");
           setSlug(response?.data?.slug ?? null);
+          setEventImage(null);
           reset();
           if (role === "admin") {
             onClose();
