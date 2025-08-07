@@ -1,17 +1,13 @@
 "use client";
 
 import React, { useState } from "react";
-import {
-  Box,
-  Typography,
-  TextField
-} from "@mui/material";
+import { Box, Typography, TextField } from "@mui/material";
 import {
   SentimentVeryDissatisfied as VeryDissatisfied,
   SentimentDissatisfied as Dissatisfied,
   SentimentNeutral as Neutral,
   SentimentSatisfied as Satisfied,
-  SentimentVerySatisfied as VerySatisfied
+  SentimentVerySatisfied as VerySatisfied,
 } from "@mui/icons-material";
 
 import { PageHeader } from "../PageHeader";
@@ -24,23 +20,41 @@ const feedbackQuestions = [
   "long established fact that a reader.",
   "long established fact that a reader will be distracted by the readable content of a page when looking at its layout.",
   "long established fact that a reader will be distracted by the readable",
-  "long established fact that a reader will be distracted"
+  "long established fact that a reader will be distracted",
 ];
 
 const emojiIcons = [
-  <VeryDissatisfied key="very-dissatisfied" fontSize="large" sx={{ color: "black" }} />,
+  <VeryDissatisfied
+    key="very-dissatisfied"
+    fontSize="large"
+    sx={{ color: "black" }}
+  />,
   <Dissatisfied key="dissatisfied" fontSize="large" sx={{ color: "black" }} />,
   <Neutral key="neutral" fontSize="large" sx={{ color: "black" }} />,
   <Satisfied key="satisfied" fontSize="large" sx={{ color: "black" }} />,
-  <VerySatisfied key="very-satisfied" fontSize="large" sx={{ color: "black" }} />
+  <VerySatisfied
+    key="very-satisfied"
+    fontSize="large"
+    sx={{ color: "black" }}
+  />,
 ];
 
 interface AddFeedbackProps {
   eventId: string;
+  setActiveView: (view: string) => void;
+  setSelectedEventId: (id: string) => void;
+  setSelectedEventSlug: (slug: string | null) => void;
 }
 
-export default function AddFeedback({ eventId }: AddFeedbackProps) {
-  const [ratings, setRatings] = useState<number[]>(Array(feedbackQuestions.length).fill(0));
+export default function AddFeedback({
+  eventId,
+  setActiveView,
+  setSelectedEventId,
+  setSelectedEventSlug,
+}: AddFeedbackProps) {
+  const [ratings, setRatings] = useState<number[]>(
+    Array(feedbackQuestions.length).fill(0)
+  );
   const [description, setDescription] = useState("");
   const [open, setOpen] = useState(false);
 
@@ -63,7 +77,7 @@ export default function AddFeedback({ eventId }: AddFeedbackProps) {
       Q4: ratings[3],
       Q5: ratings[4],
       avg: parseFloat(avg.toFixed(2)),
-      description
+      description,
     };
 
     submitFeedback(payload, {
@@ -75,13 +89,18 @@ export default function AddFeedback({ eventId }: AddFeedbackProps) {
       onError: (err) => {
         console.error("Feedback submission failed", err);
         alert("Something went wrong. Please try again.");
-      }
+      },
     });
   };
-
+  const handlebackfeedback = () => {
+    setSelectedEventSlug(null);
+    setSelectedEventId("");
+    setActiveView("Feedback");
+  };
   return (
     <>
       <PageHeader
+        onBack={handlebackfeedback}
         title="Add Event FeedBack"
         headerContent={
           <Box
@@ -89,7 +108,7 @@ export default function AddFeedback({ eventId }: AddFeedbackProps) {
               display: "grid",
               gridTemplateColumns: "repeat(5, 35px)",
               justifyContent: "flex-end",
-              gap: 1.5
+              gap: 1.5,
             }}
           >
             {emojiIcons.map((icon, idx) => (
@@ -98,7 +117,7 @@ export default function AddFeedback({ eventId }: AddFeedbackProps) {
                 sx={{
                   display: "flex",
                   justifyContent: "center",
-                  alignItems: "center"
+                  alignItems: "center",
                 }}
               >
                 {icon}
@@ -117,7 +136,7 @@ export default function AddFeedback({ eventId }: AddFeedbackProps) {
                   display: "flex",
                   alignItems: "center",
                   flexDirection: { xs: "column", sm: "row" },
-                  gap: 1
+                  gap: 1,
                 }}
               >
                 <Typography
@@ -126,7 +145,7 @@ export default function AddFeedback({ eventId }: AddFeedbackProps) {
                     fontSize: 15,
                     mb: { xs: 1, sm: 0 },
                     color: "black",
-                    textAlign: { xs: "left", sm: "inherit" }
+                    textAlign: { xs: "left", sm: "inherit" },
                   }}
                 >
                   {q}
@@ -136,7 +155,7 @@ export default function AddFeedback({ eventId }: AddFeedbackProps) {
                   sx={{
                     display: "grid",
                     gridTemplateColumns: "repeat(5, 35px)",
-                    gap: 2
+                    gap: 2,
                   }}
                 >
                   {[1, 2, 3, 4, 5].map((val) => (
@@ -146,11 +165,10 @@ export default function AddFeedback({ eventId }: AddFeedbackProps) {
                       sx={{
                         width: 35,
                         height: 35,
-                        background:
-                          ratings[idx] >= val ? "#23407c" : "#e0e3ea",
+                        background: ratings[idx] >= val ? "#23407c" : "#e0e3ea",
                         borderRadius: 1,
                         cursor: "pointer",
-                        transition: "background 0.2s"
+                        transition: "background 0.2s",
                       }}
                     />
                   ))}
@@ -167,7 +185,7 @@ export default function AddFeedback({ eventId }: AddFeedbackProps) {
           mb: 1,
           fontWeight: 400,
           color: "#212121",
-          fontSize: "20px"
+          fontSize: "20px",
         }}
       >
         Add Description
@@ -188,7 +206,7 @@ export default function AddFeedback({ eventId }: AddFeedbackProps) {
           flexDirection: { xs: "column", sm: "row" },
           alignItems: "flex-end",
           justifyContent: "flex-end",
-          gap: 2
+          gap: 2,
         }}
       >
         <CustomButton
@@ -201,8 +219,9 @@ export default function AddFeedback({ eventId }: AddFeedbackProps) {
           }
           sx={{
             border: "1px solid #00000029",
-            color: "#345794"
+            color: "#345794",
           }}
+          onClick={handlebackfeedback}
         />
         <CustomButton
           label={isPending ? "Submitting..." : "Submit Feedback"}
@@ -213,7 +232,7 @@ export default function AddFeedback({ eventId }: AddFeedbackProps) {
               : "230px"
           }
           sx={{
-            background: "#345794"
+            background: "#345794",
           }}
           onClick={handleSubmit}
         />

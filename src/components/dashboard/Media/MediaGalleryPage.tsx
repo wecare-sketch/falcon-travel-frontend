@@ -1,60 +1,89 @@
-"use client"
-import { useState } from "react"
-import { PageHeader } from "../PageHeader"
-import { MediaEventCard } from "./MediaEventCard"
-import { Box } from "@mui/material"
-import { MediaUploadPage } from "./AddMedia"
+"use client";
+import { useEffect, useState } from "react";
+import { PageHeader } from "../PageHeader";
+import { MediaEventCard } from "./MediaEventCard";
+import { Box } from "@mui/material";
+import { MediaUploadPage } from "./AddMedia";
+import axiosInstance from "@/lib/axios";
+import { useSelector } from "react-redux";
+import { SearchFilters } from "../SearchFilter";
+import { RootState } from "@/store";
 
-
-const mediaEvents = [
-  {
-    id: 1,
-    title: "Annual Corporate Gala",
-    date: "Dec 15, 2023",
-    imageUrl: "/images/media1.png?height=200&width=400",
-    photoCount: 12,
-    videoCount: 4,
-    badgeCount: 24,
-  },
-  {
-    id: 2,
-    title: "Tech Conference 2023",
-    date: "Dec 20, 2023",
-    imageUrl: "/images/media2.png?height=200&width=400",
-    photoCount: 12,
-    videoCount: 4,
-    badgeCount: 36,
-  },
-  {
-    id: 3,
-    title: "Holiday Celebration",
-    date: "Dec 25, 2023",
-    imageUrl: "/images/media3.png?height=200&width=400",
-    photoCount: 12,
-    videoCount: 4,
-    badgeCount: 18,
-  },
-]
-
-export function MediaGalleryPage() {
-  const [selectedEventId, setSelectedEventId] = useState<number | null>(null);
-
-  const handleFileUpload = (eventId: number, files: FileList) => {
-    console.log(`Uploading ${files.length} files for event ${eventId}`)
-    // Handle file upload logic here
-  }
-
-  const handleAddMedia = (eventId: number) => {
-    setSelectedEventId(eventId)
-    console.log("Add media for event:", eventId)
-  }
-  if(selectedEventId!== null)
-    {
-      return <MediaUploadPage />
+interface MediaGalleryPageProps {
+  setActiveSubItem: (subItem: string | null) => void;
+  setActiveView: (view: string) => void;
+}
+interface MediaEvent {
+  id: number;
+  name: string;
+  title: string;
+  pickupDate: string | number;
+  imageUrl: string;
+  badgeCount: number;
+  slug: string;
+}
+export function MediaGalleryPage({
+  setActiveSubItem,
+  setActiveView,
+}: MediaGalleryPageProps) {
+  const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
+  const [mediaEvents, setmediaEvents] = useState<MediaEvent[]>([]);
+const [SelectedEventid, setSelectedEventid] = useState<string>("")
+  const role = useSelector((state: RootState) => state.userRole.role);
+  const fetchUserEvents = async () => {
+    let endpoint = "";
+    if (role === "admin") {
+      endpoint = "/admin/events";
+    } else if (role === "user") {
+      endpoint = "/user/events";
+    } else {
+      console.error("Invalid role");
+      return;
     }
+
+    try {
+      const response = await axiosInstance.get<{
+        data: { events: MediaEvent[] };
+      }>(endpoint);
+      setmediaEvents(response?.data?.data?.events);
+    } catch (error) {
+      console.error("Error fetching events:", error);
+    }
+  };
+
+ 
+
+  useEffect(() => {
+    fetchUserEvents();
+  }, []);
+
+  const handleAddMedia = (eventId: string, eventid: string) => {
+    setSelectedEventId(eventId);
+    setSelectedEventid(eventid); 
+  };
+  const handlebackpage = () => {
+    setSelectedEventId(null);
+    setActiveView("Media");
+  };
+  if (selectedEventId !== null) {
+    return (
+      <MediaUploadPage
+        onBack={handlebackpage}
+        eventId={selectedEventId}
+        eventid={SelectedEventid || ""}
+      />
+    );
+  }
+  const handleBack = () => {
+    setActiveView("Dashboard");
+    setActiveSubItem(null);
+  };
+
   return (
     <>
-      <PageHeader title="Media Gallery" />
+      <PageHeader onBack={handleBack} title="Media Gallery" />
+      <SearchFilters />
+      
       <Box
         sx={{
           marginTop: "24px",
@@ -71,17 +100,15 @@ export function MediaGalleryPage() {
         {mediaEvents.map((event) => (
           <MediaEventCard
             key={event.id}
-            title={event.title}
-            date={event.date}
+            eventId={event.id.toString()}
+            name={event.name}
+            pickupDate={event.pickupDate}
             imageUrl={event.imageUrl}
-            photoCount={event.photoCount}
-            videoCount={event.videoCount}
-            badgeCount={event.badgeCount}
-            onFileUpload={(files) => handleFileUpload(event.id, files)}
-            onAddMedia={() => handleAddMedia(event.id)}
+            badgeCount={undefined}
+            onAddMedia={() => handleAddMedia(event.slug, event.id.toString())}
           />
         ))}
       </Box>
     </>
-  )
+  );
 }

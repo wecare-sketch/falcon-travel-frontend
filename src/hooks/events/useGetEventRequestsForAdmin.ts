@@ -1,5 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import axios from "@/lib/axios";
+import { useSelector } from "react-redux";
+import { RootState } from "@/store";
 
 export interface EventRequest {
   eventType: string;
@@ -36,6 +38,7 @@ export interface EventRequestsResponse {
 }
 
 export const useGetEventRequestsForAdmin = () => {
+  const role = useSelector((state: RootState) => state.userRole.role);
   return useQuery<EventRequestsResponse>({
     queryKey: ["event-requests"],
     queryFn: async () => {
@@ -44,5 +47,6 @@ export const useGetEventRequestsForAdmin = () => {
       );
       return res.data;
     },
+     enabled: role === "admin",
   });
 };

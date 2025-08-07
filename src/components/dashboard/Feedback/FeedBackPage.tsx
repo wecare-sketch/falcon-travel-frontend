@@ -47,8 +47,11 @@ interface Event {
   cohosts: string[];
   feedbacks: Feedback[];
 }
+interface FeedBackPageProps {
+  setActiveView: (view: string) => void; 
+}
 
-export function FeedBackPage() {
+export function FeedBackPage({ setActiveView }: FeedBackPageProps) {
   const [selectedEventSlug, setSelectedEventSlug] = useState<string | null>(
     null
   );
@@ -64,20 +67,35 @@ export function FeedBackPage() {
     setSelectedEventSlug(event.slug);
     setSelectedEventId(event.id);
   };
+  const handlebackk = () => {
+    setSelectedEventSlug(null);
+    setSelectedEventId("");
+    setActiveView("Feedback");
+  };
 
   if (role === "user") {
     if (selectedEventSlug !== null) {
-      return <AddFeedback eventId={selectedEventSlug} />;
+      return (
+        <AddFeedback
+          eventId={selectedEventSlug}
+          setActiveView={setActiveView}
+          setSelectedEventId={setSelectedEventId}
+          setSelectedEventSlug={setSelectedEventSlug}
+        />
+      );
     }
   } else {
     if (selectedEventSlug !== null) {
-      return <FeedbackDetailsPage event={data?.event} />;
+      return <FeedbackDetailsPage onBack={handlebackk} event={data?.event} />;
     }
   }
 
   return (
     <>
-      <PageHeader title="Add Event FeedBack" />
+      <PageHeader
+        onBack={() => setActiveView("Dashboard")}
+        title="Add Event FeedBack"
+      />
       <SearchFilters />
       {/* Loading State */}
       {isLoading && (

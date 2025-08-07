@@ -12,6 +12,7 @@ import { setUserRole } from "@/store/slices/userRoleSlice";
 import { FeedBackPage } from "../Feedback/FeedBackPage";
 import { DashboardPage } from "../dashboard view/DashboardPage";
 import { UserRequestsPage } from "../UserRequests/UserRequestsPage";
+import { useGetEventRequestsForAdmin } from "@/hooks/events/useGetEventRequestsForAdmin";
 
 interface DashboardLayoutProps {
   role: "user" | "admin";
@@ -50,13 +51,15 @@ export function DashboardLayout({ role }: Readonly<DashboardLayoutProps>) {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editingEvent, setEditingEvent] = useState<EventRequest>();
+  const [activeSubItem, setActiveSubItem] = useState<string | null>(null);
+  const { refetch } = useGetEventRequestsForAdmin();
 
   const dispatch = useDispatch();
 
   useEffect(() => {
     dispatch(setUserRole(role));
   }, [dispatch, role]);
-
+  
   const toggleSidebar = () => setIsMobileSidebarOpen((prev) => !prev);
   const closeSidebar = () => setIsMobileSidebarOpen(false);
   const handleSidebarNavigation = (view: string) => {
@@ -71,23 +74,39 @@ export function DashboardLayout({ role }: Readonly<DashboardLayoutProps>) {
   const handleCloseEditModal = () => {
     setIsEditModalOpen(false);
   };
+
   const renderView = () => {
     switch (activeView) {
       case "Upcoming Events":
         return (
-          <UpcomingEventsPage setIsCreateModalOpen={setIsCreateModalOpen} />
+          <UpcomingEventsPage
+            setIsCreateModalOpen={setIsCreateModalOpen}
+            setActiveView={setActiveView}
+            setActiveSubItem={setActiveSubItem}
+          />
         );
       case "Dashboard":
-        return <DashboardPage />;
+        return <DashboardPage/>;
       case "Music Library":
-        return <MusicLibraryPage />;
+        return (
+          <MusicLibraryPage
+            setActiveView={setActiveView}
+            setActiveSubItem={setActiveSubItem}
+          />
+        );
       case "Media":
-        return <MediaGalleryPage />;
+        return (
+          <MediaGalleryPage
+            setActiveView={setActiveView}
+            setActiveSubItem={setActiveSubItem}
+          />
+        );
       case "Feedback":
-        return <FeedBackPage />;
+        return <FeedBackPage setActiveView={setActiveView} />;
       case "User Requests":
         return (
           <UserRequestsPage
+            setActiveView={setActiveView}
             setIsCreateModalOpen={setIsEditModalOpen}
             setEditingEvent={setEditingEvent}
           />
@@ -112,6 +131,8 @@ export function DashboardLayout({ role }: Readonly<DashboardLayoutProps>) {
           onClose={closeSidebar}
           onNavigate={handleSidebarNavigation}
           role={role}
+          setActiveSubItem={setActiveSubItem}
+          activeSubItem={activeSubItem}
         />
 
         <div className="flex-1 w-full px-5 pt-8 pb-4">{renderView()}</div>
@@ -121,6 +142,7 @@ export function DashboardLayout({ role }: Readonly<DashboardLayoutProps>) {
         open={isCreateModalOpen}
         onClose={handleCloseModal}
         isEditMode={false}
+        setActiveView={setActiveView}
       />
 
       {/* Edit Event Modal */}
@@ -131,6 +153,8 @@ export function DashboardLayout({ role }: Readonly<DashboardLayoutProps>) {
         initialData={editingEvent}
         eventId={editingEvent?.slug}
         isUserRequestPage={true}
+        refetch={refetch}
+        setActiveView={setActiveView}
       />
     </div>
   );

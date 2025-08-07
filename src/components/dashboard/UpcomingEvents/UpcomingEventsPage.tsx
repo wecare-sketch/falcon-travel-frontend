@@ -28,6 +28,8 @@ const PAGE_SIZE = 4;
 
 interface UpcomingEventsPageProps {
   setIsCreateModalOpen: (isOpen: boolean) => void;
+  setActiveView: (view: string) => void;
+  setActiveSubItem: (subItem: string | null) => void;
 }
 
 interface EventFormData {
@@ -52,9 +54,23 @@ interface EventFormData {
   depositAmount: number;
   vehicle: string;
 }
+interface MappedEvent {
+  id: string;
+  title: string;
+  name: string;
+  date: string;
+  passenger: string;
+  paymentStatus: string;
+  remainingAmount: string;
+  clientName: string;
+  slug: string;
+}
+
 
 export function UpcomingEventsPage({
+  setActiveView,
   setIsCreateModalOpen,
+  setActiveSubItem,
 }: Readonly<UpcomingEventsPageProps>) {
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
   const [openEditModal, setOpenEditModal] = useState(false);
@@ -63,7 +79,17 @@ export function UpcomingEventsPage({
   const role = useSelector((state: RootState) => state.userRole.role);
   const [page, setPage] = useState(1);
   const isMobile = useIsMobile();
-  const { data: eventsData, isLoading, isError } = useEventsByRole();
+  const {
+    data: eventsData,
+    isLoading,
+    isError,
+    refetch,
+  }: {
+    data: { events: EventFormData[] } | null | undefined;
+    isLoading: boolean;
+    isError: boolean;
+    refetch?: () => void;
+  } = useEventsByRole();
   const { mutate: deleteEvent } = useDeleteEvent();
 
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -105,6 +131,7 @@ export function UpcomingEventsPage({
           toast.success("Event deleted!");
           setDeleteDialogOpen(false);
           setEventToDelete(null);
+          refetch?.();
         },
         onError: () => {
           toast.error("Failed to delete event.");
@@ -117,6 +144,7 @@ export function UpcomingEventsPage({
     eventsData?.events.map((event) => ({
       id: event.id,
       title: event.eventType,
+      name: event.name,
       date: new Date(event.pickupDate).toLocaleDateString("en-US", {
         year: "numeric",
         month: "2-digit",
@@ -151,18 +179,28 @@ export function UpcomingEventsPage({
     );
   }
 
-  if (selectedEventId !== null) {
-    return <EventDetailsPage eventId={selectedEventId} />;
-  }
+  const handleBack = () => {
+    setActiveView("Dashboard");
+    setActiveSubItem(null); 
+  };
+  const onBackhandler = () => {
+    setSelectedEventId(null);
+    setActiveView("Upcoming Events");
+  };
 
+  if (selectedEventId !== null) {
+    return (
+      <EventDetailsPage onBack={onBackhandler} eventId={selectedEventId} />
+    );
+  }
   return (
     <div>
-      <PageHeader title="List of Events" />
+      <PageHeader onBack={handleBack} title="List of Events" />
       <SearchFilters />
       {role === "admin" ? (
         isMobile ? (
           <div>
-            {paginatedEvents.map((event) => (
+            {paginatedEvents.map((event: MappedEvent) => (
               <MobileEventListItem
                 key={event.id}
                 eventName={event.title}
@@ -253,63 +291,78 @@ export function UpcomingEventsPage({
                   </tr>
                 </thead>
                 <tbody>
-                  {paginatedEvents.map((event, idx) => (
-                    <tr
-                      key={event.id}
-                      className={
-                        idx % 2 === 1
-                          ? "bg-[#F3F6F9] text-center text-black"
-                          : "bg-white text-center text-black"
-                      }
-                    >
-                      <td className="py-2 px-2 border border-gray-300">
-                        <input type="checkbox" />
-                      </td>
-                      <td className="py-2 px-2 border border-gray-300">
-                        {(page - 1) * PAGE_SIZE + idx + 1}
-                      </td>
-                      <td className="py-2 px-2 border border-gray-300">
-                        {event.title}
-                      </td>
-                      <td className="py-2 px-2 border border-gray-300">
-                        {event.date}
-                      </td>
-                      <td className="py-2 px-2 border border-gray-300">
-                        {event.passenger}
-                      </td>
-                      <td className="py-2 px-2 border border-gray-300">
-                        {event.remainingAmount}
-                      </td>
-                      <td className="py-2 px-2 border border-gray-300">
-                        <span
-                          className={`px-4 py-1 rounded-lg font-semibold ${
-                            event.paymentStatus === "Paid"
-                              ? "bg-green-200 text-green-800"
-                              : "bg-red-200 text-red-800"
-                          }`}
-                        >
-                          {event.paymentStatus}
-                        </span>
-                      </td>
-                      <td className="py-2 px-2 border border-gray-300">
-                        {event.clientName}
-                      </td>
-                      <td className="py-2 px-2 border border-gray-300">
-                        <DescriptionIcon
-                          className="cursor-pointer mr-2 text-[#C2C9D1]"
-                          onClick={() => handleViewDetails(event.id)}
-                        />
-                        <EditIcon
-                          className="cursor-pointer mr-2 text-[#C2C9D1]"
-                          onClick={() => handleEditClick(event.id)}
-                        />
-                        <DeleteIcon
-                          className="cursor-pointer text-[#C2C9D1]"
-                          onClick={() => handleDeleteClick(event.slug)}
-                        />
-                      </td>
-                    </tr>
-                  ))}
+                  {paginatedEvents.map(
+                    (
+                      event: {
+                        id: string;
+                        title: string;
+                        name: string;
+                        date: string;
+                        passenger: string;
+                        paymentStatus: string;
+                        remainingAmount: string;
+                        clientName: string;
+                        slug: string;
+                      },
+                      idx: number
+                    ) => (
+                      <tr
+                        key={event.id}
+                        className={
+                          idx % 2 === 1
+                            ? "bg-[#F3F6F9] text-center text-black"
+                            : "bg-white text-center text-black"
+                        }
+                      >
+                        <td className="py-2 px-2 border border-gray-300">
+                          <input type="checkbox" />
+                        </td>
+                        <td className="py-2 px-2 border border-gray-300">
+                          {(page - 1) * PAGE_SIZE + idx + 1}
+                        </td>
+                        <td className="py-2 px-2 border border-gray-300">
+                          {event.name}
+                        </td>
+                        <td className="py-2 px-2 border border-gray-300">
+                          {event.date}
+                        </td>
+                        <td className="py-2 px-2 border border-gray-300">
+                          {event.passenger}
+                        </td>
+                        <td className="py-2 px-2 border border-gray-300">
+                          {event.remainingAmount}
+                        </td>
+                        <td className="py-2 px-2 border border-gray-300">
+                          <span
+                            className={`px-4 py-1 rounded-lg font-semibold ${
+                              event.paymentStatus === "Paid"
+                                ? "bg-green-200 text-green-800"
+                                : "bg-red-200 text-red-800"
+                            }`}
+                          >
+                            {event.paymentStatus}
+                          </span>
+                        </td>
+                        <td className="py-2 px-2 border border-gray-300">
+                          {event.clientName}
+                        </td>
+                        <td className="py-2 px-2 border border-gray-300">
+                          <DescriptionIcon
+                            className="cursor-pointer mr-2 text-[#C2C9D1]"
+                            onClick={() => handleViewDetails(event.id)}
+                          />
+                          <EditIcon
+                            className="cursor-pointer mr-2 text-[#C2C9D1]"
+                            onClick={() => handleEditClick(event.id)}
+                          />
+                          <DeleteIcon
+                            className="cursor-pointer text-[#C2C9D1]"
+                            onClick={() => handleDeleteClick(event.slug)}
+                          />
+                        </td>
+                      </tr>
+                    )
+                  )}
                 </tbody>
               </table>
             </div>
@@ -367,6 +420,8 @@ export function UpcomingEventsPage({
         isEditMode={true}
         initialData={editingEvent}
         eventId={editingEvent?.slug}
+        setActiveView={setActiveView}
+        refetch={refetch}
       />
 
       <Dialog
