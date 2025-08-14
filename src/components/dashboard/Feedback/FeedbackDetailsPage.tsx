@@ -40,6 +40,7 @@ interface EventParticipant {
   updatedAt: string;
   user: EventUser;
 }
+
 interface Event {
   id: string;
   slug: string;
@@ -82,7 +83,11 @@ export function FeedbackDetailsPage({
 }: FeedbackDetailsPageProps) {
   const feedback = event?.feedbacks?.[0];
 
-  if (!event || !feedback) {
+  if (!event) {
+    return null; 
+  }
+
+  if (feedback === undefined) {
     return (
       <>
         <PageHeader onBack={onBack} title="Client FeedBack" />

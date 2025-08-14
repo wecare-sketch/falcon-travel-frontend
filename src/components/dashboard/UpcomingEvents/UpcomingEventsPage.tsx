@@ -441,7 +441,6 @@ export function UpcomingEventsPage({
         initialData={editingEvent}
         eventId={editingEvent?.slug}
         setActiveView={setActiveView}
-        refetch={refetch}
       />
 
       <Dialog

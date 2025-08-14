@@ -23,6 +23,7 @@ import { ShareEventModal } from "../ShareEventModal";
 import { toast } from "react-hot-toast";
 import { useEventMutationByRole } from "@/hooks/events/useCreateEventMutationByRole";
 import { useUpdateEventByPageType } from "@/hooks/events/useUpdateEventByPageType";
+import { useAdminEvents } from "@/hooks/events/useAdminEvents";
 
 interface EventFormData {
   eventType: string;
@@ -32,7 +33,7 @@ interface EventFormData {
   dropoffDate: string;
   pickupTime: string;
   location: string;
-  addStops: string;
+  addStops: string[] | string;
   hoursReserved: number;
   totalAmount: number;
   pendingAmount: number;
@@ -56,9 +57,21 @@ interface CreateEventModalProps {
   initialData?: EventFormData;
   eventId?: string;
   isUserRequestPage?: boolean;
-  refetch?: () => void;
   setActiveView: (view: string) => void;
 }
+const validatePickupBeforeDropoff = (
+  pickupDate: string,
+  dropoffDate: string
+) => {
+  if (!pickupDate || !dropoffDate) return true; 
+  const pickup = new Date(pickupDate);
+  const dropoff = new Date(dropoffDate);
+  if (pickup >= dropoff) {
+    return "Pickup date must be before the drop-off date";
+  }
+  return true; 
+};
+
 
 export function CreateEventModal({
   open,
@@ -67,10 +80,10 @@ export function CreateEventModal({
   isEditMode,
   eventId,
   isUserRequestPage,
-  refetch,
 }: Readonly<CreateEventModalProps>) {
   const methods = useForm<EventFormData>({
     defaultValues: initialData ?? {
+      imageUrl: "",
       eventType: "",
       clientName: "",
       phoneNumber: "",
@@ -78,7 +91,7 @@ export function CreateEventModal({
       dropoffDate: "",
       pickupTime: "",
       location: "",
-      addStops: "",
+      addStops: [],
       vehicle: "",
       passengerCount: 0,
       hoursReserved: 0,
@@ -90,7 +103,7 @@ export function CreateEventModal({
   });
 
   const role = useSelector((state: RootState) => state.userRole.role);
-  const { handleSubmit, reset, getValues } = methods;
+  const { handleSubmit, reset, getValues, setValue } = methods;
   const [showShareModal, setShowShareModal] = useState(false);
   const [slug, setSlug] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -103,7 +116,7 @@ export function CreateEventModal({
       isUserRequestPage,
     });
   const isPending = status === "loading";
-
+ const { refetch } = useAdminEvents();
   useEffect(() => {
     if (initialData) {
       reset(initialData);
@@ -113,19 +126,39 @@ export function CreateEventModal({
     }
   }, [initialData, reset]);
 
-  const handleAddStop = () => {
-    const stop = getValues("addStops").trim();
-    if (stop) {
-      console.log("Adding stop:", stop);
-    }
-  };
+const [currentStop, setCurrentStop] = useState<string>("");
+
+const handleAddStop = () => {
+  const trimmedStop = currentStop.trim();
+  if (trimmedStop) {
+    const newStops = [...getValues("addStops"), trimmedStop];
+    setValue("addStops", newStops);
+    setCurrentStop(""); 
+  }
+};
 
   const handleCancel = () => {
     reset();
     onClose();
+     if (!isEditMode) {
+       setEventImage(null); 
+       setEventFile(null); 
+       if (fileInputRef.current) {
+         fileInputRef.current.value = "";
+       }
+     }
   };
 
   const onSubmit = (data: EventFormData) => {
+    const dateValidation = validatePickupBeforeDropoff(
+      data.pickupDate,
+      data.dropoffDate
+    );
+    if (dateValidation !== true) {
+      toast.error(String(dateValidation));
+      return;
+    }
+
     if (!eventFile && !isEditMode) {
       toast.error("Please upload an event image.");
       return;
@@ -178,8 +211,11 @@ export function CreateEventModal({
           onSuccess: () => {
             toast.success("Event updated!");
             reset();
+            setEventImage(null); 
+            setEventFile(null);
             onClose();
-            refetch?.();
+            refetch();
+
           },
           onError: () => toast.error("Failed to update event"),
         }
@@ -190,7 +226,10 @@ export function CreateEventModal({
           toast.success("Event created!");
           setSlug(response?.data?.slug ?? null);
           setEventImage(null);
+          setEventFile(null); 
           reset();
+          refetch()
+
           if (role === "admin") {
             onClose();
             setShowShareModal(true);
@@ -224,6 +263,10 @@ export function CreateEventModal({
         }
       };
       reader.readAsDataURL(file);
+    } else {
+      setEventImage(null); 
+      setEventFile(null);
+        
     }
   };
  
@@ -262,7 +305,7 @@ export function CreateEventModal({
             >
               Create New Event
             </Typography>
-            <IconButton onClick={onClose} sx={{ padding: "4px" }}>
+            <IconButton onClick={handleCancel} sx={{ padding: "4px" }}>
               <X className="w-6 h-6 text-gray-600" />
             </IconButton>
           </DialogTitle>

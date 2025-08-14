@@ -2,14 +2,13 @@
 
 import { Box, Typography, Button } from "@mui/material";
 import { Phone, MapPin } from "lucide-react";
-import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
-import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
+import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
+import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
 import { LabelValuePair } from "./ui/LabelValuePair";
 import Image from "next/image";
 import React, { useState } from "react";
 import { useSelector } from "react-redux";
 import { RootState } from "@/store";
-
 
 interface EventInfoCardProps {
   eventType: string | undefined;
@@ -59,193 +58,237 @@ export function EventInfoCard({
       >
         {/* Left Column */}
         <Box sx={{ flex: 1 }}>
-          <LabelValuePair label="Event Type" value={eventType} icon={<Image src="/images/eventcalendar.png" width={20} height={20} alt="Event Calendar"/>} />
-          <LabelValuePair label="Date" value={pickupDate} icon={<Image src="/images/date.png" width={20} height={20} alt="date"/>} />
-          <LabelValuePair label="Client Name" value={clientName} icon={<Image src="/images/profile.png" width={20} height={20} alt="profile"/>} />
+          <LabelValuePair
+            label="Event Type"
+            value={eventType}
+            icon={
+              <Image
+                src="/images/eventcalendar.png"
+                width={20}
+                height={20}
+                alt="Event Calendar"
+              />
+            }
+          />
+          <LabelValuePair
+            label="Date"
+            value={pickupDate}
+            icon={
+              <Image src="/images/date.png" width={20} height={20} alt="date" />
+            }
+          />
+          <LabelValuePair
+            label="Client Name"
+            value={clientName}
+            icon={
+              <Image
+                src="/images/profile.png"
+                width={20}
+                height={20}
+                alt="profile"
+              />
+            }
+          />
         </Box>
 
         {/* Middle Column */}
         <Box sx={{ flex: 1 }}>
-          <LabelValuePair label="Vehicle" value={vehicle} icon={<Image src="/images/car.png" width={20} height={20} alt="car"/>} />
-          <LabelValuePair label="Phone Number" value={phoneNumber} icon={<Phone className="w-4 h-4 text-[#4A5F8A]" />} />
-          <LabelValuePair label="Location" value={location} icon={<MapPin className="w-4 h-4 text-[#4A5F8A] mt-1" />} rowSx={{ alignItems: "flex-start" }} valueSx={{ lineHeight: 1.4 }} />
+          <LabelValuePair
+            label="Vehicle"
+            value={vehicle}
+            icon={
+              <Image src="/images/car.png" width={20} height={20} alt="car" />
+            }
+          />
+          <LabelValuePair
+            label="Phone Number"
+            value={phoneNumber}
+            icon={<Phone className="w-4 h-4 text-[#4A5F8A]" />}
+          />
+          <LabelValuePair
+            label="Location"
+            value={location}
+            icon={<MapPin className="w-4 h-4 text-[#4A5F8A] mt-1" />}
+            rowSx={{ alignItems: "flex-start" }}
+            valueSx={{ lineHeight: 1.4 }}
+          />
         </Box>
 
         {/* Right Column: Total & Actions */}
-        {role === "admin"? 
-        (
+        {role === "admin" ? (
           <Box sx={{ flex: 1, p: 2 }}>
-          {/* Amount Summary Box */}
-          <Box
-            sx={{
-              borderRadius: "12px",
-              background: "#F9F9F9",
-              padding: "20px",
-              textAlign: "center",
-              mb: 3,
-            }}
-          >
-            <Typography
+            {/* Amount Summary Box */}
+            <Box
               sx={{
-                fontSize: "16px",
-                fontWeight: 600,
-                color: "#345794",
-                mb: 1,
+                borderRadius: "12px",
+                background: "#F9F9F9",
+                padding: "20px",
+                textAlign: "center",
+                mb: 3,
               }}
             >
-              Total Amount
-            </Typography>
-            <Typography
-              sx={{
-                fontSize: "32px",
-                fontWeight: 600,
-                color: "#757575",
-                mb: 2,
-              }}
-            >
-              $ 3000
-            </Typography>
-        
-            <Typography
-              sx={{
-                fontSize: "16px",
-                fontWeight: 600,
-                color: "#345794",
-                mb: 1,
-              }}
-            >
-              Remaining Amount
-            </Typography>
-            <Typography
-              sx={{
-                fontSize: "24px",
-                fontWeight: 700,
-                color: "#B00020",
-              }}
-            >
-              $ 800
-            </Typography>
-          </Box>
-        
-          {/* Action Buttons */}
-          <Box sx={{ display: "flex", gap: 2, mb: 2 }}>
+              <Typography
+                sx={{
+                  fontSize: "16px",
+                  fontWeight: 600,
+                  color: "#345794",
+                  mb: 1,
+                }}
+              >
+                Total Amount
+              </Typography>
+              <Typography
+                sx={{
+                  fontSize: "32px",
+                  fontWeight: 600,
+                  color: "#757575",
+                  mb: 2,
+                }}
+              >
+                {totalAmount ? totalAmount : "0"}
+              </Typography>
+
+              <Typography
+                sx={{
+                  fontSize: "16px",
+                  fontWeight: 600,
+                  color: "#345794",
+                  mb: 1,
+                }}
+              >
+                Remaining Amount
+              </Typography>
+              <Typography
+                sx={{
+                  fontSize: "24px",
+                  fontWeight: 700,
+                  color: "#B00020",
+                }}
+              >
+                {pendingAmount ? pendingAmount : "0"}
+              </Typography>
+            </Box>
+
+            {/* Action Buttons */}
+            <Box sx={{ display: "flex", gap: 2, mb: 2 }}>
+              <Button
+                variant="outlined"
+                disabled
+                sx={{
+                  flex: 1,
+                  backgroundColor: "#F5F5F5",
+                  color: "#BDBDBD",
+                  borderColor: "#E0E0E0",
+                  fontWeight: 500,
+                  fontSize: 14,
+                  textTransform: "none",
+                }}
+              >
+                Download Invoice
+              </Button>
+
+              <Button
+                variant="outlined"
+                sx={{
+                  flex: 1,
+                  color: "#345794",
+                  borderColor: "#345794",
+                  fontWeight: 500,
+                  fontSize: 14,
+                  textTransform: "none",
+                  backgroundColor: "#fff",
+                  "&:hover": {
+                    borderColor: "#2c4770",
+                  },
+                }}
+              >
+                Share Itinerary
+              </Button>
+            </Box>
+
             <Button
-              variant="outlined"
-              disabled
+              fullWidth
+              variant="contained"
               sx={{
-                flex: 1,
-                backgroundColor: "#F5F5F5",
-                color: "#BDBDBD",
-                borderColor: "#E0E0E0",
-                fontWeight: 500,
-                fontSize: 14,
+                backgroundColor: "#345794",
+                fontWeight: 600,
+                fontSize: 16,
                 textTransform: "none",
-              }}
-            >
-              Download Invoice
-            </Button>
-        
-            <Button
-              variant="outlined"
-              sx={{
-                flex: 1,
-                color: "#345794",
-                borderColor: "#345794",
-                fontWeight: 500,
-                fontSize: 14,
-                textTransform: "none",
-                backgroundColor: "#fff",
+                borderRadius: "6px",
+                boxShadow: "none",
                 "&:hover": {
-                  borderColor: "#2c4770",
+                  backgroundColor: "#2c4770",
+                  boxShadow: "none",
                 },
               }}
             >
-              Share Itinerary
+              Send Reminder
             </Button>
           </Box>
-        
-          <Button
-            fullWidth
-            variant="contained"
-            sx={{
-              backgroundColor: "#345794",
-              fontWeight: 600,
-              fontSize: 16,
-              textTransform: "none",
-              borderRadius: "6px",
-              boxShadow: "none",
-              "&:hover": {
-                backgroundColor: "#2c4770",
-                boxShadow: "none",
-              },
-            }}
-          >
-            Send Reminder
-          </Button>
-        </Box>
-        
-      )
-        :
-        (
+        ) : (
           <Box sx={{ flex: 1 }}>
-          {/* Total Amount Box */}
-          <EventSummaryCard totalAmount={totalAmount} remainingAmount={pendingAmount} payableAmount={totalAmount! - pendingAmount!} />
+            {/* Total Amount Box */}
+            <EventSummaryCard
+              totalAmount={totalAmount}
+              remainingAmount={pendingAmount}
+              payableAmount={totalAmount! - pendingAmount!}
+            />
 
-          {/* Action Buttons */}
-          <Box sx={{ display: "flex", gap: 2, marginBottom: 2 }}>
+            {/* Action Buttons */}
+            <Box sx={{ display: "flex", gap: 2, marginBottom: 2 }}>
+              <Button
+                variant="outlined"
+                disabled
+                sx={{
+                  flex: 1,
+                  background: "#F5F5F5",
+                  color: "#BDBDBD",
+                  borderColor: "#E0E0E0",
+                  fontWeight: 500,
+                  fontSize: 16,
+                  textTransform: "none",
+                }}
+                onClick={onDownloadInvoice}
+              >
+                Download Invoice
+              </Button>
+              <Button
+                variant="outlined"
+                sx={{
+                  flex: 1,
+                  color: "#2196F3",
+                  borderColor: "#345794",
+                  fontWeight: 500,
+                  fontSize: 16,
+                  textTransform: "none",
+                  background: "#fff",
+                }}
+                onClick={onShareIt}
+              >
+                Share
+              </Button>
+            </Box>
             <Button
-              variant="outlined"
-              disabled
+              variant="contained"
               sx={{
-                flex: 1,
-                background: "#F5F5F5",
-                color: "#BDBDBD",
-                borderColor: "#E0E0E0",
-                fontWeight: 500,
-                fontSize: 16,
+                width: "100%",
+                background: "#345794",
+                color: "#fff",
+                fontWeight: 600,
+                fontSize: 18,
                 textTransform: "none",
+                borderRadius: "6px",
+                boxShadow: "none",
+                "&:hover": {
+                  background: "#2c4770",
+                  boxShadow: "none",
+                },
               }}
-              onClick={onDownloadInvoice}
+              onClick={onPayNow}
             >
-              Download Invoice
-            </Button>
-            <Button
-              variant="outlined"
-              sx={{
-                flex: 1,
-                color: "#2196F3",
-                borderColor: "#345794",
-                fontWeight: 500,
-                fontSize: 16,
-                textTransform: "none",
-                background: "#fff",
-              }}
-              onClick={onShareIt}
-            >
-              Share
+              Pay Now
             </Button>
           </Box>
-          <Button
-            variant="contained"
-            sx={{
-              width: "100%",
-              background: "#345794",
-              color: "#fff",
-              fontWeight: 600,
-              fontSize: 18,
-              textTransform: "none",
-              borderRadius: "6px",
-              boxShadow: "none",
-              "&:hover": {
-                background: "#2c4770",
-                boxShadow: "none",
-              },
-            }}
-            onClick={onPayNow}
-          >
-            Pay Now
-          </Button>
-        </Box>
         )}
       </Box>
     </Box>
@@ -258,14 +301,18 @@ type EventSummaryCardProps = {
   payableAmount: number | undefined;
 };
 
-function EventSummaryCard({ totalAmount, remainingAmount, payableAmount }: EventSummaryCardProps) {
+function EventSummaryCard({
+  totalAmount,
+  remainingAmount,
+  payableAmount,
+}: EventSummaryCardProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [editablePayable, setEditablePayable] = useState(payableAmount);
 
   const handleEditClick = () => setIsEditing(true);
   const handleSave = () => setIsEditing(false);
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => setEditablePayable(Number(e.target.value));
-
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) =>
+    setEditablePayable(Number(e.target.value));
   return (
     <Box
       sx={{
@@ -302,12 +349,27 @@ function EventSummaryCard({ totalAmount, remainingAmount, payableAmount }: Event
             marginBottom: { xs: 1, sm: 0 },
           }}
         >
-          <Image src="/images/wallet.png" style={{ color: "#fff", fontSize: 28 }} width={20} height={20} alt="wallet"/>
+          <Image
+            src="/images/wallet.png"
+            style={{ color: "#fff", fontSize: 28 }}
+            width={20}
+            height={20}
+            alt="wallet"
+          />
         </Box>
-        <Typography sx={{ color: "#222", fontWeight: 500, fontSize: 18, flex: 1 }}>
+        <Typography
+          sx={{ color: "#222", fontWeight: 500, fontSize: 18, flex: 1 }}
+        >
           Total Amount:
         </Typography>
-        <Typography sx={{ color: "#345794", fontWeight: 700, fontSize: 32, marginLeft: { xs: 0, sm: 1 } }}>
+        <Typography
+          sx={{
+            color: "#345794",
+            fontWeight: 700,
+            fontSize: 32,
+            marginLeft: { xs: 0, sm: 1 },
+          }}
+        >
           $ {totalAmount}
         </Typography>
       </Box>
@@ -352,7 +414,9 @@ function EventSummaryCard({ totalAmount, remainingAmount, payableAmount }: Event
             <Typography sx={{ color: "#222", fontWeight: 500, fontSize: 14 }}>
               Remaining Amount
             </Typography>
-            <Typography sx={{ color: "#12B76A", fontWeight: 700, fontSize: 22 }}>
+            <Typography
+              sx={{ color: "#12B76A", fontWeight: 700, fontSize: 22 }}
+            >
               $ {remainingAmount}
             </Typography>
           </Box>
@@ -369,7 +433,7 @@ function EventSummaryCard({ totalAmount, remainingAmount, payableAmount }: Event
             position: "relative",
           }}
         >
-                          <Box
+          <Box
             sx={{
               background: "#F04438",
               borderRadius: "50%",
@@ -393,9 +457,14 @@ function EventSummaryCard({ totalAmount, remainingAmount, payableAmount }: Event
                   type="number"
                   value={editablePayable}
                   onChange={handleChange}
-                  style={{ width: 80, fontSize: 18, fontWeight: 700, padding: 4 }}
+                  style={{
+                    width: 80,
+                    fontSize: 18,
+                    fontWeight: 700,
+                    padding: 4,
+                  }}
                   onKeyDown={(e) => {
-                    if (e.key === 'Enter') handleSave();
+                    if (e.key === "Enter") handleSave();
                   }}
                 />
               </Box>
@@ -404,7 +473,6 @@ function EventSummaryCard({ totalAmount, remainingAmount, payableAmount }: Event
                 $ {editablePayable}
               </Typography>
             )}
-         
           </Box>
           <Image
             src="/images/Edit.png"
