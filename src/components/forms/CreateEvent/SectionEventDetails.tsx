@@ -17,7 +17,7 @@ export function SectionEventDetails() {
   } = useFormContext();
 
   return (
-    <FormSection title="Event Details" >
+    <FormSection title="Event Details">
       <Box sx={{ marginBottom: "16px" }}>
         <FormInput
           label="Event Name"
@@ -158,7 +158,7 @@ export function SectionEventDetails() {
                 onChange={(time) => field.onChange(time?.toISOString())}
                 slotProps={{
                   textField: {
-                    fullWidth: true,
+                    fullWidth: true, 
                     label: "Pickup Time",
                     placeholder: "Enter Time",
                     sx: {},

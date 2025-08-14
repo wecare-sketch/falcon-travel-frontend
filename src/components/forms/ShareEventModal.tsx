@@ -88,6 +88,7 @@ export function ShareEventModal({
 
       setInviteUrl(inviteLink);
       onClose();
+      setEmail("");
       setShowCopyModal(true);
       toast.success("Event invite shared successfully");
     } catch {

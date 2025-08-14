@@ -226,7 +226,7 @@ const handleAddStop = () => {
           toast.success("Event created!");
           setSlug(response?.data?.slug ?? null);
           setEventImage(null);
-           setEventFile(null); 
+          setEventFile(null); 
           reset();
           refetch()
 
