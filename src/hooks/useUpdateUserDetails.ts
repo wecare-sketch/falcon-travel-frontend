@@ -4,7 +4,6 @@ import axios from "@/lib/axios";
 interface PersonalDetailsPayload {
   fullName: string;
   phone: string;
-  dob: string;
 }
 
 export const useUpdateUserDetails = () => {

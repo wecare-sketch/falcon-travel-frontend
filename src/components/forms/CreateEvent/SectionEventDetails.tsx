@@ -5,6 +5,9 @@ import { Box } from "@mui/material";
 import { DatePicker, TimePicker } from "@mui/x-date-pickers";
 import dayjs from "dayjs";
 
+const validateNotEmpty = (value: string, fieldName: string) => {
+  return value.trim() !== "" || `${fieldName} cannot be just spaces`;
+};
 
 export function SectionEventDetails() {
   const {
@@ -21,7 +24,10 @@ export function SectionEventDetails() {
           placeholder="Enter Event Name"
           error={!!errors.name}
           helperText={errors.name?.message as string}
-          {...register("name", { required: "Event name is required" })}
+          {...register("name", {
+            required: "Event name is required",
+            validate: (value) => validateNotEmpty(value, "Event name"),
+          })}
         />
       </Box>
 
@@ -65,7 +71,10 @@ export function SectionEventDetails() {
               type={type}
               error={!!errors[name]}
               helperText={errors[name]?.message as string}
-              {...register(name, required ? { required } : {})}
+              {...register(name, {
+                required,
+                validate: (value) => validateNotEmpty(value, label),
+              })}
             />
           </Box>
         ))}
@@ -132,7 +141,14 @@ export function SectionEventDetails() {
         </Box>
 
         {/* Pickup Time */}
-        <Box sx={{ flex: { xs: "1 1 100%", md: "1 1 calc(25% - 12px)" } }}>
+        <Box
+          sx={{
+            flex: { xs: "1 1 100%", md: "1 1 calc(25% - 12px)" },
+            display: "flex",
+            flexDirection: "column",
+            gap: 2,
+          }}
+        >
           <Controller
             name="pickupTime"
             control={control}
@@ -145,6 +161,7 @@ export function SectionEventDetails() {
                     fullWidth: true,
                     label: "Pickup Time",
                     placeholder: "Enter Time",
+                    sx: {},
                   },
                 }}
               />
@@ -158,7 +175,10 @@ export function SectionEventDetails() {
             placeholder="Enter Location"
             error={!!errors.location}
             helperText={errors.location?.message as string}
-            {...register("location", { required: "Location is required" })}
+            {...register("location", {
+              required: "Location is required",
+              validate: (value) => validateNotEmpty(value, "Location"),
+            })}
             labelMarginBottom={0}
             sx={{
               mt: 0,

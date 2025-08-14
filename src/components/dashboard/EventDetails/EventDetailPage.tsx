@@ -30,7 +30,6 @@ export function EventDetailsPage({
     isUserRequestPage ?? false
   );
 
-  console.log("event", event);
 
   if (isLoading) {
     return <div className="text-center mt-6">Loading event...</div>;
@@ -52,6 +51,7 @@ export function EventDetailsPage({
 
   const handlePay = () => {
     console.log("Pay Now");
+  
   };
 
   const membersData: Member[] | undefined =

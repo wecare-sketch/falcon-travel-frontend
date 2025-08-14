@@ -2,7 +2,6 @@
 
 import { Box } from "@mui/material";
 import InputField from "./InputField";
-import MonthDayPicker from "./MonthDayPicker";
 import React, { useState } from "react";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
@@ -15,24 +14,22 @@ type ApiError = {
 type UserDetails = {
   fullName: string;
   phone: string;
-  dob: string;
 };
 
 const PersonalDetailsForm = () => {
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
-  const [dob, setDob] = useState("");
   const router = useRouter();
 
   const { mutate, isPending } = useUpdateUserDetails();
 
   const handleSubmit = () => {
-    if (!fullName || !phone || !dob) {
+    if (!fullName || !phone) {
       toast.error("Please fill all fields.");
       return;
     }
 
-    const userDetails: UserDetails = { fullName, phone, dob };
+    const userDetails: UserDetails = { fullName, phone };
 
     mutate(userDetails, {
       onSuccess: () => {
@@ -73,14 +70,6 @@ const PersonalDetailsForm = () => {
         }
       />
 
-      <label
-        htmlFor="dob-mmdd"
-        className="font-inter font-medium text-[0.9375rem] leading-[100%] mb-2 text-[#000000]"
-      >
-        Date of Birth
-      </label>
-      <MonthDayPicker value={dob} onChange={setDob} />
-
       <Box className="flex flex-col md:flex-row justify-between items-center gap-4 mt-6">
         <button
           type="button"
@@ -106,3 +95,4 @@ const PersonalDetailsForm = () => {
 };
 
 export default PersonalDetailsForm;
+

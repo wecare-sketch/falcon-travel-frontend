@@ -12,7 +12,6 @@ import { setUserRole } from "@/store/slices/userRoleSlice";
 import { FeedBackPage } from "../Feedback/FeedBackPage";
 import { DashboardPage } from "../dashboard view/DashboardPage";
 import { UserRequestsPage } from "../UserRequests/UserRequestsPage";
-import { useGetEventRequestsForAdmin } from "@/hooks/events/useGetEventRequestsForAdmin";
 
 interface DashboardLayoutProps {
   role: "user" | "admin";
@@ -52,7 +51,6 @@ export function DashboardLayout({ role }: Readonly<DashboardLayoutProps>) {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editingEvent, setEditingEvent] = useState<EventRequest>();
   const [activeSubItem, setActiveSubItem] = useState<string | null>(null);
-  const { refetch } = useGetEventRequestsForAdmin();
 
   const dispatch = useDispatch();
 
@@ -153,7 +151,6 @@ export function DashboardLayout({ role }: Readonly<DashboardLayoutProps>) {
         initialData={editingEvent}
         eventId={editingEvent?.slug}
         isUserRequestPage={true}
-        refetch={refetch}
         setActiveView={setActiveView}
       />
     </div>
