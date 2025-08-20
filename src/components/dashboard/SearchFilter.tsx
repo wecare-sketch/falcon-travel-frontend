@@ -21,13 +21,16 @@ interface SearchFiltersProps {
 
 export function SearchFilters({ onSearch }: SearchFiltersProps) {
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedHost, setSelectedHost] = useState("");
-  const [selectedStatus, setSelectedStatus] = useState("");
+  const [selectedHost, setSelectedHost] = useState("allHost"); 
+  const [selectedStatus, setSelectedStatus] = useState("allStatus"); 
   const [showFilter, setShowFilter] = useState(false);
   const isMobile = useIsMobile();
-
   const handleSearch = () => {
-    onSearch?.(searchQuery, selectedHost, selectedStatus);
+    const query = searchQuery.trim(); 
+
+    if (onSearch) {
+      onSearch(query, selectedHost, selectedStatus);
+    }
   };
 
   const handleFilterClick = () => {
@@ -36,8 +39,8 @@ export function SearchFilters({ onSearch }: SearchFiltersProps) {
 
   const hostOptions = [
     { label: "All Hosts", value: "allHost" },
-    { label: "Host 1", value: "host1" },
-    { label: "Host 2", value: "host2" },
+    { label: "Host 1", value: "host" },
+    { label: "Host 2", value: "cohost" },
   ];
 
   const statusOptions = [
@@ -97,7 +100,7 @@ export function SearchFilters({ onSearch }: SearchFiltersProps) {
             <CustomSelect
               label="Search By Host"
               value={selectedHost}
-              onChange={(value) => setSelectedHost(value)}
+              onChange={setSelectedHost}
               options={hostOptions}
               maxWidth="100%"
             />
@@ -139,7 +142,7 @@ export function SearchFilters({ onSearch }: SearchFiltersProps) {
         <CustomSelect
           label="Search By Host"
           value={selectedHost}
-          onChange={(value) => setSelectedHost(value)}
+          onChange={setSelectedHost}
           options={hostOptions}
           maxWidth={300}
         />

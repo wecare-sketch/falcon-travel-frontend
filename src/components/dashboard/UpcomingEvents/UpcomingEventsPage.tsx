@@ -24,7 +24,7 @@ import {
   DialogTitle,
 } from "@mui/material";
 import Image from "next/image";
-
+import axiosInstance from "@/lib/axios";
 
 const PAGE_SIZE = 4;
 
@@ -34,6 +34,11 @@ interface UpcomingEventsPageProps {
   setActiveSubItem: (subItem: string | null) => void;
 }
 
+interface EventResponse {
+  data: {
+    events: EventFormData[];
+  };
+}
 interface EventFormData {
   eventType: string;
   clientName: string;
@@ -56,6 +61,11 @@ interface EventFormData {
   depositAmount: number;
   vehicle: string;
 }
+interface SearchParams {
+  search: string;
+  host?: string;
+  paymentStatus?: string;
+}
 interface MappedEvent {
   id: string;
   title: string;
@@ -66,8 +76,9 @@ interface MappedEvent {
   remainingAmount: string;
   clientName: string;
   slug: string;
+  pickupDate: string; 
+  imageUrl: string;
 }
-
 
 export function UpcomingEventsPage({
   setActiveView,
@@ -96,9 +107,65 @@ export function UpcomingEventsPage({
 
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [eventToDelete, setEventToDelete] = useState<string | null>(null);
+  const [filteredEvents, setFilteredEvents] = useState<MappedEvent[]>([]);
+  const [hasSearched, setHasSearched] = useState(false);
 
   const handleViewDetails = (eventId: string) => {
     setSelectedEventId(eventId);
+  };
+
+  const handleSearch = async (query: string, host: string, status: string) => {
+    setHasSearched(true);
+    try {
+      const params: SearchParams = {
+        search: query,
+      };
+
+      if (host !== "allHost") {
+        params.host = host;
+      }
+
+      if (status !== "allStatus") {
+        params.paymentStatus = status;
+      }
+      let endpoint = "";
+      if (role === "admin") {
+        endpoint = "/admin/events";
+      } else if (role === "user") {
+        endpoint = "/user/events";
+      } else {
+        console.error("Invalid role");
+        return;
+      }
+      const response = await axiosInstance.get<EventResponse>(endpoint, { params });
+
+      if (response?.data?.data?.events) {
+        const mappedFilteredEvents = response.data.data.events.map((event) => ({
+          id: event.id,
+          title: event.eventType,
+          name: event.name,
+          date: new Date(event.pickupDate).toLocaleDateString("en-US", {
+            year: "numeric",
+            month: "2-digit",
+            day: "2-digit",
+          }),
+          passenger: event.passengerCount?.toString() ?? "",
+          paymentStatus:
+            event.paymentStatus.charAt(0).toUpperCase() +
+            event.paymentStatus.slice(1),
+          remainingAmount: `${event.pendingAmount}$`,
+          clientName: event.clientName,
+          slug: event.slug,
+          pickupDate: event.pickupDate, 
+          imageUrl: event.imageUrl,
+        }));
+        setFilteredEvents(mappedFilteredEvents);
+      } else {
+        setFilteredEvents([]);
+      }
+    } catch (error) {
+      console.error("Error fetching filtered events:", error);
+    }
   };
 
   const handleCreateEvent = () => {
@@ -159,12 +226,17 @@ export function UpcomingEventsPage({
       slug: event.slug,
     })) || [];
 
-  const paginatedEvents = mappedAdminEvents.slice(
-    (page - 1) * PAGE_SIZE,
-    page * PAGE_SIZE
-  );
-  const totalPages = Math.ceil(mappedAdminEvents.length / PAGE_SIZE);
+  const paginatedEvents = hasSearched
+    ? filteredEvents.length > 0
+      ? filteredEvents.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
+      : [] 
+    : mappedAdminEvents.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
+  const totalPages = hasSearched
+    ? filteredEvents.length > 0
+      ? Math.ceil(filteredEvents.length / PAGE_SIZE)
+      : 1 
+    : Math.ceil(mappedAdminEvents.length / PAGE_SIZE);
   if (isLoading) {
     return (
       <div className="flex justify-center items-center h-64">
@@ -172,7 +244,6 @@ export function UpcomingEventsPage({
       </div>
     );
   }
-
   if (isError) {
     return (
       <div className="p-4 text-red-500 bg-red-50 rounded-lg">
@@ -183,7 +254,7 @@ export function UpcomingEventsPage({
 
   const handleBack = () => {
     setActiveView("Dashboard");
-    setActiveSubItem(null); 
+    setActiveSubItem(null);
   };
   const onBackhandler = () => {
     setSelectedEventId(null);
@@ -195,31 +266,30 @@ export function UpcomingEventsPage({
       <EventDetailsPage onBack={onBackhandler} eventId={selectedEventId} />
     );
   }
+
   return (
     <div>
       <PageHeader onBack={handleBack} title="List of Events" />
-      <SearchFilters />
+      <SearchFilters onSearch={handleSearch} />
       {role === "admin" ? (
         isMobile ? (
           <div>
-            {paginatedEvents.map((event: MappedEvent) => (
-              <>
-                <MobileEventListItem
-                  key={event.id}
-                  eventName={event.name}
-                  clientName={event.clientName}
-                  passenger={parseInt(event.passenger, 10) || 0}
-                  date={event.date}
-                  remainingAmount={
-                    parseInt(event.remainingAmount.replace(/\$/g, ""), 10) || 0
-                  }
-                  paymentStatus={
-                    event.paymentStatus as "Paid" | "Pending" | "Overdue"
-                  }
-                  onEdit={() => handleEditClick(event.id)}
-                  onDelete={() => handleDeleteClick(event.slug)}
-                />
-              </>
+            {paginatedEvents.map((event) => (
+              <MobileEventListItem
+                key={event.id}
+                eventName={event.name}
+                clientName={event.clientName}
+                passenger={parseInt(event.passenger, 10) || 0}
+                date={event.date}
+                remainingAmount={
+                  parseInt(event.remainingAmount.replace(/\$/g, ""), 10) || 0
+                }
+                paymentStatus={
+                  event.paymentStatus as "Paid" | "Pending" | "Overdue"
+                }
+                onEdit={() => handleEditClick(event.id)}
+                onDelete={() => handleDeleteClick(event.slug)}
+              />
             ))}
 
             <div className="flex justify-start mt-4 gap-2">
@@ -259,7 +329,7 @@ export function UpcomingEventsPage({
                 height={80}
               />
               <Image
-              className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2"
+                className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2"
                 src="/images/plus.png"
                 alt="Events"
                 width={26}
@@ -419,16 +489,29 @@ export function UpcomingEventsPage({
         )
       ) : (
         <div className="mt-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {eventsData?.events.map((event) => (
-            <EventCard
-              key={event.id}
-              title={event.name}
-              date={event.pickupDate}
-              imageUrl={event.imageUrl}
-              Label="View Details"
-              onViewDetails={() => handleViewDetails(event.id)}
-            />
-          ))}
+          {hasSearched
+            ? filteredEvents.length > 0
+              ? filteredEvents.map((event) => (
+                  <EventCard
+                    key={event.id}
+                    title={event.name}
+                    date={event.pickupDate || event.date}
+                    imageUrl={event.imageUrl}
+                    Label="View Details"
+                    onViewDetails={() => handleViewDetails(event.id)}
+                  />
+                ))
+              : null
+            : eventsData?.events?.map((event) => (
+                <EventCard
+                  key={event.id}
+                  title={event.name}
+                  date={event.pickupDate}
+                  imageUrl={event.imageUrl}
+                  Label="View Details"
+                  onViewDetails={() => handleViewDetails(event.id)}
+                />
+              ))}
           <CreateEventCard onCreateEvent={handleCreateEvent} />
         </div>
       )}
