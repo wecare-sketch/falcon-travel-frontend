@@ -13,6 +13,18 @@ interface MediaGalleryPageProps {
   setActiveSubItem: (subItem: string | null) => void;
   setActiveView: (view: string) => void;
 }
+interface SearchParams {
+  search: string;
+  host?: string;
+  paymentStatus?: string;
+}
+
+interface EventResponse {
+  data: {
+    events: MediaEvent[];
+  };
+}
+
 interface MediaEvent {
   id: number;
   name: string;
@@ -26,9 +38,11 @@ export function MediaGalleryPage({
   setActiveSubItem,
   setActiveView,
 }: MediaGalleryPageProps) {
+  const [hasSearched, setHasSearched] = useState(false);
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
   const [mediaEvents, setmediaEvents] = useState<MediaEvent[]>([]);
-const [SelectedEventid, setSelectedEventid] = useState<string>("")
+  const [SelectedEventid, setSelectedEventid] = useState<string>("");
+  const [filteredEvents, setFilteredEvents] = useState<MediaEvent[]>([]);
   const role = useSelector((state: RootState) => state.userRole.role);
   const fetchUserEvents = async () => {
     let endpoint = "";
@@ -51,15 +65,60 @@ const [SelectedEventid, setSelectedEventid] = useState<string>("")
     }
   };
 
- 
-
   useEffect(() => {
     fetchUserEvents();
   }, []);
 
+  const handleSearch = async (query: string, host: string, status: string) => {
+  setHasSearched(true);
+    try {
+      const params: SearchParams = {
+        search: query,
+      };
+
+      if (host !== "allHost") {
+        params.host = host;
+      }
+
+      if (status !== "allStatus") {
+        params.paymentStatus = status;
+      }
+
+      let endpoint = "";
+      if (role === "admin") {
+        endpoint = "/admin/events";
+      } else if (role === "user") {
+        endpoint = "/user/events";
+      } else {
+        console.error("Invalid role");
+        return;
+      }
+      const response = await axiosInstance.get<EventResponse>(endpoint, {
+        params,
+      });
+
+      if (response?.data?.data?.events) {
+        const mappedFilteredEvents = response.data.data.events.map((event) => ({
+          id: event.id,
+          name: event.name,
+          title: event.name,
+          pickupDate: event.pickupDate,
+          imageUrl: event.imageUrl,
+          badgeCount: event.badgeCount ?? 0,
+          slug: event.slug,
+        }));
+        setFilteredEvents(mappedFilteredEvents);
+      } else {
+        setFilteredEvents([]);
+      }
+    } catch (error) {
+      console.error("Error fetching filtered events:", error);
+    }
+  };
+
   const handleAddMedia = (eventId: string, eventid: string) => {
     setSelectedEventId(eventId);
-    setSelectedEventid(eventid); 
+    setSelectedEventid(eventid);
   };
   const handlebackpage = () => {
     setSelectedEventId(null);
@@ -78,12 +137,11 @@ const [SelectedEventid, setSelectedEventid] = useState<string>("")
     setActiveView("Dashboard");
     setActiveSubItem(null);
   };
-
   return (
     <>
       <PageHeader onBack={handleBack} title="Media Gallery" />
-      <SearchFilters />
-      
+      <SearchFilters onSearch={handleSearch} />
+
       <Box
         sx={{
           marginTop: "24px",
@@ -97,17 +155,41 @@ const [SelectedEventid, setSelectedEventid] = useState<string>("")
           justifyItems: "center",
         }}
       >
-        {mediaEvents.map((event) => (
-          <MediaEventCard
-            key={event.id}
-            eventId={event.id.toString()}
-            name={event.name}
-            pickupDate={event.pickupDate}
-            imageUrl={event.imageUrl}
-            badgeCount={undefined}
-            onAddMedia={() => handleAddMedia(event.slug, event.id.toString())}
-          />
-        ))}
+        {hasSearched ? (
+          filteredEvents.length > 0 ? (
+            filteredEvents.map((event) => (
+              <MediaEventCard
+                key={event.id}
+                eventId={event.id.toString()}
+                name={event.name}
+                pickupDate={event.pickupDate}
+                imageUrl={event.imageUrl}
+                badgeCount={event.badgeCount ?? undefined}
+                onAddMedia={() =>
+                  handleAddMedia(event.slug, event.id.toString())
+                }
+              />
+            ))
+          ) : (
+            <div className="flex items-center top-1/2   justify-center absolute ">
+              <h1 className="text-black text-xl text-center">
+                Result not found
+              </h1>
+            </div>
+          )
+        ) : (
+          mediaEvents.map((event) => (
+            <MediaEventCard
+              key={event.id}
+              eventId={event.id.toString()}
+              name={event.name}
+              pickupDate={event.pickupDate}
+              imageUrl={event.imageUrl}
+              badgeCount={event.badgeCount ?? undefined}
+              onAddMedia={() => handleAddMedia(event.slug, event.id.toString())}
+            />
+          ))
+        )}
       </Box>
     </>
   );

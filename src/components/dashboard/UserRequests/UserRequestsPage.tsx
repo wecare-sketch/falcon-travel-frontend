@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { PageHeader } from "../PageHeader";
-import { SearchFilters } from "../SearchFilter";
 import { EventDetailsPage } from "../EventDetails/EventDetailPage";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -337,7 +336,6 @@ export function UserRequestsPage({
         onBack={() => setActiveView("Dashboard")}
         title="List of Events"
       />
-      <SearchFilters />
       {isMobile ? (
         <div>
           {paginatedEvents.map((event) => (
