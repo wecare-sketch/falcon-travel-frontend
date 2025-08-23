@@ -21,15 +21,19 @@ interface SearchFiltersProps {
 
 export function SearchFilters({ onSearch }: SearchFiltersProps) {
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedHost, setSelectedHost] = useState("allHost"); 
-  const [selectedStatus, setSelectedStatus] = useState("allStatus"); 
+  const [selectedHost, setSelectedHost] = useState("allHost");
+  const [selectedStatus, setSelectedStatus] = useState("allStatus");
   const [showFilter, setShowFilter] = useState(false);
   const isMobile = useIsMobile();
-  const handleSearch = () => {
-    const query = searchQuery.trim(); 
 
+  const handleSearch = (query: string) => {
+    const trimmedQuery = query.trim();
     if (onSearch) {
-      onSearch(query, selectedHost, selectedStatus);
+      if (trimmedQuery === ""|| trimmedQuery === undefined) {
+        onSearch("", selectedHost, selectedStatus); 
+      } else {
+        onSearch(trimmedQuery, selectedHost, selectedStatus); 
+      }
     }
   };
 
@@ -48,6 +52,11 @@ export function SearchFilters({ onSearch }: SearchFiltersProps) {
     { label: "Paid", value: "paid" },
     { label: "Pending", value: "pending" },
   ];
+
+  const handleInputChange = (query: string) => {
+    setSearchQuery(query);
+    handleSearch(query); 
+  };
 
   return isMobile ? (
     <>
@@ -91,9 +100,10 @@ export function SearchFilters({ onSearch }: SearchFiltersProps) {
           <div style={{ marginBottom: 20 }}>
             <CustomSearchInput
               value={searchQuery}
-              onChange={setSearchQuery}
+              onChange={handleInputChange}
               placeholder="Search Event..."
               maxWidth="100%"
+              handleSearch={handleSearch} 
             />
           </div>
           <div style={{ marginBottom: 20 }}>
@@ -119,7 +129,7 @@ export function SearchFilters({ onSearch }: SearchFiltersProps) {
           </Button>
           <Button
             onClick={() => {
-              handleSearch();
+              handleSearch(searchQuery); 
               handleFilterClick();
             }}
             variant="contained"
@@ -135,9 +145,10 @@ export function SearchFilters({ onSearch }: SearchFiltersProps) {
       <div className="flex flex-wrap gap-4 mb-5 mt-5 justify-end">
         <CustomSearchInput
           value={searchQuery}
-          onChange={setSearchQuery}
+          onChange={handleInputChange} 
           placeholder="Search Event..."
           maxWidth={300}
+          handleSearch={handleSearch} 
         />
         <CustomSelect
           label="Search By Host"
@@ -153,7 +164,10 @@ export function SearchFilters({ onSearch }: SearchFiltersProps) {
           options={statusOptions}
           maxWidth={300}
         />
-        <CustomButton label="Search" onClick={handleSearch} />
+        <CustomButton
+          label="Search"
+          onClick={() => handleSearch(searchQuery)} 
+        />
       </div>
       <CustomDivider />
     </>

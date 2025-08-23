@@ -8,6 +8,7 @@ interface CustomSearchInputProps {
   onChange: (value: string) => void;
   placeholder?: string;
   maxWidth?: number | string;
+  handleSearch: (query: string) => void; 
 }
 
 export function CustomSearchInput({
@@ -15,14 +16,21 @@ export function CustomSearchInput({
   onChange,
   placeholder = "Search...",
   maxWidth = 300,
+  handleSearch,
 }: Readonly<CustomSearchInputProps>) {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const query = e.target.value;
+    onChange(query); 
+    handleSearch(query);
+  };
+
   return (
     <div className="relative" style={{ width: "100%", maxWidth }}>
       <TextField
         variant="outlined"
         placeholder={placeholder}
         value={value}
-        onChange={(e) => onChange(e.target.value)}
+        onChange={handleInputChange} 
         sx={{
           width: "100%",
           height: "40.24px",
