@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Image from "next/image";
 import { Card, CardContent, Typography, Box, Button } from "@mui/material";
 import { Video } from "lucide-react";
@@ -47,24 +47,31 @@ export function MediaEventCard({
     return /\.(mp4|mov|avi|webm)$/i.test(url);
   };
 
-  const fetchUservents = async () => {
+  const fetchUservents = useCallback(async () => {
     try {
       const endpoint =
         role === "user"
           ? `/user/event/media/${eventId}`
           : `/admin/event/media/${eventId}`;
+
       const response = await axiosInstance.get<EventMediaResponse>(endpoint);
+
       let media;
       if (role === "user") {
         media = response?.data?.data?.event?.media;
       } else if (role === "admin") {
         media = response?.data?.data?.media;
       }
+
       setUserMedia(media || []);
     } catch (error) {
       console.error("Error fetching event media:", error);
     }
-  };
+  }, [eventId, role]); // dependencies here
+
+  useEffect(() => {
+    fetchUservents();
+  }, [fetchUservents]);
 
   useEffect(() => {
     const photos = UserMedia.filter((item) => isPhoto(item.url)).length;
@@ -74,9 +81,6 @@ export function MediaEventCard({
     setVideoCount(videos);
   }, [UserMedia]);
 
-  useEffect(() => {
-    fetchUservents();
-  }, [eventId, role, fetchUservents]);
   return (
     <Card
       sx={{

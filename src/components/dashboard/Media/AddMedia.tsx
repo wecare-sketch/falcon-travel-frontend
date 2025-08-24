@@ -2,15 +2,8 @@
 
 import type React from "react";
 
-import { useEffect, useState } from "react";
-import {
-  Box,
-  Typography,
-  Tabs,
-  Tab,
-  IconButton,
-  Button,
-} from "@mui/material";
+import { useCallback, useEffect, useState } from "react";
+import { Box, Typography, Tabs, Tab, IconButton, Button } from "@mui/material";
 import { Upload, Heart, Download } from "lucide-react";
 import { PageHeader } from "../PageHeader";
 import Image from "next/image";
@@ -44,8 +37,7 @@ interface MediaUploadPageProps {
 interface Media {
   id: string;
   url: string;
-  createdAt: string; 
-  
+  createdAt: string;
 }
 
 export function MediaUploadPage({
@@ -54,7 +46,7 @@ export function MediaUploadPage({
   eventid,
 }: MediaUploadPageProps) {
   const [activeTab, setActiveTab] = useState(0);
-  const [uploadedFiles, setUploadedFiles] = useState<MediaFile[]>([]); 
+  const [uploadedFiles, setUploadedFiles] = useState<MediaFile[]>([]);
   const [isDragOver, setIsDragOver] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [userMedia, setuserMedia] = useState<Media[]>([]);
@@ -82,7 +74,6 @@ export function MediaUploadPage({
     handleFileUpload(files);
   };
 
- 
   const handleLikeToggle = (fileId: string) => {
     setUploadedFiles((prev) =>
       prev.map((file) =>
@@ -91,124 +82,123 @@ export function MediaUploadPage({
     );
   };
 
-  
-
   const handleDelete = (fileId: string) => {
     setUploadedFiles((prev) => prev.filter((file) => file.id !== fileId));
   };
 
   const handleCancel = () => {
-    onBack?.()
+    onBack?.();
   };
-const handleFileUpload = (files: File[]) => {
-  const allowedExtensions = ["jpg", "png", "mp4"];
+  const handleFileUpload = (files: File[]) => {
+    const allowedExtensions = ["jpg", "png", "mp4"];
 
-  const newFiles: MediaFile[] = Array.from(files)
-    .filter((file) => {
-      const fileExtension = file.name.split(".").pop()?.toLowerCase();
-      return fileExtension && allowedExtensions.includes(fileExtension);
-    })
-    .map((file) => ({
-      id: `${file.name}-${file.size}-${Date.now()}-${Math.random()}`, 
-      name: file.name,
-      size: `${(file.size / 1024).toFixed(2)} KB`,
-      type: file.type.startsWith("image")
-        ? "image"
-        : file.type.startsWith("video")
-        ? "video"
-        : "document",
-      url: URL.createObjectURL(file),
-    }));
+    const newFiles: MediaFile[] = Array.from(files)
+      .filter((file) => {
+        const fileExtension = file.name.split(".").pop()?.toLowerCase();
+        return fileExtension && allowedExtensions.includes(fileExtension);
+      })
+      .map((file) => ({
+        id: `${file.name}-${file.size}-${Date.now()}-${Math.random()}`,
+        name: file.name,
+        size: `${(file.size / 1024).toFixed(2)} KB`,
+        type: file.type.startsWith("image")
+          ? "image"
+          : file.type.startsWith("video")
+          ? "video"
+          : "document",
+        url: URL.createObjectURL(file),
+      }));
 
-  if (newFiles.length === 0) {
-    toast.error("Unsupported file type. Only JPG, PNG, MP4 allowed.");
-  } else {
-    setUploadedFiles((prev) => [...prev, ...newFiles]);
-  }
-};
-
-
-const handleClick = () => {
-  const input = document.createElement("input");
-  input.type = "file";
-  input.multiple = true;
-
-  if (activeTab === 0) {
-    input.accept = "image/*";
-  } else if (activeTab === 1) {
-    input.accept = "video/*"; 
-  } else {
-    input.accept = "*"; 
-  }
-
-  input.onchange = (e) => {
-    const target = e.target as HTMLInputElement;
-
-    if (target.files) {
-      handleFileUpload([...target.files]);
-    }
-  };
-
-  input.click();
-};
-
-const handleUploadAll = async () => {
-    setIsUploading(true);
-  try {
-    const formData = new FormData();
-
-    for (const file of uploadedFiles) {
-      if (file.url && file.url.startsWith("blob:")) {
-        const fileContent = await fetch(file.url).then((res) => res.blob());
-        formData.append("files", fileContent, file.name);
-      }
-    }
-
-
-    const response = await axiosInstance.post(
-      `/user/upload/${eventId}`,
-      formData,
-      {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      }
-    );
-
-    if (response.status === 200) {
-      setUploadedFiles([]);
-      toast.success("Files uploaded successfully!");
+    if (newFiles.length === 0) {
+      toast.error("Unsupported file type. Only JPG, PNG, MP4 allowed.");
     } else {
-      throw new Error("Upload failed. Please try again.");
+      setUploadedFiles((prev) => [...prev, ...newFiles]);
     }
-  } catch (error: unknown) {
-    console.error("Error uploading files:", error);
-  } finally {
-    setIsUploading(false);
-  }
-};
-  const fetchUservent = async () => {
+  };
+
+  const handleClick = () => {
+    const input = document.createElement("input");
+    input.type = "file";
+    input.multiple = true;
+
+    if (activeTab === 0) {
+      input.accept = "image/*";
+    } else if (activeTab === 1) {
+      input.accept = "video/*";
+    } else {
+      input.accept = "*";
+    }
+
+    input.onchange = (e) => {
+      const target = e.target as HTMLInputElement;
+
+      if (target.files) {
+        handleFileUpload([...target.files]);
+      }
+    };
+
+    input.click();
+  };
+
+  const handleUploadAll = async () => {
+    setIsUploading(true);
+    try {
+      const formData = new FormData();
+
+      for (const file of uploadedFiles) {
+        if (file.url && file.url.startsWith("blob:")) {
+          const fileContent = await fetch(file.url).then((res) => res.blob());
+          formData.append("files", fileContent, file.name);
+        }
+      }
+
+      const response = await axiosInstance.post(
+        `/user/upload/${eventId}`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+
+      if (response.status === 200) {
+        setUploadedFiles([]);
+        toast.success("Files uploaded successfully!");
+      } else {
+        throw new Error("Upload failed. Please try again.");
+      }
+    } catch (error: unknown) {
+      console.error("Error uploading files:", error);
+    } finally {
+      setIsUploading(false);
+    }
+  };
+  const fetchUservent = useCallback(async () => {
     try {
       const endpoint =
         role === "user"
           ? `/user/event/media/${eventid}`
           : `/admin/event/media/${eventid}`;
       const response = await axiosInstance.get<EventMediaResponse>(endpoint);
-       let media : [] | undefined;
-       if (role === "user") {
-         media = response?.data?.data?.event?.media; 
-       } else if (role === "admin") {
-         media = response?.data?.data?.media; }
+
+      let media: [] | undefined;
+      if (role === "user") {
+        media = response?.data?.data?.event?.media;
+      } else if (role === "admin") {
+        media = response?.data?.data?.media;
+      }
+
       setuserMedia(media || []);
     } catch (error) {
       console.error("Error fetching event media:", error);
     }
-  };
+  }, [eventid, role]);
 
   useEffect(() => {
     fetchUservent();
-  }, [eventid,role, fetchUservent]);
-  
+  }, [fetchUservent]);
+
   const getFileType = (url: string) => {
     const extension = url.split(".").pop()?.toLowerCase();
     const imageTypes = ["jpg", "jpeg", "png", "gif", "bmp", "svg"];
@@ -216,33 +206,29 @@ const handleUploadAll = async () => {
 
     if (imageTypes.includes(extension || "")) return "image";
     if (videoTypes.includes(extension || "")) return "video";
-    return "unknown"; 
+    return "unknown";
   };
 
   const images = userMedia?.filter((file) => getFileType(file.url) === "image");
   const videos = userMedia?.filter((file) => getFileType(file.url) === "video");
 
+  const handleDownload = (url: string, filename?: string): void => {
+    fetch(url)
+      .then((response: Response) => response.blob())
+      .then((blob: Blob) => {
+        const blobUrl: string = window.URL.createObjectURL(blob);
 
+        const link: HTMLAnchorElement = document.createElement("a");
+        link.href = blobUrl;
+        link.download = filename || "image";
+        link.click();
 
-const handleDownload = (url: string, filename?: string): void => {
-  fetch(url)
-    .then((response: Response) => response.blob()) 
-    .then((blob: Blob) => {
-      const blobUrl: string = window.URL.createObjectURL(blob);
-
-      const link: HTMLAnchorElement = document.createElement("a");
-      link.href = blobUrl;
-      link.download = filename || "image"; 
-      link.click();
-
-      window.URL.revokeObjectURL(blobUrl);
-    })
-    .catch((error: unknown) => {
-      console.error("Error downloading the image:", error);
-    });
-};
-
-
+        window.URL.revokeObjectURL(blobUrl);
+      })
+      .catch((error: unknown) => {
+        console.error("Error downloading the image:", error);
+      });
+  };
 
   const tabLabels = ["Images", "Videos"];
 
@@ -256,7 +242,7 @@ const handleDownload = (url: string, filename?: string): void => {
       />
       <Box
         sx={{
-          marginTop:"20px",
+          marginTop: "20px",
           backgroundColor: "white",
           borderRadius: "12px",
           padding: "10px",
@@ -360,7 +346,8 @@ const handleDownload = (url: string, filename?: string): void => {
                   margin: "0 auto",
                 }}
               >
-            Support for a single or bulk upload. Strictly prohibited from uploading company data or other banned files.
+                Support for a single or bulk upload. Strictly prohibited from
+                uploading company data or other banned files.
               </Typography>
             </Box>
 
@@ -497,7 +484,7 @@ const handleDownload = (url: string, filename?: string): void => {
                 gap: "12px",
                 paddingTop: "24px",
                 borderTop: "1px solid #E0E0E0",
-                marginBottom:"27px"
+                marginBottom: "27px",
               }}
             >
               <Button
@@ -634,7 +621,7 @@ const handleDownload = (url: string, filename?: string): void => {
                     overflow: "hidden",
                     backgroundColor: "white",
                     width: "100%",
-                    height: { xs: "220px", sm: "290px", lg: "330px" }, 
+                    height: { xs: "220px", sm: "290px", lg: "330px" },
                     margin: "0 auto",
                   }}
                 >
@@ -688,8 +675,8 @@ const handleDownload = (url: string, filename?: string): void => {
                     borderRadius: "8px",
                     overflow: "hidden",
                     backgroundColor: "white",
-                    width: "100%", 
-                    height: { xs: "220px", sm: "290px", lg: "330px" }, 
+                    width: "100%",
+                    height: { xs: "220px", sm: "290px", lg: "330px" },
                     margin: "0 auto",
                   }}
                 >
@@ -724,7 +711,6 @@ const handleDownload = (url: string, filename?: string): void => {
             </Box>
           )}
         </Box>
-
       </Box>
     </>
   );

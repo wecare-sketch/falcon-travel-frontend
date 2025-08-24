@@ -3,7 +3,7 @@ import Image from "next/image";
 import { useRouter, useParams } from "next/navigation";
 import axiosInstance from "@/lib/axios";
 import toast from "react-hot-toast";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { jwtDecode } from "jwt-decode";
 import { useSelector } from "react-redux";
 import { RootState } from "@/store";
@@ -53,45 +53,48 @@ const SocialLoginButtons = () => {
   const [isLoading, setIsLoading] = useState(false);
   const formType = useSelector((state: RootState) => state.formType.type);
 
-  const handleCredentialResponse = async (response: { credential: string }) => {
-    setIsLoading(true);
-    try {
-      const idToken = response.credential;
-
-      const payload = JSON.parse(atob(idToken.split(".")[1]));
-      const email = payload.email;
-      const email_verified = payload.email_verified;
-
-      if (!email || !email_verified) {
-        throw new Error("Google email not verified");
-      }
-
-      const endpoint = inviteToken
-        ? `/auth/social/google/signup/${inviteToken}`
-        : `/auth/social/google/login`;
-
-      const { data } = await axiosInstance.post<ApiResponse>(endpoint, {
-        authToken: idToken,
-        email,
-      });
-
-      if (!data?.data) {
-        throw new Error("Invalid response from server");
-      }
-      if (data?.data) {
-        localStorage.setItem("access_token", data?.data);
-        const decoded = jwtDecode<{ role: string }>(data?.data);
+  const handleCredentialResponse = useCallback(
+    async (response: { credential: string }) => {
+      setIsLoading(true);
+      try {
+        const idToken = response.credential;
+  
+        const payload = JSON.parse(atob(idToken.split(".")[1]));
+        const email = payload.email;
+        const email_verified = payload.email_verified;
+  
+        if (!email || !email_verified) {
+          throw new Error("Google email not verified");
+        }
+  
+        const endpoint = inviteToken
+          ? `/auth/social/google/signup/${inviteToken}`
+          : `/auth/social/google/login`;
+  
+        const { data } = await axiosInstance.post<ApiResponse>(endpoint, {
+          authToken: idToken,
+          email,
+        });
+  
+        if (!data?.data) {
+          throw new Error("Invalid response from server");
+        }
+  
+        localStorage.setItem("access_token", data.data);
+        const decoded = jwtDecode<{ role: string }>(data.data);
         const role = decoded.role.toLowerCase();
         router.push(`/${role}/dashboard`);
+      } catch (error) {
+        console.error("Google login error:", error);
+        const message = error instanceof Error ? error.message : "Login failed";
+        toast.error(message);
+      } finally {
+        setIsLoading(false);
       }
-    } catch (error) {
-      console.error("Google login error:", error);
-      const message = error instanceof Error ? error.message : "Login failed";
-      toast.error(message);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+    },
+    [inviteToken, router]
+  );
+
   useEffect(() => {
     const script = document.createElement("script");
     script.src = "https://accounts.google.com/gsi/client";
