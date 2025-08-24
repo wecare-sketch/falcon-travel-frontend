@@ -15,8 +15,8 @@ const ResetPassword = ({
   setConfirmPassword,
 }: Props) => {
   return (
-    <div className="mt-6">
-      <div className="mb-4">
+    <div className="mt-3 md:mt-4">
+      <div className="mb-2.5">
         <PasswordInputWithToggle
           label="New Password"
           placeholder="Enter password"
@@ -24,7 +24,7 @@ const ResetPassword = ({
           onChange={setPassword}
         />
       </div>
-      <div className="mb-10">
+      <div className="mb-4 md:mb-6">
         <PasswordInputWithToggle
           label="Confirm Password"
           placeholder="Enter password again"

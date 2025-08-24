@@ -22,8 +22,8 @@ const PasswordInputWithToggle = ({
   const [showPassword, setShowPassword] = useState(false);
 
   return (
-    <div className="mb-4">
-      <label className="mb-2 block text-[#000000] font-medium text-[0.9375rem]">
+    <div className="mb-2.5">
+      <label className="mb-1 md:mb-2 block text-[#000000] font-medium text-[0.875rem] md:text-[0.9375rem]">
         {label}
       </label>
       <TextField
@@ -57,9 +57,9 @@ const PasswordInputWithToggle = ({
           ),
           style: {
             borderRadius: "0.375rem",
-            height: "3.66rem",
+            height: "2.75rem",
             fontFamily: "var(--font-inter), Inter, sans-serif",
-            fontSize: "1rem",
+            fontSize: "0.875rem",
             background: "#F8F9FA",
           },
         }}

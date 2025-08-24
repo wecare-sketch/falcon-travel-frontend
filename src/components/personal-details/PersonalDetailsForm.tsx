@@ -26,27 +26,42 @@ const PersonalDetailsForm = () => {
 
   const { mutate, isPending } = useUpdateUserDetails();
 
+  const validatePhoneNumber = (phoneNumber: string) => {
+    if (!phoneNumber || phoneNumber.trim() === "") {
+      return "Phone number is required";
+    }
+    // Check if the phone number is valid (at least 10 digits including country code)
+    const phone = phoneNumber.replace(/\D/g, ''); // Remove all non-digits
+    if (phone.length < 10) {
+      return "Please enter a valid phone number";
+    }
+    return null;
+  };
+
   const handleSubmit = () => {
     if (!fullName || !phone) {
       toast.error("Please fill all fields.");
       return;
     }
 
-    if (!phoneError) {
-      const userDetails: UserDetails = { fullName, phone };
-      setPhoneError("");
-      mutate(userDetails, {
-        onSuccess: () => {
-          toast.success("Details saved successfully!");
-          router.push("/user/dashboard");
-        },
-        onError: (error: ApiError) => {
-          toast.error(error.message || "Failed to save details.");
-        },
-      });
-    } else {
-      toast.error("Please correct the phone number.");
+    const phoneValidationError = validatePhoneNumber(phone);
+    if (phoneValidationError) {
+      setPhoneError(phoneValidationError);
+      toast.error(phoneValidationError);
+      return;
     }
+
+    const userDetails: UserDetails = { fullName, phone };
+    setPhoneError("");
+    mutate(userDetails, {
+      onSuccess: () => {
+        toast.success("Details saved successfully!");
+        router.push("/user/dashboard");
+      },
+      onError: (error: ApiError) => {
+        toast.error(error.message || "Failed to save details.");
+      },
+    });
   };
 
   return (
@@ -75,10 +90,19 @@ const PersonalDetailsForm = () => {
           <PhoneInput
             country="pk"
             value={phone}
-            onChange={setPhone}
+            onChange={(phoneNumber) => {
+              setPhone(phoneNumber);
+              // Clear error when user starts typing
+              if (phoneError) {
+                setPhoneError(null);
+              }
+            }}
             placeholder="Enter Your Phone Number"
             inputClass="rounded-md min-h-[40px] resize-none sm:text-base md:text-lg lg:text-[16px]"
-            isValid={phoneError === null}
+            isValid={(inputNumber) => {
+              const phone = inputNumber.replace(/\D/g, '');
+              return phone.length >= 10;
+            }}
           />
         </div>
 

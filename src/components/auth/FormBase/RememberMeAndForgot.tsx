@@ -5,7 +5,7 @@ import Link from "next/link";
 
 const RememberMeAndForgot = () => {
   return (
-    <div className="flex sm:flex-row justify-between items-center mb-6 ml-4 below-320:flex-col">
+    <div className="flex sm:flex-row justify-between items-center mb-3 md:mb-4 ml-4 below-320:flex-col">
       <FormControlLabel
         control={
           <Checkbox
@@ -28,14 +28,14 @@ const RememberMeAndForgot = () => {
           />
         }
         label={
-          <span className="text-[#1C2927] text-sm md:text-[18px] md:leading-[27px] font-normal">
+          <span className="text-[#1C2927] text-xs md:text-sm lg:text-[18px] lg:leading-[27px] font-normal">
             Keep me Logged in
           </span>
         }
       />
       <Link
         href="/auth/forgot-password"
-        className="font-inter text-sm md:text-[18px] md:leading-[27px] text-[#345794] hover:underline"
+        className="font-inter text-xs md:text-sm lg:text-[18px] lg:leading-[27px] text-[#345794] hover:underline"
       >
         Forgot Password?
       </Link>

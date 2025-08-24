@@ -67,7 +67,7 @@ export function MediaGalleryPage({
 
   useEffect(() => {
     fetchUserEvents();
-  }, []);
+  }, [fetchUserEvents]);
 
   const handleSearch = async (query: string, host: string, status: string) => {
   setHasSearched(true);

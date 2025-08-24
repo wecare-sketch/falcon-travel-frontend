@@ -122,16 +122,16 @@ const SocialLoginButtons = () => {
     return () => {
       document.body.removeChild(script);
     };
-  }, []);
+  }, [formType, handleCredentialResponse]);
 
   return (
-    <div className="flex w-full gap-4 mb-6">
-      <button className="flex-1 bg-[#F5F5F5] rounded-lg h-12 flex items-center justify-center cursor-pointer">
-        <Image src="/images/apple.png" alt="Apple" width={28} height={28} />
+    <div className="flex w-full gap-3 md:gap-4 mb-3 md:mb-4">
+      <button className="flex-1 bg-[#F5F5F5] rounded-lg h-9 md:h-11 flex items-center justify-center cursor-pointer">
+        <Image src="/images/apple.png" alt="Apple" width={24} height={24} className="md:w-7 md:h-7" />
       </button>
       <div
         id="google-signin-button"
-        className="flex-1 h-12 flex items-center justify-center"
+        className="flex-1 h-9 md:h-11 flex items-center justify-center"
       >
         {isLoading && (
           <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>

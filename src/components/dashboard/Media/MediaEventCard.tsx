@@ -76,7 +76,7 @@ export function MediaEventCard({
 
   useEffect(() => {
     fetchUservents();
-  }, [eventId, role]);
+  }, [eventId, role, fetchUservents]);
   return (
     <Card
       sx={{

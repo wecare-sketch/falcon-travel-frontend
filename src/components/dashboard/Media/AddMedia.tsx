@@ -207,7 +207,7 @@ const handleUploadAll = async () => {
 
   useEffect(() => {
     fetchUservent();
-  }, [eventid,role]);
+  }, [eventid,role, fetchUservent]);
   
   const getFileType = (url: string) => {
     const extension = url.split(".").pop()?.toLowerCase();
