@@ -38,6 +38,7 @@ interface EventRequest {
   paymentStatus: string;
   depositAmount: number;
   vehicle: string;
+  tripNotes: string;
 }
 
 export function DashboardLayout({ role }: Readonly<DashboardLayoutProps>) {

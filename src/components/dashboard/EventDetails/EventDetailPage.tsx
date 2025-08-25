@@ -3,7 +3,9 @@
 import { PageHeader } from "../PageHeader";
 import { EventInfoCard } from "./EventInfoCard";
 import { MembersTable } from "./MembersTable";
+import { ShareItineraryPage } from "./ShareItineraryPage";
 import { useEventDetailsByPageType } from "@/hooks/events/useEventDetailsByPageType";
+import { useState } from "react";
 
 interface EventDetailsPageProps {
   onBack?: () => void;
@@ -25,10 +27,31 @@ export function EventDetailsPage({
   eventId,
   isUserRequestPage,
 }: EventDetailsPageProps) {
+  const [showShareItinerary, setShowShareItinerary] = useState(false);
   const { event, isLoading, isError } = useEventDetailsByPageType(
     eventId,
     isUserRequestPage ?? false
   );
+
+  const formatValue = (value: unknown): string => {
+    if (value == null) return "";
+    if (typeof value === "string" || typeof value === "number") return String(value);
+    if (typeof value === "object") {
+      const obj = value as Record<string, unknown>;
+      const candidate =
+        (obj.address as string) ||
+        (obj.city as string) ||
+        (obj.name as string) ||
+        (obj.label as string);
+      if (candidate) return candidate;
+      try {
+        return JSON.stringify(obj);
+      } catch {
+        return "";
+      }
+    }
+    return "";
+  };
 
 
   if (isLoading) {
@@ -46,13 +69,21 @@ export function EventDetailsPage({
   };
 
   const handleShareIt = () => {
-    console.log("Share it");
+    console.log("handleShareIt");
+    setShowShareItinerary(true);
+  };
+
+  const handleBackFromShare = () => {
+    setShowShareItinerary(false);
   };
 
   const handlePay = () => {
     console.log("Pay Now");
-  
   };
+
+  if (showShareItinerary) {
+    return <ShareItineraryPage eventSlug={event?.slug || ""} onBack={handleBackFromShare} />;
+  }
 
   const membersData: Member[] | undefined =
     !isUserRequestPage && "participants" in event
@@ -81,7 +112,7 @@ export function EventDetailsPage({
         pickupDate={event?.pickupDate}
         phoneNumber={event?.phoneNumber}
         clientName={event?.clientName}
-        location={event?.location}
+        location={formatValue(event?.location)}
         totalAmount={event?.totalAmount}
         pendingAmount={event?.pendingAmount}
         onDownloadInvoice={handleDownloadInvoice}

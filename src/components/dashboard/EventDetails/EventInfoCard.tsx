@@ -201,6 +201,7 @@ export function EventInfoCard({
                     borderColor: "#2c4770",
                   },
                 }}
+                onClick={onShareIt}
               >
                 Share Itinerary
               </Button>

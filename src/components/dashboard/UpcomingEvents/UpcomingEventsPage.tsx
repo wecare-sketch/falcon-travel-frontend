@@ -60,6 +60,7 @@ interface EventFormData {
   paymentStatus: string;
   depositAmount: number;
   vehicle: string;
+  tripNotes: string;
 }
 interface SearchParams {
   search: string;

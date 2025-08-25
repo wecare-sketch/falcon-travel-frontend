@@ -44,6 +44,7 @@ interface EventRequest {
   paymentStatus: string;
   depositAmount: number;
   vehicle: string;
+  tripNotes: string;
 }
 
 const PAGE_SIZE = 4;
@@ -265,6 +266,29 @@ export function UserRequestsPage({
   const isMobile = useIsMobile();
   const { mutate: deleteRequest } = useDeleteEventRequest();
 
+  const formatValue = (value: unknown): string => {
+    if (value == null) return "";
+    if (typeof value === "string" || typeof value === "number") {
+      return String(value);
+    }
+    if (typeof value === "object") {
+      const obj = value as Record<string, unknown>;
+      // Try common location fields first
+      const candidate =
+        (obj.address as string) ||
+        (obj.city as string) ||
+        (obj.name as string) ||
+        (obj.label as string);
+      if (candidate) return candidate;
+      try {
+        return JSON.stringify(obj);
+      } catch {
+        return "";
+      }
+    }
+    return "";
+  };
+
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [eventToDelete, setEventToDelete] = useState<string | null>(null);
 
@@ -345,7 +369,7 @@ export function UserRequestsPage({
               clientName={event.clientName}
               passenger={event.passengerCount || 0}
               date={new Date(event?.createdAt)?.toLocaleDateString()}
-              location={event.location}
+              location={formatValue(event.location)}
               onEdit={() => handleCreateEvent(event)}
               onDelete={() => handleDeleteClick(event)}
             />
@@ -439,7 +463,7 @@ export function UserRequestsPage({
                       {event.passengerCount}
                     </td>
                     <td className="py-2 px-2 border border-gray-300">
-                      {event.location}
+                      {formatValue(event.location)}
                     </td>
                     <td className="py-2 px-2 border border-gray-300">
                       {event.clientName}

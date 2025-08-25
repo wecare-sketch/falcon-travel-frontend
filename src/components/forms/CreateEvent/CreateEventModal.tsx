@@ -45,7 +45,8 @@ interface EventFormData {
   passengerCount: number;
   paymentStatus: string;
   depositAmount: number;
-  vehicle: string; 
+  vehicle: string;
+  tripNotes: string;
 }
 
 interface CreateEventModalProps {
@@ -99,7 +100,7 @@ export function CreateEventModal({
       pendingAmount: 0,
       equityDivision: 0,
       name: "",
-      // tripNotes: "", 
+      tripNotes: "",
     },
   });
 
@@ -184,8 +185,12 @@ export function CreateEventModal({
         pickupTime: data.pickupTime,
         location: data.location,
         stops: data.addStops ? [data.addStops] : [],
-        // tripNotes: data.tripNotes, 
       })
+    );
+
+    formData.append(
+      "tripNotes",
+      JSON.stringify(data.tripNotes)
     );
 
     formData.append(
@@ -219,7 +224,7 @@ export function CreateEventModal({
             setEventFile(null);
             onClose();
             refetch();
-            // reset({ tripNotes: "" }); 
+            reset({ tripNotes: "" });
           },
           onError: () => toast.error("Failed to update event"),
         }

@@ -85,7 +85,7 @@ const PersonalDetailsForm = () => {
       />
 
       <div className="mb-6 ">
-        <label className="block text-lg sm:text-sm mb-2">Phone Number</label>
+        <label className="block text-lg text-black sm:text-sm mb-2">Phone Number</label>
         <div className="w-full p-2 border border-gray-300 bg-gray-100 rounded-md min-h-[54px] resize-none sm:text-base md:text-lg lg:text-[16px]">
           <PhoneInput
             country="pk"
@@ -98,7 +98,7 @@ const PersonalDetailsForm = () => {
               }
             }}
             placeholder="Enter Your Phone Number"
-            inputClass="rounded-md min-h-[40px] resize-none sm:text-base md:text-lg lg:text-[16px]"
+            inputClass="rounded-md min-h-[40px] resize-none sm:text-base md:text-lg lg:text-[16px] text-black"
             isValid={(inputNumber) => {
               const phone = inputNumber.replace(/\D/g, '');
               return phone.length >= 10;
