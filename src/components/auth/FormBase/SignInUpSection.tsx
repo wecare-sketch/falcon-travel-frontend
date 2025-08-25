@@ -24,9 +24,9 @@ const SignInUpSection = ({
   return (
     <>
       <SocialLoginButtons />
-      <div className="flex items-center mb-6">
+      <div className="flex items-center mb-3 md:mb-4">
         <div className="flex-1 h-px bg-[#E0E0E0]" />
-        <span className="mx-4 text-[#1C2927] text-sm">
+        <span className="mx-3 md:mx-4 text-[#1C2927] text-xs md:text-sm">
           {isSignUp ? "or sign up with email" : "or sign in with email"}
         </span>
         <div className="flex-1 h-px bg-[#E0E0E0]" />

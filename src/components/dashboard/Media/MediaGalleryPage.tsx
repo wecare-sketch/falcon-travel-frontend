@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { PageHeader } from "../PageHeader";
 import { MediaEventCard } from "./MediaEventCard";
 import { Box } from "@mui/material";
@@ -44,7 +44,7 @@ export function MediaGalleryPage({
   const [SelectedEventid, setSelectedEventid] = useState<string>("");
   const [filteredEvents, setFilteredEvents] = useState<MediaEvent[]>([]);
   const role = useSelector((state: RootState) => state.userRole.role);
-  const fetchUserEvents = async () => {
+  const fetchUserEvents = useCallback(async () => {
     let endpoint = "";
     if (role === "admin") {
       endpoint = "/admin/events";
@@ -63,14 +63,14 @@ export function MediaGalleryPage({
     } catch (error) {
       console.error("Error fetching events:", error);
     }
-  };
+  }, [role]); // ✅ stable dependencies
 
   useEffect(() => {
     fetchUserEvents();
-  }, []);
+  }, [fetchUserEvents]);
 
   const handleSearch = async (query: string, host: string, status: string) => {
-  setHasSearched(true);
+    setHasSearched(true);
     try {
       const params: SearchParams = {
         search: query,

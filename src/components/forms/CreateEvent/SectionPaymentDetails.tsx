@@ -73,6 +73,28 @@ export function SectionPaymentDetails() {
             )}
           />
         </Box>
+
+        <Box sx={{ flex: { xs: "1 1 100%", md: "1 1 100%" } }}>
+          <label className="block text-lg sm:test-sm font-semibold mb-2">
+            Trip Notes
+          </label>
+          <textarea
+            {...register("tripNotes", {
+              required: "Trip notes are required",
+              maxLength: {
+                value: 500,
+                message: "Notes can't exceed 500 characters",
+              },
+            })}
+            className="w-full p-2 border border-gray-200 rounded-md min-h-[150px] max-w-full resize-none sm:text-base md:text-lg lg:text-[16px]"
+            placeholder="Add your trip notes here..."
+          />
+          {/* {errors.tripNotes && (
+            <p className="text-red-500 text-sm mt-1">
+              {errors.tripNotes.message}
+            </p>
+          )} */}
+        </Box>
       </Box>
     </FormSection>
   );

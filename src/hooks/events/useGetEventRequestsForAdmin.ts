@@ -25,6 +25,7 @@ export interface EventRequest {
   depositAmount: number;
   vehicle: string;
   createdAt: string;
+  tripNotes: string;
 }
 
 export interface EventRequestsResponse {

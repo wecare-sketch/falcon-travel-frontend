@@ -11,7 +11,7 @@ const EmailInput = ({ value, onChange }: EmailInputProps) => (
   <>
     <label
       htmlFor="email"
-      className="mb-2 text-[#000000] font-medium text-[0.9375rem]"
+      className="mb-1 md:mb-2 text-[#000000] font-medium text-[0.875rem] md:text-[0.9375rem]"
     >
       Email Id
     </label>
@@ -35,16 +35,16 @@ const EmailInput = ({ value, onChange }: EmailInputProps) => (
         ),
         style: {
           borderRadius: "0.375rem",
-          height: "3.66rem",
+          height: "2.75rem",
           fontFamily: "var(--font-inter), Inter, sans-serif",
-          fontSize: "1rem",
+          fontSize: "0.875rem",
           borderColor: "#D9D9D9",
           background: "#F8F9FA",
         },
       }}
       sx={{
         width: "100%",
-        mb: 4,
+        mb: 2.5,
         "& .MuiOutlinedInput-root": {
           borderRadius: "0.375rem",
           background: "#F8F9FA",

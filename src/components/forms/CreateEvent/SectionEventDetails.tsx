@@ -4,6 +4,8 @@ import { FormSection } from "@/components/dashboard/ui/FomSection";
 import { Box } from "@mui/material";
 import { DatePicker, TimePicker } from "@mui/x-date-pickers";
 import dayjs from "dayjs";
+import PhoneInput from "react-phone-input-2";
+import "react-phone-input-2/lib/style.css";
 
 const validateNotEmpty = (value: string, fieldName: string) => {
   return value.trim() !== "" || `${fieldName} cannot be just spaces`;
@@ -53,14 +55,7 @@ export function SectionEventDetails() {
             placeholder: "Enter Client Name",
             required: "Client name is required",
           },
-          {
-            name: "phoneNumber",
-            label: "Phone Number",
-            placeholder: "Enter Phone Number",
-            required: "Phone number is required",
-            type: "tel" as const,
-          },
-        ].map(({ name, label, placeholder, required, type }) => (
+        ].map(({ name, label, placeholder, required }) => (
           <Box
             key={name}
             sx={{ flex: { xs: "1 1 100%", md: "1 1 calc(33.33% - 12px)" } }}
@@ -68,7 +63,6 @@ export function SectionEventDetails() {
             <FormInput
               label={label}
               placeholder={placeholder}
-              type={type}
               error={!!errors[name]}
               helperText={errors[name]?.message as string}
               {...register(name, {
@@ -78,6 +72,62 @@ export function SectionEventDetails() {
             />
           </Box>
         ))}
+        
+        {/* Phone Number Field with PhoneInput */}
+        <Box sx={{ flex: { xs: "1 1 100%", md: "1 1 calc(33.33% - 12px)" } }}>
+          <Controller
+            name="phoneNumber"
+            control={control}
+            rules={{
+              required: "Phone number is required",
+              validate: (value) => {
+                if (!value || value.trim() === "") {
+                  return "Phone number is required";
+                }
+                // Check if the phone number is valid (at least 10 digits including country code)
+                const phoneNumber = value.replace(/\D/g, ''); // Remove all non-digits
+                if (phoneNumber.length < 10) {
+                  return "Please enter a valid phone number";
+                }
+                return true;
+              },
+            }}
+            render={({ field, fieldState }) => (
+              <Box>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Phone Number
+                </label>
+                <div className="w-full min-h-[40px] resize-none">
+                  <PhoneInput
+                    country="pk"
+                    value={field.value}
+                    onChange={(phone) => {
+                      field.onChange(phone);
+                      // Additional validation on change
+                      const phoneNumber = phone.replace(/\D/g, '');
+                      if (phoneNumber.length < 10) {
+                        field.onChange(phone); // Still update the field but it will be invalid
+                      }
+                    }}
+                    placeholder="Enter Phone Number"
+                    inputClass="rounded-md min-h-[40px] resize-none text-base px-3 py-1"
+                    containerClass="w-full"
+                    buttonClass="border-0 bg-transparent"
+                    isValid={(inputNumber) => {
+                      const phoneNumber = inputNumber.replace(/\D/g, '');
+                      return phoneNumber.length >= 10;
+                    }}
+                  />
+                </div>
+                {fieldState.error && (
+                  <div className="text-red-500 text-sm mt-2">
+                    {fieldState.error.message}
+                  </div>
+                )}
+              </Box>
+            )}
+          />
+        </Box>
       </Box>
 
       {/* Row 2 */}

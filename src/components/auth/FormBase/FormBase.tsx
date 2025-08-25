@@ -250,23 +250,31 @@ const FormBase = ({
 
   return (
     <Box
-      className="bg-white rounded-[1.25rem] shadow-[0_8px_16px_0_#BBBBBB26] w-[90vw] max-w-full md:w-[28rem] lg:w-[32rem] mx-auto md:mx-8 my-4 md:my-8 px-4 md:px-10 pt-8 md:pt-12 pb-4 md:pb-6"
+      className="bg-white rounded-[1.25rem] shadow-[0_8px_16px_0_#BBBBBB26] w-[90vw] max-w-full md:w-[26rem] lg:w-[30rem] mx-auto md:mx-8 my-4 md:my-6 px-4 md:px-8 pt-6 md:pt-8 pb-4 md:pb-6"
       sx={{
         minHeight: {
           xs: "15rem",
-          sm: "15",
-          md: "50rem",
+          sm: "15rem",
+          md: "auto",
+          lg: "auto",
+        },
+        maxHeight: {
+          xs: "none",
+          sm: "none", 
+          md: "85vh",
+          lg: "85vh",
         },
         display: "flex",
         flexDirection: "column",
         justifyContent: "space-between",
+        overflow: "hidden",
       }}
     >
-      <div className="flex-grow flex flex-col justify-center">
-        <div className="font-inter font-bold text-[2rem] text-[#1C2927] mb-2 text-center">
+      <div className="flex-grow flex flex-col justify-center overflow-y-auto">
+        <div className="font-inter font-bold text-[1.25rem] md:text-[1.5rem] lg:text-[1.75rem] text-[#1C2927] mb-1 md:mb-2 text-center">
           {titleMap[type]}
         </div>
-        <div className="font-inter font-normal text-[1.125rem] text-[#1C2927] mb-8 text-center">
+        <div className="font-inter font-normal text-[0.75rem] md:text-[0.875rem] lg:text-[1rem] text-[#1C2927] mb-3 md:mb-4 text-center">
           {subtitleMap[type]}
         </div>
 
@@ -301,7 +309,7 @@ const FormBase = ({
           type="submit"
           onClick={handleSubmit}
           disabled={loading}
-          className="w-full h-[3.57rem] rounded-[0.25rem] font-inter font-medium text-[1rem] leading-[100%] text-white transition mb-4 cursor-pointer"
+          className="w-full rounded-[0.25rem] font-inter font-medium text-[0.875rem] md:text-[1rem] leading-[100%] text-white transition mb-3 md:mb-4 cursor-pointer py-2 md:py-3"
           style={{
             background: "linear-gradient(90deg, #345794 0%, #101B2E 100%)",
             opacity: loading ? 0.6 : 1,
@@ -337,8 +345,8 @@ const FormBase = ({
         )}
       </div>
 
-      <div className="mt-10 flex justify-center">
-        <span className="font-inter font-normal text-sm md:text-[18px] md:leading-[27px] text-[#1C2927] text-center">
+      <div className="mt-3 md:mt-4 flex justify-center flex-shrink-0">
+        <span className="font-inter font-normal text-xs md:text-sm lg:text-base text-[#1C2927] text-center">
           Copyright © 2025 Falcon. All rights reserved
         </span>
       </div>

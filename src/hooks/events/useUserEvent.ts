@@ -41,6 +41,7 @@ interface EventType {
   pickupTime: string;
   addStops: string;
   feedbacks: Feedback[];
+  tripNotes: string;
 }
 
 interface ApiResponse {

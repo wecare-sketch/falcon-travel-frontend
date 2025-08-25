@@ -1,11 +1,13 @@
 "use client";
 
 import { Box } from "@mui/material";
-import InputField from "./InputField";
 import React, { useState } from "react";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
 import { useUpdateUserDetails } from "@/hooks/useUpdateUserDetails";
+import PhoneInput from "react-phone-input-2"; // Import PhoneInput component
+import "react-phone-input-2/lib/style.css"; // Import the default styles
+import InputField from "./InputField";
 
 type ApiError = {
   message: string;
@@ -19,9 +21,22 @@ type UserDetails = {
 const PersonalDetailsForm = () => {
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
+  const [phoneError, setPhoneError] = useState<string | null>(null); // Track phone validation error
   const router = useRouter();
 
   const { mutate, isPending } = useUpdateUserDetails();
+
+  const validatePhoneNumber = (phoneNumber: string) => {
+    if (!phoneNumber || phoneNumber.trim() === "") {
+      return "Phone number is required";
+    }
+    // Check if the phone number is valid (at least 10 digits including country code)
+    const phone = phoneNumber.replace(/\D/g, ''); // Remove all non-digits
+    if (phone.length < 10) {
+      return "Please enter a valid phone number";
+    }
+    return null;
+  };
 
   const handleSubmit = () => {
     if (!fullName || !phone) {
@@ -29,8 +44,15 @@ const PersonalDetailsForm = () => {
       return;
     }
 
-    const userDetails: UserDetails = { fullName, phone };
+    const phoneValidationError = validatePhoneNumber(phone);
+    if (phoneValidationError) {
+      setPhoneError(phoneValidationError);
+      toast.error(phoneValidationError);
+      return;
+    }
 
+    const userDetails: UserDetails = { fullName, phone };
+    setPhoneError("");
     mutate(userDetails, {
       onSuccess: () => {
         toast.success("Details saved successfully!");
@@ -51,6 +73,7 @@ const PersonalDetailsForm = () => {
         Add your Basic info to proceed
       </div>
 
+      {/* Full Name Field */}
       <InputField
         id="fullName"
         label="Full Name"
@@ -60,15 +83,33 @@ const PersonalDetailsForm = () => {
           setFullName(e.target.value)
         }
       />
-      <InputField
-        id="phone"
-        label="Phone Number"
-        placeholder="Enter Your Phone Number"
-        value={phone}
-        onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-          setPhone(e.target.value)
-        }
-      />
+
+      <div className="mb-6 ">
+        <label className="block text-lg text-black sm:text-sm mb-2">Phone Number</label>
+        <div className="w-full p-2 border border-gray-300 bg-gray-100 rounded-md min-h-[54px] resize-none sm:text-base md:text-lg lg:text-[16px]">
+          <PhoneInput
+            country="pk"
+            value={phone}
+            onChange={(phoneNumber) => {
+              setPhone(phoneNumber);
+              // Clear error when user starts typing
+              if (phoneError) {
+                setPhoneError(null);
+              }
+            }}
+            placeholder="Enter Your Phone Number"
+            inputClass="rounded-md min-h-[40px] resize-none sm:text-base md:text-lg lg:text-[16px] text-black"
+            isValid={(inputNumber) => {
+              const phone = inputNumber.replace(/\D/g, '');
+              return phone.length >= 10;
+            }}
+          />
+        </div>
+
+        {phoneError && (
+          <div className="text-red-500 text-sm mt-2">{phoneError}</div>
+        )}
+      </div>
 
       <Box className="flex flex-col md:flex-row justify-between items-center gap-4 mt-6">
         <button
@@ -95,4 +136,3 @@ const PersonalDetailsForm = () => {
 };
 
 export default PersonalDetailsForm;
-

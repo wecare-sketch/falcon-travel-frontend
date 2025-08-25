@@ -14,6 +14,7 @@ import { PageHeader } from "../PageHeader";
 import { CustomButton } from "@/components/shared/CustomButton";
 import { FeedbackSuccessDialog } from "./FeedbackSuccessDialog";
 import { useSubmitFeedback } from "@/hooks/events/useSubmitFeedback";
+import toast from "react-hot-toast";
 
 const feedbackQuestions = [
   "long established fact that a reader will be distracted by the readable content of a page",
@@ -85,10 +86,15 @@ export default function AddFeedback({
         setOpen(true);
         setDescription("");
         setRatings(Array(feedbackQuestions.length).fill(0));
+         setSelectedEventSlug(null);
+         setSelectedEventId("");
+        setActiveView("Feedback");
       },
+
       onError: (err) => {
         console.error("Feedback submission failed", err);
-        alert("Something went wrong. Please try again.");
+        toast.error("Feedback already submitted");
+        
       },
     });
   };

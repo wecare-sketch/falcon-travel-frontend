@@ -46,6 +46,7 @@ interface EventFormData {
   paymentStatus: string;
   depositAmount: number;
   vehicle: string;
+  tripNotes: string;
 }
 
 interface CreateEventModalProps {
@@ -59,19 +60,19 @@ interface CreateEventModalProps {
   isUserRequestPage?: boolean;
   setActiveView: (view: string) => void;
 }
+
 const validatePickupBeforeDropoff = (
   pickupDate: string,
   dropoffDate: string
 ) => {
-  if (!pickupDate || !dropoffDate) return true; 
+  if (!pickupDate || !dropoffDate) return true;
   const pickup = new Date(pickupDate);
   const dropoff = new Date(dropoffDate);
-  if (pickup >= dropoff) {
+  if (pickup > dropoff) {
     return "Pickup date must be before the drop-off date";
   }
-  return true; 
+  return true;
 };
-
 
 export function CreateEventModal({
   open,
@@ -99,6 +100,7 @@ export function CreateEventModal({
       pendingAmount: 0,
       equityDivision: 0,
       name: "",
+      tripNotes: "",
     },
   });
 
@@ -116,7 +118,8 @@ export function CreateEventModal({
       isUserRequestPage,
     });
   const isPending = status === "loading";
- const { refetch } = useAdminEvents();
+  const { refetch } = useAdminEvents();
+
   useEffect(() => {
     if (initialData) {
       reset(initialData);
@@ -126,27 +129,27 @@ export function CreateEventModal({
     }
   }, [initialData, reset]);
 
-const [currentStop, setCurrentStop] = useState<string>("");
+  const [currentStop, setCurrentStop] = useState<string>("");
 
-const handleAddStop = () => {
-  const trimmedStop = currentStop.trim();
-  if (trimmedStop) {
-    const newStops = [...getValues("addStops"), trimmedStop];
-    setValue("addStops", newStops);
-    setCurrentStop(""); 
-  }
-};
+  const handleAddStop = () => {
+    const trimmedStop = currentStop.trim();
+    if (trimmedStop) {
+      const newStops = [...getValues("addStops"), trimmedStop];
+      setValue("addStops", newStops);
+      setCurrentStop("");
+    }
+  };
 
   const handleCancel = () => {
     reset();
     onClose();
-     if (!isEditMode) {
-       setEventImage(null); 
-       setEventFile(null); 
-       if (fileInputRef.current) {
-         fileInputRef.current.value = "";
-       }
-     }
+    if (!isEditMode) {
+      setEventImage(null);
+      setEventFile(null);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+    }
   };
 
   const onSubmit = (data: EventFormData) => {
@@ -186,6 +189,11 @@ const handleAddStop = () => {
     );
 
     formData.append(
+      "tripNotes",
+      JSON.stringify(data.tripNotes)
+    );
+
+    formData.append(
       "vehicleInfo",
       JSON.stringify({
         vehicleName: data.vehicle,
@@ -211,11 +219,12 @@ const handleAddStop = () => {
           onSuccess: () => {
             toast.success("Event updated!");
             reset();
-            setEventImage(null); 
+            
+            setEventImage(null);
             setEventFile(null);
             onClose();
             refetch();
-
+            reset({ tripNotes: "" });
           },
           onError: () => toast.error("Failed to update event"),
         }
@@ -226,9 +235,9 @@ const handleAddStop = () => {
           toast.success("Event created!");
           setSlug(response?.data?.slug ?? null);
           setEventImage(null);
-          setEventFile(null); 
+          setEventFile(null);
           reset();
-          refetch()
+          refetch();
 
           if (role === "admin") {
             onClose();
@@ -264,12 +273,11 @@ const handleAddStop = () => {
       };
       reader.readAsDataURL(file);
     } else {
-      setEventImage(null); 
+      setEventImage(null);
       setEventFile(null);
-        
     }
   };
- 
+
   return (
     <>
       <FormProvider {...methods}>
@@ -323,7 +331,7 @@ const handleAddStop = () => {
                 variant="body2"
                 sx={{ color: "#000000", fontSize: "20px" }}
               >
-                {eventImage ? "Change Image" : "Add Event Image"}
+                Add Event Image
               </Typography>
               <input
                 type="file"
@@ -361,11 +369,10 @@ const handleAddStop = () => {
               </Avatar>
             </Box>
 
-            <SectionEventDetails/>
+            <SectionEventDetails />
             <SectionStops onAddStop={handleAddStop} />
             <SectionVehicleInfo />
             <SectionPaymentDetails />
-
             <Box
               sx={{
                 display: "flex",
