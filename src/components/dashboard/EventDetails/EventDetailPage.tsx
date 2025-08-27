@@ -1,11 +1,12 @@
 "use client";
-
+import { loadStripe } from "@stripe/stripe-js";
 import { PageHeader } from "../PageHeader";
 import { EventInfoCard } from "./EventInfoCard";
 import { MembersTable } from "./MembersTable";
-import { ShareItineraryPage } from "./ShareItineraryPage";
 import { useEventDetailsByPageType } from "@/hooks/events/useEventDetailsByPageType";
-import { useState } from "react";
+import axiosInstance from "@/lib/axios";
+import { useRouter } from "next/navigation";
+import toast from "react-hot-toast";
 
 interface EventDetailsPageProps {
   onBack?: () => void;
@@ -21,13 +22,19 @@ export interface Member {
   dueAmount: number;
   paymentStatus: "Paid" | "Pending" | "Overdue";
 }
+interface PaymentResponse {
+  data: {
+    sessionId: string;
+  };
+}
 
 export function EventDetailsPage({
   onBack,
   eventId,
   isUserRequestPage,
 }: EventDetailsPageProps) {
-  const [showShareItinerary, setShowShareItinerary] = useState(false);
+  const router = useRouter();
+
   const { event, isLoading, isError } = useEventDetailsByPageType(
     eventId,
     isUserRequestPage ?? false
@@ -35,7 +42,8 @@ export function EventDetailsPage({
 
   const formatValue = (value: unknown): string => {
     if (value == null) return "";
-    if (typeof value === "string" || typeof value === "number") return String(value);
+    if (typeof value === "string" || typeof value === "number")
+      return String(value);
     if (typeof value === "object") {
       const obj = value as Record<string, unknown>;
       const candidate =
@@ -53,7 +61,6 @@ export function EventDetailsPage({
     return "";
   };
 
-
   if (isLoading) {
     return <div className="text-center mt-6">Loading event...</div>;
   }
@@ -69,21 +76,67 @@ export function EventDetailsPage({
   };
 
   const handleShareIt = () => {
-    console.log("handleShareIt");
-    setShowShareItinerary(true);
+    const eventSlug = event?.slug;
+    console.log("event?.slug", eventSlug);
+    if (eventSlug) {
+      router.replace(`/shared/trip-details/${eventSlug}`);
+    } else {
+      console.error("Event slug is undefined or null");
+    }
+  };
+ 
+  // Handle Pay function
+  const handlePay = async () => {
+    const stripe = await loadStripe(
+      "pk_test_51S0P6SGmOtjjYLVJAYZV2O10382JEKrmyNhHyUW3MzJlGhNI8SaMQhQbRZ46zrzBdFYmCkKdXyIm7eCLZ3d1TWny00bwc5nU0P"
+    );
+    if (!stripe) {
+      console.error("Stripe failed to load.");
+      return;
+    }
+    try {
+      const response = await axiosInstance.post<PaymentResponse>(
+        "/payment/stripe",
+        {
+          amount: event?.pendingAmount,
+          slug: event?.slug,
+        }
+      );
+
+      if (response.status !== 200) {
+        console.error("Failed to create Stripe session");
+        return;
+      }
+      const { sessionId } = response.data.data;
+
+      // Redirect to Stripe Checkout
+      const { error } = await stripe.redirectToCheckout({
+        sessionId: sessionId, // Use session ID from backend
+      });
+
+      if (error) {
+        console.error("Stripe checkout error:", error);
+      }
+    } catch (error) {
+      console.error("Error creating Stripe session:", error);
+    }
   };
 
-  const handleBackFromShare = () => {
-    setShowShareItinerary(false);
+  const handleCopyClick = () => {
+    const eventSlug = event?.slug;
+    const url = `${window.location.origin}/shared/trip-details/${eventSlug}`;
+
+    navigator.clipboard
+      .writeText(url)
+      .then(() => {
+        toast.success("URL copied to clipboard!");
+      })
+      .catch((error) => {
+        console.error("Failed to copy text:", error);
+      });
   };
 
-  const handlePay = () => {
-    console.log("Pay Now");
-  };
 
-  if (showShareItinerary) {
-    return <ShareItineraryPage eventSlug={event?.slug || ""} onBack={handleBackFromShare} />;
-  }
 
   const membersData: Member[] | undefined =
     !isUserRequestPage && "participants" in event
@@ -118,6 +171,7 @@ export function EventDetailsPage({
         onDownloadInvoice={handleDownloadInvoice}
         onShareIt={handleShareIt}
         onPayNow={handlePay}
+        handleCopyClick={handleCopyClick}
       />
 
       {!isUserRequestPage && "participants" in event && (

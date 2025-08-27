@@ -1,7 +1,7 @@
 "use client";
 
 import { Box, Typography, Button } from "@mui/material";
-import { Phone, MapPin } from "lucide-react";
+import { Phone, MapPin, Copy } from "lucide-react";
 import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
 import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
 import { LabelValuePair } from "./ui/LabelValuePair";
@@ -9,7 +9,6 @@ import Image from "next/image";
 import React, { useState } from "react";
 import { useSelector } from "react-redux";
 import { RootState } from "@/store";
-
 interface EventInfoCardProps {
   eventType: string | undefined;
   vehicle: string | undefined;
@@ -22,6 +21,7 @@ interface EventInfoCardProps {
   onDownloadInvoice?: () => void;
   onShareIt?: () => void;
   onPayNow?: () => void;
+  handleCopyClick?: () => void;
 }
 
 export function EventInfoCard({
@@ -36,8 +36,11 @@ export function EventInfoCard({
   onDownloadInvoice,
   onShareIt,
   onPayNow,
+  handleCopyClick,
 }: EventInfoCardProps) {
   const role = useSelector((state: RootState) => state.userRole.role);
+  const calculatedPayableAmount = (totalAmount ?? 0) - (pendingAmount ?? 0);
+
   return (
     <Box
       sx={{
@@ -205,6 +208,14 @@ export function EventInfoCard({
               >
                 Share Itinerary
               </Button>
+              <div className="flex justify-center mt-2">
+                <Copy
+                  size={24}
+                  color="#2196F3"
+                  style={{ cursor: "pointer" }}
+                  onClick={handleCopyClick}
+                />
+              </div>
             </Box>
 
             <Button
@@ -228,11 +239,10 @@ export function EventInfoCard({
           </Box>
         ) : (
           <Box sx={{ flex: 1 }}>
-            {/* Total Amount Box */}
             <EventSummaryCard
               totalAmount={totalAmount}
               remainingAmount={pendingAmount}
-              payableAmount={totalAmount! - pendingAmount!}
+              payableAmount={calculatedPayableAmount}
             />
 
             {/* Action Buttons */}
@@ -268,6 +278,14 @@ export function EventInfoCard({
               >
                 Share
               </Button>
+              <div className="flex justify-center mt-2">
+                <Copy
+                  size={24}
+                  color="#2196F3"
+                  style={{ cursor: "pointer" }}
+                  onClick={handleCopyClick}
+                />
+              </div>
             </Box>
             <Button
               variant="contained"
@@ -371,7 +389,7 @@ function EventSummaryCard({
             marginLeft: { xs: 0, sm: 1 },
           }}
         >
-          $ {totalAmount}
+          ${totalAmount}
         </Typography>
       </Box>
 

@@ -78,7 +78,6 @@ export const useEventDetailsByPageType = (
     isError: boolean;
   };
 
-  console.log('userRequest', userRequest)
   if (isUserRequestPage) {
     return {
       event: userRequest.data,

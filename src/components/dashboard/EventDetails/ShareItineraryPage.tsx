@@ -21,10 +21,18 @@ interface ShareItineraryPageProps {
   onBack: () => void;
 }
 
+
+
 export function ShareItineraryPage({ eventSlug, onBack }: ShareItineraryPageProps) {
   const { data, isLoading, isError } = useGetSharedEvent(eventSlug);
   console.log(data);
   const event = data?.data;
+ const handleClick = (location: string): void => {
+   const url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+     location
+   )}`;
+   window.open(url, "_blank"); // Open in a new tab
+ };
 
   if (isLoading) {
     return (
@@ -57,10 +65,11 @@ export function ShareItineraryPage({ eventSlug, onBack }: ShareItineraryPageProp
     <div className="min-h-screen bg-gray-50">
       <PageHeader title="Trip Dashboard" onBack={onBack} />
 
-      {/* Status Bar */}
       <div className="bg-white px-4 py-3 flex items-center justify-between">
         <div>
-          <div className="text-sm text-blue-600 font-medium capitalize">{event?.status || "N/A"}</div>
+          <div className="text-sm text-blue-600 font-medium capitalize">
+            {event?.status || "N/A"}
+          </div>
           <div className="text-xl font-bold text-gray-900">
             Trip #{event?.trip_id || "N/A"}
           </div>
@@ -68,9 +77,7 @@ export function ShareItineraryPage({ eventSlug, onBack }: ShareItineraryPageProp
         <div className="text-right">
           <div className="text-sm text-gray-500">ETA</div>
           <div className="text-xl font-bold text-gray-900">
-            {event?.ETA
-              ? new Date(event.ETA).toLocaleDateString()
-              : "N/A"}
+            {event?.ETA ? new Date(event.ETA).toLocaleDateString() : "N/A"}
           </div>
         </div>
       </div>
@@ -137,13 +144,21 @@ export function ShareItineraryPage({ eventSlug, onBack }: ShareItineraryPageProp
               <div className="flex gap-4">
                 <div className="flex flex-col items-center">
                   <div className="w-8 h-8 bg-green-600 rounded-full flex items-center justify-center">
-                    <MapPin className="w-4 h-4 text-white" />
+                    <MapPin
+                      className="w-4 h-4 text-white cursor-pointer"
+                      onClick={() =>
+                        handleClick(
+                          event?.routeDetails?.location ||
+                            "Location not specified"
+                        )
+                      }
+                    />
                   </div>
                   <div className="w-px h-12 bg-gray-300 border-l-2 border-dashed border-gray-300 my-2"></div>
                 </div>
                 <div className="flex-1">
                   <div className="font-medium text-gray-900">
-                    Pickup Location
+                    Pickup Location kjik
                   </div>
                   <div className="text-gray-900 font-semibold">
                     {event?.routeDetails?.location || "Location not specified"}
@@ -158,35 +173,49 @@ export function ShareItineraryPage({ eventSlug, onBack }: ShareItineraryPageProp
               </div>
 
               {/* Route Stops */}
-              {event?.routeDetails?.route && event.routeDetails.route.length > 0 && 
-               event.routeDetails.route[0] && event.routeDetails.route[0].map((stop, index) => (
-                <div key={index} className="flex gap-4">
-                  <div className="flex flex-col items-center">
-                    <div className={`w-6 h-6 rounded-full flex items-center justify-center ${
-                      index === 0 ? 'bg-blue-500' : 
-                      index === event.routeDetails.route[0].length - 1 ? 'bg-red-600' : 'bg-yellow-500'
-                    }`}>
-                      <MapPin className="w-3 h-3 text-white" />
+              {event?.routeDetails?.route &&
+                event.routeDetails.route.length > 0 &&
+                event.routeDetails.route[0] &&
+                event.routeDetails.route[0].map((stop, index) => (
+                  <div key={index} className="flex gap-4">
+                    <div className="flex flex-col items-center">
+                      <div
+                        className={`w-6 h-6 rounded-full flex items-center justify-center ${
+                          index === 0
+                            ? "bg-blue-500"
+                            : index === event.routeDetails.route[0].length - 1
+                            ? "bg-red-600"
+                            : "bg-yellow-500"
+                        }`}
+                      >
+                        <MapPin
+                          className="w-3 h-3 text-white cursor-pointer"
+                          onClick={() => handleClick(stop)}
+                        />
+                      </div>
+                      {index < event.routeDetails.route[0].length - 1 && (
+                        <div className="w-px h-12 bg-gray-300 border-l-2 border-dashed border-gray-300 my-2"></div>
+                      )}
                     </div>
-                    {index < event.routeDetails.route[0].length - 1 && (
-                      <div className="w-px h-12 bg-gray-300 border-l-2 border-dashed border-gray-300 my-2"></div>
-                    )}
+                    <div className="flex-1">
+                      <div className="font-medium text-gray-900">
+                        {index === 0
+                          ? "First Stop"
+                          : index === event.routeDetails.route[0].length - 1
+                          ? "Destination"
+                          : `Stop ${index}`}
+                      </div>
+                      <div className="text-gray-900 font-semibold">{stop}</div>
+                      <div className="text-sm text-gray-500">
+                        {index === 0
+                          ? "Starting point"
+                          : index === event.routeDetails.route[0].length - 1
+                          ? "Final destination"
+                          : "Brief stop"}
+                      </div>
+                    </div>
                   </div>
-                  <div className="flex-1">
-                    <div className="font-medium text-gray-900">
-                      {index === 0 ? 'First Stop' : 
-                       index === event.routeDetails.route[0].length - 1 ? 'Destination' : `Stop ${index}`}
-                    </div>
-                    <div className="text-gray-900 font-semibold">
-                      {stop}
-                    </div>
-                    <div className="text-sm text-gray-500">
-                      {index === 0 ? 'Starting point' : 
-                       index === event.routeDetails.route[0].length - 1 ? 'Final destination' : 'Brief stop'}
-                    </div>
-                  </div>
-                </div>
-              ))}
+                ))}
             </div>
           </CardContent>
         </Card>
@@ -217,7 +246,9 @@ export function ShareItineraryPage({ eventSlug, onBack }: ShareItineraryPageProp
                 <span className="text-gray-600">Hours Locked</span>
                 <span className="font-semibold text-gray-900">
                   {event?.vehicleInfo?.hoursLocked
-                    ? new Date(event.vehicleInfo.hoursLocked).toLocaleDateString()
+                    ? new Date(
+                        event.vehicleInfo.hoursLocked
+                      ).toLocaleDateString()
                     : "N/A"}
                 </span>
               </div>
