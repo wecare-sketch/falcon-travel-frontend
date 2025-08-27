@@ -61,7 +61,7 @@ const CheckoutPage = ({ amount,slug }: { amount: number,slug:string }) => {
       elements,
       clientSecret,
       confirmParams: {
-        return_url: "https://falcon-travel-frontend.vercel.app/user/dashboard",
+        return_url: process.env.NEXT_PUBLIC_RETURN_URL!
       },
     });
 
