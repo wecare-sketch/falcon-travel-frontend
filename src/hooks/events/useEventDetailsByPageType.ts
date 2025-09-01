@@ -62,7 +62,8 @@ interface EventData {
 
 export const useEventDetailsByPageType = (
   eventId: string | undefined,
-  isUserRequestPage: boolean
+  isUserRequestPage: boolean,
+  role?: "admin" | "user" | null
 ) => {
   const stringEventId = eventId?.toString() ?? "";
 
@@ -71,7 +72,7 @@ export const useEventDetailsByPageType = (
   });
 
   const adminEvent = useGetEventByIdByRole(stringEventId, {
-    enabled: !isUserRequestPage && !!stringEventId,
+    enabled: !isUserRequestPage && !!stringEventId && !!role,
   }) as {
     data: EventData | undefined;
     isLoading: boolean;
