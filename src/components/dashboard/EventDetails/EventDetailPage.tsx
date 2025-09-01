@@ -1,17 +1,18 @@
 "use client";
-import { loadStripe } from "@stripe/stripe-js";
 import { PageHeader } from "../PageHeader";
 import { EventInfoCard } from "./EventInfoCard";
 import { MembersTable } from "./MembersTable";
 import { useEventDetailsByPageType } from "@/hooks/events/useEventDetailsByPageType";
-import axiosInstance from "@/lib/axios";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
+import { CustomPaymentModal } from "./CustomPaymentModal";
+import { useState } from "react";
 
 interface EventDetailsPageProps {
   onBack?: () => void;
   eventId?: string;
   isUserRequestPage?: boolean;
+  role?: "admin" | "user" | null;
 }
 
 export interface Member {
@@ -22,22 +23,21 @@ export interface Member {
   dueAmount: number;
   paymentStatus: "Paid" | "Pending" | "Overdue";
 }
-interface PaymentResponse {
-  data: {
-    sessionId: string;
-  };
-}
+
 
 export function EventDetailsPage({
   onBack,
   eventId,
   isUserRequestPage,
+  role,
 }: EventDetailsPageProps) {
   const router = useRouter();
+  const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
 
   const { event, isLoading, isError } = useEventDetailsByPageType(
     eventId,
-    isUserRequestPage ?? false
+    isUserRequestPage ?? false,
+    role
   );
 
   const formatValue = (value: unknown): string => {
@@ -86,41 +86,14 @@ export function EventDetailsPage({
   };
  
   // Handle Pay function
-  const handlePay = async () => {
-    const stripe = await loadStripe(
-      process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY || ""
-    );
-    if (!stripe) {
-      console.error("Stripe failed to load.");
-      return;
-    }
-    try {
-      const response = await axiosInstance.post<PaymentResponse>(
-        "/payment/stripe",
-        {
-          amount: event?.pendingAmount,
-          slug: event?.slug,
-        }
-      );
+  const handlePay = () => {
+    setIsPaymentModalOpen(true);
+  };
 
-      if (response.status !== 200) {
-        console.error("Failed to create Stripe session");
-        return;
-      }
-      const { sessionId } = response.data.data;
-      console.log("response", response);
-      console.log("sessionId", sessionId);
-      // Redirect to Stripe Checkout
-      const { error } = await stripe.redirectToCheckout({
-        sessionId: sessionId, // Use session ID from backend
-      });
-
-      if (error) {
-        console.error("Stripe checkout error:", error);
-      }
-    } catch (error) {
-      console.error("Error creating Stripe session:", error);
-    }
+  const handlePaymentSuccess = () => {
+    // Refresh event data or show success message
+    toast.success("Payment completed successfully!");
+    // You can add logic here to refresh the event data
   };
 
   const handleCopyClick = () => {
@@ -178,6 +151,15 @@ export function EventDetailsPage({
       {!isUserRequestPage && "participants" in event && (
         <MembersTable members={membersData} />
       )}
+
+      {/* Custom Payment Modal */}
+      <CustomPaymentModal
+        isOpen={isPaymentModalOpen}
+        onClose={() => setIsPaymentModalOpen(false)}
+        amount={event?.pendingAmount || 0}
+        eventSlug={event?.slug || ""}
+        onPaymentSuccess={handlePaymentSuccess}
+      />
     </>
   );
 }
