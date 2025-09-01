@@ -88,7 +88,7 @@ export function EventDetailsPage({
   // Handle Pay function
   const handlePay = async () => {
     const stripe = await loadStripe(
-      "pk_test_51S0P6SGmOtjjYLVJAYZV2O10382JEKrmyNhHyUW3MzJlGhNI8SaMQhQbRZ46zrzBdFYmCkKdXyIm7eCLZ3d1TWny00bwc5nU0P"
+      process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY || ""
     );
     if (!stripe) {
       console.error("Stripe failed to load.");
@@ -108,7 +108,8 @@ export function EventDetailsPage({
         return;
       }
       const { sessionId } = response.data.data;
-
+      console.log("response", response);
+      console.log("sessionId", sessionId);
       // Redirect to Stripe Checkout
       const { error } = await stripe.redirectToCheckout({
         sessionId: sessionId, // Use session ID from backend
