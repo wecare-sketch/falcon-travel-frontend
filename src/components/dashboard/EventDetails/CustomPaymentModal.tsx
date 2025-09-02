@@ -2,7 +2,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { loadStripe, Stripe } from "@stripe/stripe-js";
 import axiosInstance from "@/lib/axios";
-import toast from "react-hot-toast";
 
 interface CustomPaymentModalProps {
   isOpen: boolean;
@@ -30,10 +29,12 @@ export function CustomPaymentModal({
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [canMakePayment, setCanMakePayment] = useState(false);
+  const [isGooglePayLoading, setIsGooglePayLoading] = useState(true);
+  const [isGooglePayReady, setIsGooglePayReady] = useState(false);
   const buttonRef = useRef<HTMLDivElement>(null);
-  
-  // Single Stripe instance - created once and reused
-  const [stripeInstance, setStripeInstance] = useState<Stripe | null>(null);
+  const stripeRef = useRef<Stripe | null>(null);
+  const paymentRequestRef = useRef<ReturnType<Stripe['paymentRequest']> | null>(null);
+  const buttonElementRef = useRef<unknown>(null);
 
   const handlePayment = useCallback(async (paymentMethodId: string) => {
     setIsProcessing(true);
@@ -51,11 +52,11 @@ export function CustomPaymentModal({
 
       const { clientSecret } = response.data.data;
       
-      if (!stripeInstance) {
+      if (!stripeRef.current) {
         throw new Error("Stripe not available. Please refresh and try again.");
       }
 
-      const { error: confirmError, paymentIntent } = await stripeInstance.confirmCardPayment(
+      const { error: confirmError, paymentIntent } = await stripeRef.current.confirmCardPayment(
         clientSecret,
         { payment_method: paymentMethodId },
         { handleActions: false }
@@ -66,10 +67,9 @@ export function CustomPaymentModal({
       }
 
       if (paymentIntent.status !== "succeeded") {
-        await stripeInstance.confirmCardPayment(clientSecret);
+        await stripeRef.current.confirmCardPayment(clientSecret);
       }
 
-      toast.success("Payment completed successfully!");
       onPaymentSuccess();
       onClose();
 
@@ -78,29 +78,30 @@ export function CustomPaymentModal({
     } finally {
       setIsProcessing(false);
     }
-  }, [stripeInstance, amount, eventSlug, onPaymentSuccess, onClose]);
+  }, [amount, eventSlug, onPaymentSuccess, onClose]);
 
-  const initializeStripe = useCallback(async () => {
+  const initializeGooglePay = useCallback(async () => {
     try {
-      // Only create Stripe instance if it doesn't exist
-      if (!stripeInstance) {
-        const newStripeInstance = await loadStripe(
+      setIsGooglePayLoading(true);
+      setError(null);
+
+      // Load Stripe if not already loaded
+      if (!stripeRef.current) {
+        const stripe = await loadStripe(
           process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY || ""
         );
         
-        if (!newStripeInstance) {
-          setError("Failed to load Stripe");
-          return;
+        if (!stripe) {
+          throw new Error("Failed to load Stripe");
         }
-
-        setStripeInstance(newStripeInstance);
-        return; // Exit early, let the next call handle the setup
+        
+        stripeRef.current = stripe;
       }
 
-      // Use existing Stripe instance
-      const currentStripe = stripeInstance;
+      const stripe = stripeRef.current;
 
-      const pr = currentStripe.paymentRequest({
+      // Create payment request
+      const paymentRequest = stripe.paymentRequest({
         country: "US",
         currency: "usd",
         total: {
@@ -111,46 +112,150 @@ export function CustomPaymentModal({
         requestPayerEmail: true,
       });
 
-      const result = await pr.canMakePayment();
-      setCanMakePayment(!!result);
+      paymentRequestRef.current = paymentRequest;
 
-      if (result) {
-        pr.on("paymentmethod", async (ev) => {
+      // Check if payment can be made
+      const result = await paymentRequest.canMakePayment();
+
+      if (result && (result.applePay || result.googlePay)) {
+        setCanMakePayment(true);
+
+        // Set up payment method handler
+        paymentRequest.on("paymentmethod", async (ev) => {
           await handlePayment(ev.paymentMethod.id);
           ev.complete("success");
         });
 
-        pr.on("cancel", () => {
-          // Payment request cancelled
+        paymentRequest.on("cancel", () => {
+          console.log("Payment request cancelled");
         });
 
+        // Create and mount the button immediately
         if (buttonRef.current) {
-          const elements = currentStripe.elements();
-          const prButton = elements.create("paymentRequestButton", {
-            paymentRequest: pr,
-            style: {
-              paymentRequestButton: {
-                type: "default",
-                theme: "dark",
-                height: "48px",
-              },
-            },
-          });
           
-          buttonRef.current.innerHTML = "";
-          prButton.mount(buttonRef.current);
+          
+          try {
+            const elements = stripe.elements();
+            const prButton = elements.create("paymentRequestButton", {
+              paymentRequest: paymentRequest,
+              style: {
+                paymentRequestButton: {
+                  type: "default",
+                  theme: "dark",
+                  height: "48px",
+                },
+              },
+            });
+            
+            buttonElementRef.current = prButton;
+            
+            // Clear the container and mount the button
+            buttonRef.current.innerHTML = "";
+            prButton.mount(buttonRef.current);
+            
+            // Mark as ready
+            setIsGooglePayReady(true);
+            setIsGooglePayLoading(false);
+          } catch (buttonError: unknown) {
+            console.error("Error creating/mounting button:", buttonError);
+            
+            // Try fallback approach
+            try {
+              const elements = stripe.elements();
+              const fallbackButton = elements.create("paymentRequestButton", {
+                paymentRequest: paymentRequest,
+              });
+              
+              buttonElementRef.current = fallbackButton;
+              buttonRef.current.innerHTML = "";
+              fallbackButton.mount(buttonRef.current);
+              
+              setIsGooglePayReady(true);
+              setIsGooglePayLoading(false);
+            } catch (fallbackError: unknown) {
+              console.error("Fallback button creation also failed:", fallbackError);
+              const errorMessage = buttonError instanceof Error ? buttonError.message : 'Unknown error';
+              throw new Error(`Button creation failed: ${errorMessage}`);
+            }
+          }
+        } else {
+          console.error("Button container not found!");
+          throw new Error("Button container not available");
         }
+      } else {
+        // Payment methods not available
+        setCanMakePayment(false);
+        setIsGooglePayLoading(false);
+        console.log("Apple Pay/Google Pay not available:", result);
       }
-    } catch {
-      setError("Failed to initialize payment system");
+    } catch (error: unknown) {
+      console.error("Google Pay initialization error:", error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      setError(`Failed to initialize payment system: ${errorMessage}`);
+      setIsGooglePayLoading(false);
     }
-  }, [amount, handlePayment, stripeInstance]);
+  }, [amount, handlePayment]);
+
+  // Cleanup function
+  const cleanup = useCallback(() => {
+    if (buttonElementRef.current) {
+      try {
+        // Type check to ensure the element has a destroy method
+        const element = buttonElementRef.current as { destroy?: () => void };
+        if (typeof element.destroy === 'function') {
+          element.destroy();
+        }
+        buttonElementRef.current = null;
+      } catch (error) {
+        console.error("Error destroying button:", error);
+      }
+    }
+    
+    if (paymentRequestRef.current) {
+      paymentRequestRef.current = null;
+    }
+    
+    setIsGooglePayReady(false);
+    setIsGooglePayLoading(true);
+    setCanMakePayment(false);
+    setError(null);
+  }, []);
+
+  // Add a separate effect to handle ref attachment
+  useEffect(() => {
+    if (buttonRef.current) {
+      // Only initialize Google Pay when ref is actually attached
+      if (isOpen && !isGooglePayReady && !isGooglePayLoading) {
+        initializeGooglePay();
+      }
+    }
+  }, [isOpen, isGooglePayReady, isGooglePayLoading, initializeGooglePay]);
 
   useEffect(() => {
     if (isOpen) {
-      initializeStripe();
+      // Don't initialize immediately, wait for ref to be attached
+      
+      // Add a safety timeout to prevent infinite loading
+      const safetyTimeout = setTimeout(() => {
+        if (isGooglePayLoading && !isGooglePayReady) {
+          setIsGooglePayLoading(false);
+          setError("Google Pay initialization timed out. Please try again.");
+        }
+      }, 10000); // 10 seconds timeout
+      
+      return () => clearTimeout(safetyTimeout);
+    } else {
+      // Cleanup when modal closes
+      cleanup();
     }
-  }, [isOpen, initializeStripe]);
+  }, [isOpen, cleanup, isGooglePayLoading, isGooglePayReady]);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      cleanup();
+    };
+  }, [cleanup]);
 
   if (!isOpen) return null;
 
@@ -206,37 +311,65 @@ export function CustomPaymentModal({
             {/* Right Panel - Payment Methods */}
             <div className="w-1/2 p-6">
               <div className="space-y-6">
-                {/* Contact Information */}
-                <div className="space-y-4">
-                  <h3 className="text-lg font-semibold text-gray-900">Contact information</h3>
-                  <div>
-                    <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">Email</label>
-                    <input type="email" id="email" defaultValue="email@example.com" className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Enter your email" />
-                  </div>
-                </div>
-
                 {/* Payment Method */}
                 <div className="space-y-4">
                   <h3 className="text-lg font-semibold text-gray-900">Payment method</h3>
                   
-                  {canMakePayment ? (
-                    <div className="border border-gray-200 rounded-lg p-4">
-                      <div ref={buttonRef}></div>
-                      <p className="text-sm text-gray-500 mt-2 text-center">
-                        Secure payment with Apple Pay or Google Pay
-                      </p>
-                    </div>
-                  ) : (
-                    <div className="text-center py-8">
-                      <div className="text-gray-500 mb-4">
-                        <svg className="w-16 h-16 mx-auto text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                        </svg>
+                  {/* Always render the button container div */}
+                  <div className="border border-gray-200 rounded-lg p-4">
+                    {/* Always render the ref div */}
+                    <div ref={buttonRef} style={{ minHeight: '48px' }}></div>
+                    
+                    {isGooglePayLoading ? (
+                      <div className="text-center py-8">
+                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                        <p className="text-gray-600 mb-2">Setting up secure payment...</p>
+                        <p className="text-sm text-gray-500">This should only take a moment</p>
                       </div>
-                      <p className="text-gray-600 mb-2">Apple Pay and Google Pay are not available on this device</p>
-                      <p className="text-sm text-gray-500">Please use a supported device or browser</p>
-                    </div>
-                  )}
+                    ) : canMakePayment && isGooglePayReady ? (
+                      <>
+                        <p className="text-sm text-gray-500 mt-2 text-center">
+                          Secure payment with Apple Pay or Google Pay
+                        </p>
+                      </>
+                    ) : (
+                      <div className="text-center py-8">
+                        <div className="text-gray-500 mb-4">
+                          <svg className="w-16 h-16 mx-auto text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                          </svg>
+                        </div>
+                        <p className="text-gray-600 mb-2">Apple Pay and Google Pay are not available on this device</p>
+                        <p className="text-sm text-gray-500 mb-4">Please use a supported device or browser</p>
+                        <p className="text-xs text-gray-400 mb-2">
+                          Ref status: {buttonRef.current ? 'Attached' : 'Not attached'}
+                        </p>
+                        <button
+                          onClick={() => {
+                            cleanup();
+                            initializeGooglePay();
+                          }}
+                          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                        >
+                          Try Again
+                        </button>
+                        <button
+                          onClick={() => {
+                            console.log("Manual debug - buttonRef.current:", buttonRef.current);
+                            console.log("Manual debug - isOpen:", isOpen);
+                            console.log("Manual debug - isGooglePayReady:", isGooglePayReady);
+                            console.log("Manual debug - isGooglePayLoading:", isGooglePayLoading);
+                            if (buttonRef.current) {
+                              initializeGooglePay();
+                            }
+                          }}
+                          className="ml-2 px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 text-sm"
+                        >
+                          Debug
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 </div>
 
                 {/* Error Display */}

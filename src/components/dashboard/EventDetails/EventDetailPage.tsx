@@ -24,7 +24,6 @@ export interface Member {
   paymentStatus: "Paid" | "Pending" | "Overdue";
 }
 
-
 export function EventDetailsPage({
   onBack,
   eventId,
@@ -84,7 +83,7 @@ export function EventDetailsPage({
       console.error("Event slug is undefined or null");
     }
   };
- 
+
   // Handle Pay function
   const handlePay = () => {
     setIsPaymentModalOpen(true);
@@ -109,8 +108,6 @@ export function EventDetailsPage({
         console.error("Failed to copy text:", error);
       });
   };
-
-
 
   const membersData: Member[] | undefined =
     !isUserRequestPage && "participants" in event
@@ -153,13 +150,15 @@ export function EventDetailsPage({
       )}
 
       {/* Custom Payment Modal */}
-      <CustomPaymentModal
-        isOpen={isPaymentModalOpen}
-        onClose={() => setIsPaymentModalOpen(false)}
-        amount={event?.pendingAmount || 0}
-        eventSlug={event?.slug || ""}
-        onPaymentSuccess={handlePaymentSuccess}
-      />
+      {isPaymentModalOpen && (
+        <CustomPaymentModal
+          isOpen
+          onClose={() => setIsPaymentModalOpen(false)}
+          amount={event?.pendingAmount || 0}
+          eventSlug={event?.slug || ""}
+          onPaymentSuccess={handlePaymentSuccess}
+        />
+      )}
     </>
   );
 }
