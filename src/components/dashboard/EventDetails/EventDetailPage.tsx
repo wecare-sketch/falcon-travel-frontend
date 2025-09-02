@@ -6,7 +6,7 @@ import { useEventDetailsByPageType } from "@/hooks/events/useEventDetailsByPageT
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import { CustomPaymentModal } from "./CustomPaymentModal";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 interface EventDetailsPageProps {
   onBack?: () => void;
@@ -32,12 +32,23 @@ export function EventDetailsPage({
 }: EventDetailsPageProps) {
   const router = useRouter();
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+  const [payableAmount, setPayableAmount] = useState<number>(0);
 
   const { event, isLoading, isError } = useEventDetailsByPageType(
     eventId,
     isUserRequestPage ?? false,
     role
   );
+
+  // Calculate initial payable amount after event is loaded
+  const calculatedPayableAmount = (event?.totalAmount || 0) - (event?.pendingAmount || 0);
+
+  // Initialize payable amount when event is loaded
+  useEffect(() => {
+    if (event && calculatedPayableAmount > 0) {
+      setPayableAmount(calculatedPayableAmount);
+    }
+  }, [event, calculatedPayableAmount]);
 
   const formatValue = (value: unknown): string => {
     if (value == null) return "";
@@ -87,6 +98,11 @@ export function EventDetailsPage({
   // Handle Pay function
   const handlePay = () => {
     setIsPaymentModalOpen(true);
+  };
+
+  // Handle payable amount change
+  const handlePayableAmountChange = (amount: number) => {
+    setPayableAmount(amount);
   };
 
   const handlePaymentSuccess = () => {
@@ -143,6 +159,7 @@ export function EventDetailsPage({
         onShareIt={handleShareIt}
         onPayNow={handlePay}
         handleCopyClick={handleCopyClick}
+        onPayableAmountChange={handlePayableAmountChange}
       />
 
       {!isUserRequestPage && "participants" in event && (
@@ -154,7 +171,7 @@ export function EventDetailsPage({
         <CustomPaymentModal
           isOpen
           onClose={() => setIsPaymentModalOpen(false)}
-          amount={event?.pendingAmount || 0}
+          amount={payableAmount > 0 ? payableAmount : (event?.pendingAmount || 0)}
           eventSlug={event?.slug || ""}
           onPaymentSuccess={handlePaymentSuccess}
         />

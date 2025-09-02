@@ -22,6 +22,7 @@ interface EventInfoCardProps {
   onShareIt?: () => void;
   onPayNow?: () => void;
   handleCopyClick?: () => void;
+  onPayableAmountChange?: (amount: number) => void;
 }
 
 export function EventInfoCard({
@@ -37,6 +38,7 @@ export function EventInfoCard({
   onShareIt,
   onPayNow,
   handleCopyClick,
+  onPayableAmountChange,
 }: EventInfoCardProps) {
   const role = useSelector((state: RootState) => state.userRole.role);
   const calculatedPayableAmount = (totalAmount ?? 0) - (pendingAmount ?? 0);
@@ -243,6 +245,7 @@ export function EventInfoCard({
               totalAmount={totalAmount}
               remainingAmount={pendingAmount}
               payableAmount={calculatedPayableAmount}
+              onPayableAmountChange={onPayableAmountChange}
             />
 
             {/* Action Buttons */}
@@ -318,20 +321,61 @@ type EventSummaryCardProps = {
   totalAmount: number | undefined;
   remainingAmount: number | undefined;
   payableAmount: number | undefined;
+  onPayableAmountChange?: (amount: number) => void;
 };
 
 function EventSummaryCard({
   totalAmount,
   remainingAmount,
   payableAmount,
+  onPayableAmountChange,
 }: EventSummaryCardProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [editablePayable, setEditablePayable] = useState(payableAmount);
+  const [validationError, setValidationError] = useState<string>("");
 
   const handleEditClick = () => setIsEditing(true);
-  const handleSave = () => setIsEditing(false);
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) =>
-    setEditablePayable(Number(e.target.value));
+  const handleSave = () => {
+    if (editablePayable && editablePayable > (totalAmount || 0)) {
+      setValidationError("Payable amount cannot exceed total amount");
+      return;
+    }
+    if (editablePayable && editablePayable < 0) {
+      setValidationError("Payable amount cannot be negative");
+      return;
+    }
+    setValidationError("");
+    setIsEditing(false);
+    
+    // Notify parent component of the final value
+    if (onPayableAmountChange) {
+      onPayableAmountChange(editablePayable || 0);
+    }
+  };
+  
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = Number(e.target.value);
+    setEditablePayable(value);
+    
+    // Clear validation error when user starts typing
+    if (validationError) {
+      setValidationError("");
+    }
+    
+    // Validate in real-time
+    if (value > (totalAmount || 0)) {
+      setValidationError("Payable amount cannot exceed total amount");
+    } else if (value < 0) {
+      setValidationError("Payable amount cannot be negative");
+    } else {
+      setValidationError("");
+    }
+    
+    // Notify parent component of the change
+    if (onPayableAmountChange) {
+      onPayableAmountChange(value);
+    }
+  };
   return (
     <Box
       sx={{
@@ -471,21 +515,31 @@ function EventSummaryCard({
               Payable Amount
             </Typography>
             {isEditing ? (
-              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                <input
-                  type="number"
-                  value={editablePayable}
-                  onChange={handleChange}
-                  style={{
-                    width: 80,
-                    fontSize: 18,
-                    fontWeight: 700,
-                    padding: 4,
-                  }}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") handleSave();
-                  }}
-                />
+              <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
+                <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                  <input
+                    type="number"
+                    value={editablePayable}
+                    onChange={handleChange}
+                    className="text-black"
+                    style={{
+                      width: 80,
+                      fontSize: 18,
+                      fontWeight: 700,
+                      padding: 4,
+                      border: validationError ? "1px solid #d32f2f" : "1px solid #ccc",
+                      borderRadius: "4px",
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") handleSave();
+                    }}
+                  />
+                </Box>
+                {validationError && (
+                  <Typography sx={{ color: "#d32f2f", fontSize: 12, fontWeight: 500 }}>
+                    {validationError}
+                  </Typography>
+                )}
               </Box>
             ) : (
               <Typography sx={{ color: "#222", fontWeight: 700, fontSize: 22 }}>
