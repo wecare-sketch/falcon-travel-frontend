@@ -264,7 +264,7 @@ export function UpcomingEventsPage({
 
   if (selectedEventId !== null) {
     return (
-      <EventDetailsPage onBack={onBackhandler} eventId={selectedEventId} role={role} />
+      <EventDetailsPage onBack={onBackhandler} eventId={selectedEventId} />
     );
   }
 
