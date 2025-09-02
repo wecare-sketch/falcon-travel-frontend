@@ -36,6 +36,9 @@ export function CustomPaymentModal({
   const paymentRequestRef = useRef<ReturnType<Stripe['paymentRequest']> | null>(null);
   const buttonElementRef = useRef<unknown>(null);
 
+  // Validate amount - don't return early to avoid breaking hooks rules
+  const isValidAmount = amount > 0;
+
   const handlePayment = useCallback(async (paymentMethodId: string) => {
     setIsProcessing(true);
     setError(null);
@@ -106,7 +109,7 @@ export function CustomPaymentModal({
         currency: "usd",
         total: {
           label: "Event Payment",
-          amount: Math.round(amount * 100),
+          amount: Math.round(amount * 100), // Convert to cents for Stripe
         },
         requestPayerName: true,
         requestPayerEmail: true,
@@ -258,6 +261,26 @@ export function CustomPaymentModal({
   }, [cleanup]);
 
   if (!isOpen) return null;
+  
+  // Show error if amount is invalid
+  if (!isValidAmount) {
+    return (
+      <div className="fixed inset-0 z-[9999] overflow-y-auto bg-gray-50">
+        <div className="flex items-center justify-center min-h-screen p-4">
+          <div className="w-full max-w-md bg-white rounded-lg shadow-2xl p-6 text-center">
+            <div className="text-red-600 text-xl mb-4">Invalid Amount</div>
+            <div className="text-gray-600 mb-4">The payment amount must be greater than 0.</div>
+            <button 
+              onClick={onClose}
+              className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="fixed inset-0 z-[9999] overflow-y-auto bg-gray-50">
