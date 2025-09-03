@@ -177,6 +177,7 @@ export function EventDetailsPage({
 
       {/* EventInfoCard now tracks user's payable amount input for payment processing */}
       {/* Users can enter the amount they want to pay, which will be sent to the payment API */}
+      {/* Invoice download is now based on depositAmount > 0 instead of pendingAmount === 0 */}
       <EventInfoCard
         eventType={event?.eventType}
         vehicle={event?.vehicle}
@@ -186,6 +187,7 @@ export function EventDetailsPage({
         location={formatValue(event?.location)}
         totalAmount={event?.totalAmount}
         pendingAmount={event?.pendingAmount}
+        depositAmount={event?.depositAmount}
         eventSlug={event?.slug}
         onShareIt={handleShareIt}
         onPayNow={handlePay}

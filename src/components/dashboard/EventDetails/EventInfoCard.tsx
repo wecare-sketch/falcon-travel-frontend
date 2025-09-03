@@ -19,6 +19,7 @@ interface EventInfoCardProps {
   location: string | undefined;
   totalAmount: number | undefined;
   pendingAmount: number | undefined;
+  depositAmount: number | undefined;
   eventSlug: string | undefined;
   onShareIt?: () => void;
   onPayNow?: () => void;
@@ -37,6 +38,7 @@ export function EventInfoCard({
   location,
   totalAmount,
   pendingAmount,
+  depositAmount,
   eventSlug,
   onShareIt,
   onPayNow,
@@ -59,8 +61,9 @@ export function EventInfoCard({
     }
   };
 
-  // Check if invoice can be downloaded (only when fully paid)
-  const canDownloadInvoice = eventSlug && (pendingAmount === 0 || pendingAmount === null || pendingAmount === undefined);
+  // Check if invoice can be downloaded (only when deposit amount > 0)
+  // This changed from pendingAmount === 0 to depositAmount > 0 as per business requirements
+  const canDownloadInvoice = eventSlug && (depositAmount !== undefined && depositAmount !== null && depositAmount > 0);
 
   return (
     <Box
@@ -193,35 +196,9 @@ export function EventInfoCard({
               </Typography>
             </Box>
 
-            {/* Payment Status Indicator */}
+            {/* Payment Status Indicator - now based on depositAmount instead of pendingAmount */}
             {(() => {
-              if (pendingAmount !== undefined && pendingAmount !== null && pendingAmount > 0) {
-                return (
-                  <Box
-                    sx={{
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      mb: 2,
-                      p: 1,
-                      backgroundColor: "#FFF3E0",
-                      borderRadius: "8px",
-                      border: "1px solid #FFB74D"
-                    }}
-                  >
-                    <Typography
-                      variant="caption"
-                      sx={{
-                        color: "#E65100",
-                        fontSize: "12px",
-                        fontWeight: 500
-                      }}
-                    >
-                      ⚠️ Invoice will be available after full payment (${pendingAmount || 0} remaining)
-                    </Typography>
-                  </Box>
-                );
-              } else if (pendingAmount === 0) {
+              if (depositAmount !== undefined && depositAmount !== null && depositAmount > 0) {
                 return (
                   <Box
                     sx={{
@@ -243,7 +220,7 @@ export function EventInfoCard({
                         fontWeight: 500
                       }}
                     >
-                      ✅ Invoice available for download
+                      ✅ Invoice available for download (${depositAmount} deposited)
                     </Typography>
                   </Box>
                 );
@@ -256,20 +233,20 @@ export function EventInfoCard({
                       justifyContent: "center",
                       mb: 2,
                       p: 1,
-                      backgroundColor: "#F5F5F5",
+                      backgroundColor: "#FFF3E0",
                       borderRadius: "8px",
-                      border: "1px solid #E0E0E0"
+                      border: "1px solid #FFB74D"
                     }}
                   >
                     <Typography
                       variant="caption"
                       sx={{
-                        color: "#757575",
+                        color: "#E65100",
                         fontSize: "12px",
                         fontWeight: 500
                       }}
                     >
-                      ℹ️ Payment information not available
+                      ⚠️ Invoice will be available after deposit payment ($${depositAmount || 0} deposited)
                     </Typography>
                   </Box>
                 );
@@ -279,7 +256,7 @@ export function EventInfoCard({
             {/* Action Buttons */}
             <Box sx={{ display: "flex", gap: 2, mb: 2 }}>
               <Tooltip 
-                title={!eventSlug ? "Event information not available" : !canDownloadInvoice ? `Invoice available after full payment ($${pendingAmount || 0} remaining)` : "Click to download invoice"}
+                title={!eventSlug ? "Event information not available" : !canDownloadInvoice ? `Invoice available after deposit payment (minimum $1)` : "Click to download invoice"}
                 placement="top"
               >
                 <span>
@@ -301,7 +278,7 @@ export function EventInfoCard({
                       } : {},
                     }}
                   >
-                    {isDownloading ? "Downloading..." : canDownloadInvoice ? "Download Invoice" : "Invoice Unavailable"}
+                    {isDownloading ? "Downloading..." : canDownloadInvoice ? "Download Invoice" : "No Deposit"}
                   </Button>
                 </span>
               </Tooltip>
@@ -355,9 +332,35 @@ export function EventInfoCard({
           </Box>
         ) : (
           <Box sx={{ flex: 1 }}>
-            {/* Payment Status Indicator for User */}
+            {/* Payment Status Indicator for User - now based on depositAmount instead of pendingAmount */}
             {(() => {
-              if (pendingAmount !== undefined && pendingAmount !== null && pendingAmount > 0) {
+              if (depositAmount !== undefined && depositAmount !== null && depositAmount > 0) {
+                return (
+                  <Box
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      mb: 2,
+                      p: 1,
+                      backgroundColor: "#E8F5E8",
+                      borderRadius: "8px",
+                      border: "1px solid #4CAF50"
+                    }}
+                  >
+                    <Typography
+                      variant="caption"
+                      sx={{
+                        color: "#2E7D32",
+                        fontSize: "12px",
+                        fontWeight: 500,
+                      }}
+                    >
+                      ✅ Invoice available for download (${depositAmount} deposited)
+                    </Typography>
+                  </Box>
+                );
+              } else {
                 return (
                   <Box
                     sx={{
@@ -379,59 +382,7 @@ export function EventInfoCard({
                         fontWeight: 500
                       }}
                     >
-                      ⚠️ Invoice will be available after full payment (${pendingAmount || 0} remaining)
-                    </Typography>
-                  </Box>
-                );
-              } else if (pendingAmount === 0) {
-                return (
-                  <Box
-                    sx={{
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      mb: 2,
-                      p: 1,
-                      backgroundColor: "#E8F5E8",
-                      borderRadius: "8px",
-                      border: "1px solid #4CAF50"
-                    }}
-                  >
-                    <Typography
-                      variant="caption"
-                      sx={{
-                        color: "#2E7D32",
-                        fontSize: "12px",
-                        fontWeight: 500
-                      }}
-                    >
-                      ✅ Invoice available for download
-                    </Typography>
-                  </Box>
-                );
-              } else {
-                return (
-                  <Box
-                    sx={{
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      mb: 2,
-                      p: 1,
-                      backgroundColor: "#F5F5F5",
-                      borderRadius: "8px",
-                      border: "1px solid #E0E0E0"
-                    }}
-                  >
-                    <Typography
-                      variant="caption"
-                      sx={{
-                        color: "#757575",
-                        fontSize: "12px",
-                        fontWeight: 500
-                      }}
-                    >
-                      ℹ️ Payment information not available
+                      ⚠️ Invoice will be available after deposit payment ($${depositAmount || 0} deposited)
                     </Typography>
                   </Box>
                 );
@@ -460,7 +411,7 @@ export function EventInfoCard({
             {/* Action Buttons */}
             <Box sx={{ display: "flex", gap: 2, marginBottom: 2 }}>
               <Tooltip 
-                title={!eventSlug ? "Event information not available" : !canDownloadInvoice ? `Invoice available after full payment ($${pendingAmount || 0} remaining)` : "Click to download invoice"}
+                title={!eventSlug ? "Event information not available" : !canDownloadInvoice ? `Invoice available after deposit payment (minimum $1)` : "Click to download invoice"}
                 placement="top"
               >
                 <span>
@@ -482,7 +433,7 @@ export function EventInfoCard({
                       } : {},
                     }}
                   >
-                    {isDownloading ? "Downloading..." : canDownloadInvoice ? "Download Invoice" : "Invoice Unavailable"}
+                    {isDownloading ? "Downloading..." : canDownloadInvoice ? "Download Invoice" : "No Deposit"}
                   </Button>
                 </span>
               </Tooltip>
