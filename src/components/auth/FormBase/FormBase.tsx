@@ -93,7 +93,8 @@ const FormBase = ({
 
           if (accessToken) {
             localStorage.setItem("access_token", accessToken);
-            const decoded = jwtDecode<{ role: string }>(accessToken);
+            const decoded = jwtDecode<{ role: string, id: string }>(accessToken);
+            localStorage.setItem("userId", decoded.id);
             const role = decoded.role.toLowerCase();
             router.push(`/${role}/dashboard`);
           } else {
