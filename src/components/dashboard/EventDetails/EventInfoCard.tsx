@@ -6,7 +6,7 @@ import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
 import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
 import { LabelValuePair } from "./ui/LabelValuePair";
 import Image from "next/image";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 import { RootState } from "@/store";
 import { useDownloadInvoice } from "@/hooks/events/useDownloadInvoice";
@@ -20,6 +20,7 @@ interface EventInfoCardProps {
   totalAmount: number | undefined;
   pendingAmount: number | undefined;
   depositAmount: number | undefined;
+  userDepositedAmount?: number;
   eventSlug: string | undefined;
   onShareIt?: () => void;
   onPayNow?: () => void;
@@ -39,21 +40,36 @@ export function EventInfoCard({
   totalAmount,
   pendingAmount,
   depositAmount,
+  userDepositedAmount,
   eventSlug,
   onShareIt,
   onPayNow,
   handleCopyClick,
   onPayableAmountChange,
+  currentPayableAmount,
   onPayableAmountUpdate,
 }: EventInfoCardProps) {
   const role = useSelector((state: RootState) => state.userRole.role);
-  const calculatedPayableAmount = (totalAmount ?? 0) - (pendingAmount ?? 0);
-  
+
+  // Calculate fallback amount
+  const fallbackPayableAmount = (totalAmount ?? 0) - (pendingAmount ?? 0);
+
+  // Use the payable amount passed from parent (user's specific due amount) or fallback to calculated amount
+  const payableAmountToUse = currentPayableAmount ?? fallbackPayableAmount;
+
   // State to track the current payable amount entered by user
   // This amount will be sent to the payment API instead of the event's pending amount
-  const [currentUserPayableAmount, setCurrentUserPayableAmount] = useState(calculatedPayableAmount);
-  
-  const { mutate: downloadInvoice, isPending: isDownloading } = useDownloadInvoice();
+  const [currentUserPayableAmount, setCurrentUserPayableAmount] =
+    useState(payableAmountToUse);
+
+  // Update state when currentPayableAmount prop changes (e.g., when user's due amount is calculated)
+  useEffect(() => {
+    const newAmount = currentPayableAmount ?? fallbackPayableAmount;
+    setCurrentUserPayableAmount(newAmount);
+  }, [currentPayableAmount, fallbackPayableAmount]);
+
+  const { mutate: downloadInvoice, isPending: isDownloading } =
+    useDownloadInvoice();
 
   const handleDownloadInvoiceClick = () => {
     if (eventSlug) {
@@ -62,8 +78,23 @@ export function EventInfoCard({
   };
 
   // Check if invoice can be downloaded (only when deposit amount > 0)
-  // This changed from pendingAmount === 0 to depositAmount > 0 as per business requirements
-  const canDownloadInvoice = eventSlug && (depositAmount !== undefined && depositAmount !== null && depositAmount > 0);
+  // For admins: use event's depositAmount, For users: use their personal depositedAmount
+  const relevantDepositAmount =
+    role === "admin" ? depositAmount : userDepositedAmount;
+  const canDownloadInvoice =
+    eventSlug &&
+    relevantDepositAmount !== undefined &&
+    relevantDepositAmount !== null &&
+    relevantDepositAmount > 0;
+
+  console.log(
+    "Invoice logic - role:",
+    role,
+    "relevantDepositAmount:",
+    relevantDepositAmount,
+    "canDownloadInvoice:",
+    canDownloadInvoice
+  );
 
   return (
     <Box
@@ -196,9 +227,13 @@ export function EventInfoCard({
               </Typography>
             </Box>
 
-            {/* Payment Status Indicator - now based on depositAmount instead of pendingAmount */}
+            {/* Payment Status Indicator - based on relevantDepositAmount (admin: event's depositAmount, user: their depositedAmount) */}
             {(() => {
-              if (depositAmount !== undefined && depositAmount !== null && depositAmount > 0) {
+              if (
+                relevantDepositAmount !== undefined &&
+                relevantDepositAmount !== null &&
+                relevantDepositAmount > 0
+              ) {
                 return (
                   <Box
                     sx={{
@@ -209,7 +244,7 @@ export function EventInfoCard({
                       p: 1,
                       backgroundColor: "#E8F5E8",
                       borderRadius: "8px",
-                      border: "1px solid #4CAF50"
+                      border: "1px solid #4CAF50",
                     }}
                   >
                     <Typography
@@ -217,10 +252,11 @@ export function EventInfoCard({
                       sx={{
                         color: "#2E7D32",
                         fontSize: "12px",
-                        fontWeight: 500
+                        fontWeight: 500,
                       }}
                     >
-                      ✅ Invoice available for download (${depositAmount} deposited)
+                      ✅ Invoice available for download ($
+                      {relevantDepositAmount} deposited)
                     </Typography>
                   </Box>
                 );
@@ -235,7 +271,7 @@ export function EventInfoCard({
                       p: 1,
                       backgroundColor: "#FFF3E0",
                       borderRadius: "8px",
-                      border: "1px solid #FFB74D"
+                      border: "1px solid #FFB74D",
                     }}
                   >
                     <Typography
@@ -243,10 +279,11 @@ export function EventInfoCard({
                       sx={{
                         color: "#E65100",
                         fontSize: "12px",
-                        fontWeight: 500
+                        fontWeight: 500,
                       }}
                     >
-                      ⚠️ Invoice will be available after deposit payment ($${depositAmount || 0} deposited)
+                      ⚠️ Invoice will be available after deposit payment ($
+                      {relevantDepositAmount || 0} deposited)
                     </Typography>
                   </Box>
                 );
@@ -255,8 +292,14 @@ export function EventInfoCard({
 
             {/* Action Buttons */}
             <Box sx={{ display: "flex", gap: 2, mb: 2 }}>
-              <Tooltip 
-                title={!eventSlug ? "Event information not available" : !canDownloadInvoice ? `Invoice available after deposit payment (minimum $1)` : "Click to download invoice"}
+              <Tooltip
+                title={
+                  !eventSlug
+                    ? "Event information not available"
+                    : !canDownloadInvoice
+                    ? `Invoice available after deposit payment (minimum $1)`
+                    : "Click to download invoice"
+                }
                 placement="top"
               >
                 <span>
@@ -272,13 +315,19 @@ export function EventInfoCard({
                       fontWeight: 500,
                       fontSize: 14,
                       textTransform: "none",
-                      "&:hover": canDownloadInvoice ? {
-                        borderColor: "#2c4770",
-                        backgroundColor: "#f8f9fa",
-                      } : {},
+                      "&:hover": canDownloadInvoice
+                        ? {
+                            borderColor: "#2c4770",
+                            backgroundColor: "#f8f9fa",
+                          }
+                        : {},
                     }}
                   >
-                    {isDownloading ? "Downloading..." : canDownloadInvoice ? "Download Invoice" : "No Deposit"}
+                    {isDownloading
+                      ? "Downloading..."
+                      : canDownloadInvoice
+                      ? "Download Invoice"
+                      : "No Deposit"}
                   </Button>
                 </span>
               </Tooltip>
@@ -332,9 +381,13 @@ export function EventInfoCard({
           </Box>
         ) : (
           <Box sx={{ flex: 1 }}>
-            {/* Payment Status Indicator for User - now based on depositAmount instead of pendingAmount */}
+            {/* Payment Status Indicator for User - based on user's personal depositedAmount */}
             {(() => {
-              if (depositAmount !== undefined && depositAmount !== null && depositAmount > 0) {
+              if (
+                relevantDepositAmount !== undefined &&
+                relevantDepositAmount !== null &&
+                relevantDepositAmount > 0
+              ) {
                 return (
                   <Box
                     sx={{
@@ -345,7 +398,7 @@ export function EventInfoCard({
                       p: 1,
                       backgroundColor: "#E8F5E8",
                       borderRadius: "8px",
-                      border: "1px solid #4CAF50"
+                      border: "1px solid #4CAF50",
                     }}
                   >
                     <Typography
@@ -356,7 +409,8 @@ export function EventInfoCard({
                         fontWeight: 500,
                       }}
                     >
-                      ✅ Invoice available for download (${depositAmount} deposited)
+                      ✅ Invoice available for download ($
+                      {relevantDepositAmount} deposited)
                     </Typography>
                   </Box>
                 );
@@ -371,7 +425,7 @@ export function EventInfoCard({
                       p: 1,
                       backgroundColor: "#FFF3E0",
                       borderRadius: "8px",
-                      border: "1px solid #FFB74D"
+                      border: "1px solid #FFB74D",
                     }}
                   >
                     <Typography
@@ -379,10 +433,11 @@ export function EventInfoCard({
                       sx={{
                         color: "#E65100",
                         fontSize: "12px",
-                        fontWeight: 500
+                        fontWeight: 500,
                       }}
                     >
-                      ⚠️ Invoice will be available after deposit payment ($${depositAmount || 0} deposited)
+                      ⚠️ Invoice will be available after deposit payment ($
+                      {relevantDepositAmount || 0} deposited)
                     </Typography>
                   </Box>
                 );
@@ -410,8 +465,14 @@ export function EventInfoCard({
 
             {/* Action Buttons */}
             <Box sx={{ display: "flex", gap: 2, marginBottom: 2 }}>
-              <Tooltip 
-                title={!eventSlug ? "Event information not available" : !canDownloadInvoice ? `Invoice available after deposit payment (minimum $1)` : "Click to download invoice"}
+              <Tooltip
+                title={
+                  !eventSlug
+                    ? "Event information not available"
+                    : !canDownloadInvoice
+                    ? `Invoice available after deposit payment (minimum $1)`
+                    : "Click to download invoice"
+                }
                 placement="top"
               >
                 <span>
@@ -426,14 +487,20 @@ export function EventInfoCard({
                       borderColor: canDownloadInvoice ? "#345794" : "#E0E0E0",
                       fontWeight: 500,
                       fontSize: 16,
-                  textTransform: "none",
-                      "&:hover": canDownloadInvoice ? {
-                        borderColor: "#2c4770",
-                        backgroundColor: "#f8f9fa",
-                      } : {},
+                      textTransform: "none",
+                      "&:hover": canDownloadInvoice
+                        ? {
+                            borderColor: "#2c4770",
+                            backgroundColor: "#f8f9fa",
+                          }
+                        : {},
                     }}
                   >
-                    {isDownloading ? "Downloading..." : canDownloadInvoice ? "Download Invoice" : "No Deposit"}
+                    {isDownloading
+                      ? "Downloading..."
+                      : canDownloadInvoice
+                      ? "Download Invoice"
+                      : "No Deposit"}
                   </Button>
                 </span>
               </Tooltip>
@@ -507,6 +574,15 @@ function EventSummaryCard({
   const [editablePayable, setEditablePayable] = useState(payableAmount);
   const [validationError, setValidationError] = useState<string>("");
 
+  // Update editablePayable when payableAmount prop changes
+  useEffect(() => {
+    console.log(
+      "EventSummaryCard: payableAmount prop changed to:",
+      payableAmount
+    );
+    setEditablePayable(payableAmount);
+  }, [payableAmount]);
+
   const handleEditClick = () => setIsEditing(true);
   const handleSave = () => {
     // Validate that payable amount doesn't exceed total amount
@@ -521,22 +597,22 @@ function EventSummaryCard({
     }
     setValidationError("");
     setIsEditing(false);
-    
+
     // Notify parent component of the final value
     if (onPayableAmountChange) {
       onPayableAmountChange(editablePayable || 0);
     }
   };
-  
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = Number(e.target.value);
     setEditablePayable(value);
-    
+
     // Clear validation error when user starts typing
     if (validationError) {
       setValidationError("");
     }
-    
+
     // Validate in real-time to provide immediate feedback
     if (value > (totalAmount || 0)) {
       setValidationError("Payable amount cannot exceed total amount");
@@ -545,7 +621,7 @@ function EventSummaryCard({
     } else {
       setValidationError("");
     }
-    
+
     // Notify parent component of the change for payment processing
     if (onPayableAmountChange) {
       onPayableAmountChange(value);
@@ -702,7 +778,9 @@ function EventSummaryCard({
                       fontSize: 18,
                       fontWeight: 700,
                       padding: 4,
-                      border: validationError ? "1px solid #d32f2f" : "1px solid #ccc",
+                      border: validationError
+                        ? "1px solid #d32f2f"
+                        : "1px solid #ccc",
                       borderRadius: "4px",
                     }}
                     onKeyDown={(e) => {
@@ -711,7 +789,9 @@ function EventSummaryCard({
                   />
                 </Box>
                 {validationError && (
-                  <Typography sx={{ color: "#d32f2f", fontSize: 12, fontWeight: 500 }}>
+                  <Typography
+                    sx={{ color: "#d32f2f", fontSize: 12, fontWeight: 500 }}
+                  >
                     {validationError}
                   </Typography>
                 )}

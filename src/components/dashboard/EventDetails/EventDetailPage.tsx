@@ -35,24 +35,43 @@ export function EventDetailsPage({
   isUserRequestPage,
 }: EventDetailsPageProps) {
   const router = useRouter();
-  
+
   // State to track the payable amount entered by user in EventInfoCard
   // This amount is what the user specifically wants to pay, not the total pending amount
   const [userPayableAmount, setUserPayableAmount] = useState<number>(0);
+
+  // State to track the current user's deposited amount for invoice availability
+  const [userDepositedAmount, setUserDepositedAmount] = useState<number>(0);
 
   const { event, isLoading, isError } = useEventDetailsByPageType(
     eventId,
     isUserRequestPage ?? false
   );
-  
-  // Calculate initial payable amount when event data is available
-  // This sets the default value that users can then modify in the EventInfoCard
+
+  // Calculate initial payable amount based on current user's due amount
+  // Get user ID from localStorage and find their participant record
   useEffect(() => {
-    if (event?.totalAmount !== undefined && event?.pendingAmount !== undefined) {
-      const calculatedPayableAmount = (event.totalAmount || 0) - (event.pendingAmount || 0);
-      setUserPayableAmount(calculatedPayableAmount);
+    if (event && "participants" in event) {
+      const userId = localStorage.getItem("userId");
+      if (userId) {
+        // Find current user's participant record
+        const currentUserParticipant = event.participants.find(
+          (participant) => participant.user?.id === userId
+        );
+
+        if (currentUserParticipant) {
+          // Calculate user's due amount: equityAmount - depositedAmount
+          const userDueAmount =
+            currentUserParticipant.equityAmount -
+            currentUserParticipant.depositedAmount;
+          setUserPayableAmount(userDueAmount);
+
+          // Set user's deposited amount for invoice availability
+          setUserDepositedAmount(currentUserParticipant.depositedAmount);
+        }
+      }
     }
-  }, [event?.totalAmount, event?.pendingAmount]);
+  }, [event]);
 
   const formatValue = (value: unknown): string => {
     if (value == null) return "";
@@ -94,7 +113,7 @@ export function EventDetailsPage({
       console.error("Event slug is undefined or null");
     }
   };
- 
+
   // Handle Pay function - uses the payable amount entered by user in EventInfoCard
   const handlePay = async () => {
     const stripe = await loadStripe(
@@ -107,7 +126,7 @@ export function EventDetailsPage({
     try {
       console.log("Sending payment request with amount:", userPayableAmount);
       toast.success(`Processing payment for $${userPayableAmount}`);
-      
+
       // API endpoint updated to use /user/payment/stripe/:event format
       // Amount is now the user's entered payable amount instead of event's pending amount
       // This allows users to pay partial amounts as needed
@@ -152,8 +171,6 @@ export function EventDetailsPage({
       });
   };
 
-
-
   const membersData: Member[] | undefined =
     !isUserRequestPage && "participants" in event
       ? event.participants.map((participant) => ({
@@ -188,10 +205,12 @@ export function EventDetailsPage({
         totalAmount={event?.totalAmount}
         pendingAmount={event?.pendingAmount}
         depositAmount={event?.depositAmount}
+        userDepositedAmount={userDepositedAmount}
         eventSlug={event?.slug}
         onShareIt={handleShareIt}
         onPayNow={handlePay}
         handleCopyClick={handleCopyClick}
+        currentPayableAmount={userPayableAmount}
         onPayableAmountUpdate={setUserPayableAmount}
       />
 
