@@ -262,14 +262,9 @@ export function ShareItineraryPage({ eventSlug, onBack }: ShareItineraryPageProp
             <h3 className="text-lg font-semibold text-gray-900 mb-4">
               Trip Notes
             </h3>
-            {event?.tripNotes && event.tripNotes.length > 0 ? (
+            {event?.tripNotes ? (
               <ul className="space-y-2">
-                {event.tripNotes.map((note, index) => (
-                  <li key={index} className="flex items-start gap-2">
-                    <div className="w-1.5 h-1.5 bg-gray-400 rounded-full mt-2 flex-shrink-0"></div>
-                    <span className="text-gray-700">{note}</span>
-                  </li>
-                ))}
+                {event.tripNotes}
               </ul>
             ) : (
               <p className="text-gray-500 text-sm">No trip notes available</p>
