@@ -20,6 +20,8 @@ export interface Member {
   name: string;
   phoneNumber: string;
   email: string;
+  equityAmount: number;
+  depositedAmount: number;
   dueAmount: number;
   paymentStatus: "Paid" | "Pending" | "Overdue";
 }
@@ -42,6 +44,9 @@ export function EventDetailsPage({
 
   // State to track the current user's deposited amount for invoice availability
   const [userDepositedAmount, setUserDepositedAmount] = useState<number>(0);
+  
+  // State to track if the current user is the host of the event
+  const [isCurrentUserHost, setIsCurrentUserHost] = useState<boolean>(false);
 
   const { event, isLoading, isError } = useEventDetailsByPageType(
     eventId,
@@ -53,22 +58,47 @@ export function EventDetailsPage({
   useEffect(() => {
     if (event && "participants" in event) {
       const userId = localStorage.getItem("userId");
+      const userEmail = localStorage.getItem("userEmail");
+      
+      // Find current user's participant record
+      let currentUserParticipant = null;
       if (userId) {
-        // Find current user's participant record
-        const currentUserParticipant = event.participants.find(
+        currentUserParticipant = event.participants.find(
           (participant) => participant.user?.id === userId
         );
 
         if (currentUserParticipant) {
-          // Calculate user's due amount: equityAmount - depositedAmount
+          // Set user's deposited amount for invoice availability
+          setUserDepositedAmount(currentUserParticipant.depositedAmount);
+        }
+      }
+      
+      // Check if current user is the host by comparing emails
+      if (userEmail && event.host) {
+        const isHost = userEmail === event.host;
+        setIsCurrentUserHost(isHost);
+        console.log("Host check - userEmail:", userEmail, "eventHost:", event.host, "isHost:", isHost);
+        
+        // Set payable amount based on user role
+        if (isHost) {
+          // For hosts: use remaining amount (pendingAmount)
+          setUserPayableAmount(event.pendingAmount || 0);
+          console.log("Host payable amount set to remaining amount:", event.pendingAmount);
+        } else if (currentUserParticipant) {
+          // For regular users: calculate their due amount
           const userDueAmount =
             currentUserParticipant.equityAmount -
             currentUserParticipant.depositedAmount;
           setUserPayableAmount(userDueAmount);
-
-          // Set user's deposited amount for invoice availability
-          setUserDepositedAmount(currentUserParticipant.depositedAmount);
+          console.log("User payable amount set to due amount:", userDueAmount);
         }
+      } else if (currentUserParticipant) {
+        // If not host but found participant, calculate their due amount
+        const userDueAmount =
+          currentUserParticipant.equityAmount -
+          currentUserParticipant.depositedAmount;
+        setUserPayableAmount(userDueAmount);
+        console.log("User payable amount set to due amount:", userDueAmount);
       }
     }
   }, [event]);
@@ -114,7 +144,7 @@ export function EventDetailsPage({
     }
   };
 
-  // Handle Pay function - uses the payable amount entered by user in EventInfoCard
+  // Handle Pay function - uses different endpoints for hosts vs regular users
   const handlePay = async () => {
     const stripe = await loadStripe(
       process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY || ""
@@ -125,13 +155,20 @@ export function EventDetailsPage({
     }
     try {
       console.log("Sending payment request with amount:", userPayableAmount);
+      console.log("User is host:", isCurrentUserHost);
       toast.success(`Processing payment for $${userPayableAmount}`);
 
-      // API endpoint updated to use /user/payment/stripe/:event format
-      // Amount is now the user's entered payable amount instead of event's pending amount
-      // This allows users to pay partial amounts as needed
+      // Use different endpoints based on user role:
+      // For hosts: /user/payment/stripe/remaining/:event (pays for remaining amount)
+      // For regular users: /user/payment/stripe/:event (pays custom amount)
+      const endpoint = isCurrentUserHost 
+        ? `/user/payment/stripe/remaining/${event?.slug}`
+        : `/user/payment/stripe/${event?.slug}`;
+      
+      console.log("Using payment endpoint:", endpoint);
+
       const response = await axiosInstance.post<PaymentResponse>(
-        `/user/payment/stripe/${event?.slug}`,
+        endpoint,
         {
           amount: userPayableAmount || event?.pendingAmount,
         }
@@ -178,6 +215,8 @@ export function EventDetailsPage({
           name: participant.user?.fullName ?? "Unknown",
           phoneNumber: participant.user?.phoneNumber ?? "N/A",
           email: participant.email,
+          equityAmount: participant.equityAmount,
+          depositedAmount: participant.depositedAmount,
           dueAmount: participant.equityAmount - participant.depositedAmount,
           userStatus: participant.role === "host" ? "Host" : "Co-Host",
           paymentStatus: (participant.paymentStatus === "paid"
@@ -206,6 +245,7 @@ export function EventDetailsPage({
         pendingAmount={event?.pendingAmount}
         depositAmount={event?.depositAmount}
         userDepositedAmount={userDepositedAmount}
+        isCurrentUserHost={isCurrentUserHost}
         eventSlug={event?.slug}
         onShareIt={handleShareIt}
         onPayNow={handlePay}

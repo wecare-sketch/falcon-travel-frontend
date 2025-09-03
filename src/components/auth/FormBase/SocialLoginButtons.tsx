@@ -81,13 +81,22 @@ const SocialLoginButtons = () => {
         }
   
         localStorage.setItem("access_token", data.data);
-        const decoded = jwtDecode<{ role: string }>(data.data);
+        const decoded = jwtDecode<{ role: string, id: string, email: string }>(data.data);
+        localStorage.setItem("userId", decoded.id);
+        localStorage.setItem("userEmail", decoded.email);
         const role = decoded.role.toLowerCase();
         router.push(`/${role}/dashboard`);
-      } catch (error) {
+      } catch (error: unknown) {
         console.error("Google login error:", error);
         const message = error instanceof Error ? error.message : "Login failed";
-        toast.error(message);
+        
+        // Type guard to check if error is an Axios error with response
+        const isAxiosError = (err: unknown): err is { response: { data: { message: string } } } => {
+          return typeof err === 'object' && err !== null && 'response' in err;
+        };
+        
+        const axiosMessage = isAxiosError(error) ? error.response?.data?.message : undefined;
+        toast.error(axiosMessage || message);
       } finally {
         setIsLoading(false);
       }

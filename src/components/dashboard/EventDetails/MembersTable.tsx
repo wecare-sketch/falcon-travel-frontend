@@ -23,6 +23,8 @@ export interface Member {
   name: string
   phoneNumber: string
   email: string
+  equityAmount: number
+  depositedAmount: number
   dueAmount: number
   paymentStatus: "Paid" | "Pending" | "Overdue"
 }
@@ -85,6 +87,14 @@ export function MembersTable({ members }: MembersTableProps) {
             </Box>
             <Box mb={1}>
               <Typography fontSize={12} fontWeight={600} color="#345794">
+                Equity Amount:
+              </Typography>
+              <Typography fontSize={14} color="#000000">${member.equityAmount}</Typography>
+              <Typography fontSize={12} fontWeight={600} color="#345794">
+                Deposited Amount:
+              </Typography>
+              <Typography fontSize={14} color="#000000">${member.depositedAmount}</Typography>
+              <Typography fontSize={12} fontWeight={600} color="#345794">
                 Due Amount:
               </Typography>
               <Typography fontSize={14} color="#000000">${member.dueAmount}</Typography>
@@ -142,7 +152,7 @@ export function MembersTable({ members }: MembersTableProps) {
         <Table>
           <TableHead>
             <TableRow>
-              {["Member Name", "Phone Number", "Email Address", "Due Amount", "Payment Status"].map((text) => (
+              {["Member Name", "Phone Number", "Email Address", "Equity Amount", "Deposited Amount", "Due Amount", "Payment Status"].map((text) => (
                 <TableCell
                   key={text}
                   sx={{
@@ -177,6 +187,12 @@ export function MembersTable({ members }: MembersTableProps) {
                 </TableCell>
                 <TableCell sx={{ padding: "16px", borderBottom: "1px solid #F0F0F0" }}>
                   <MemberInfoCell icon={<Mail className="w-4 h-4 text-gray-400" />} value={member.email} />
+                </TableCell>
+                <TableCell sx={{ padding: "16px", borderBottom: "1px solid #F0F0F0" }}>
+                  <AmountCell amount={member.equityAmount} />
+                </TableCell>
+                <TableCell sx={{ padding: "16px", borderBottom: "1px solid #F0F0F0" }}>
+                  <AmountCell amount={member.depositedAmount} />
                 </TableCell>
                 <TableCell sx={{ padding: "16px", borderBottom: "1px solid #F0F0F0" }}>
                   <AmountCell amount={member.dueAmount} />

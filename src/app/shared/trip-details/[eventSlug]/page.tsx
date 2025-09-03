@@ -148,7 +148,7 @@ const { data, isLoading, isError } = useGetSharedEvent(eventSlug);
                 </div>
                 <div className="flex-1">
                   <div className="font-medium text-gray-900">
-                    Pickup Location kjik
+                    Pickup Location
                   </div>
                   <div className="text-gray-900 font-semibold">
                     {event?.routeDetails?.location || "Location not specified"}
