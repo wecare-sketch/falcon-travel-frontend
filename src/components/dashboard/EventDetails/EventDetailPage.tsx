@@ -7,6 +7,7 @@ import { useEventDetailsByPageType } from "@/hooks/events/useEventDetailsByPageT
 import axiosInstance from "@/lib/axios";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
+import { useState, useEffect } from "react";
 
 interface EventDetailsPageProps {
   onBack?: () => void;
@@ -34,11 +35,24 @@ export function EventDetailsPage({
   isUserRequestPage,
 }: EventDetailsPageProps) {
   const router = useRouter();
+  
+  // State to track the payable amount entered by user in EventInfoCard
+  // This amount is what the user specifically wants to pay, not the total pending amount
+  const [userPayableAmount, setUserPayableAmount] = useState<number>(0);
 
   const { event, isLoading, isError } = useEventDetailsByPageType(
     eventId,
     isUserRequestPage ?? false
   );
+  
+  // Calculate initial payable amount when event data is available
+  // This sets the default value that users can then modify in the EventInfoCard
+  useEffect(() => {
+    if (event?.totalAmount !== undefined && event?.pendingAmount !== undefined) {
+      const calculatedPayableAmount = (event.totalAmount || 0) - (event.pendingAmount || 0);
+      setUserPayableAmount(calculatedPayableAmount);
+    }
+  }, [event?.totalAmount, event?.pendingAmount]);
 
   const formatValue = (value: unknown): string => {
     if (value == null) return "";
@@ -71,10 +85,6 @@ export function EventDetailsPage({
     );
   }
 
-  const handleDownloadInvoice = () => {
-    console.log("Download invoice");
-  };
-
   const handleShareIt = () => {
     const eventSlug = event?.slug;
     console.log("event?.slug", eventSlug);
@@ -85,7 +95,7 @@ export function EventDetailsPage({
     }
   };
  
-  // Handle Pay function
+  // Handle Pay function - uses the payable amount entered by user in EventInfoCard
   const handlePay = async () => {
     const stripe = await loadStripe(
       process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY || ""
@@ -95,11 +105,16 @@ export function EventDetailsPage({
       return;
     }
     try {
+      console.log("Sending payment request with amount:", userPayableAmount);
+      toast.success(`Processing payment for $${userPayableAmount}`);
+      
+      // API endpoint updated to use /user/payment/stripe/:event format
+      // Amount is now the user's entered payable amount instead of event's pending amount
+      // This allows users to pay partial amounts as needed
       const response = await axiosInstance.post<PaymentResponse>(
-        "/payment/stripe",
+        `/user/payment/stripe/${event?.slug}`,
         {
-          amount: event?.pendingAmount,
-          slug: event?.slug,
+          amount: userPayableAmount || event?.pendingAmount,
         }
       );
 
@@ -160,6 +175,8 @@ export function EventDetailsPage({
     <>
       <PageHeader title="Event Details" onBack={onBack} />
 
+      {/* EventInfoCard now tracks user's payable amount input for payment processing */}
+      {/* Users can enter the amount they want to pay, which will be sent to the payment API */}
       <EventInfoCard
         eventType={event?.eventType}
         vehicle={event?.vehicle}
@@ -169,10 +186,11 @@ export function EventDetailsPage({
         location={formatValue(event?.location)}
         totalAmount={event?.totalAmount}
         pendingAmount={event?.pendingAmount}
-        onDownloadInvoice={handleDownloadInvoice}
+        eventSlug={event?.slug}
         onShareIt={handleShareIt}
         onPayNow={handlePay}
         handleCopyClick={handleCopyClick}
+        onPayableAmountUpdate={setUserPayableAmount}
       />
 
       {!isUserRequestPage && "participants" in event && (

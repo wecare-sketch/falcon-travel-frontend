@@ -1,6 +1,6 @@
 "use client";
 
-import { Box, Typography, Button } from "@mui/material";
+import { Box, Typography, Button, Tooltip } from "@mui/material";
 import { Phone, MapPin, Copy } from "lucide-react";
 import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
 import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
@@ -9,6 +9,7 @@ import Image from "next/image";
 import React, { useState } from "react";
 import { useSelector } from "react-redux";
 import { RootState } from "@/store";
+import { useDownloadInvoice } from "@/hooks/events/useDownloadInvoice";
 interface EventInfoCardProps {
   eventType: string | undefined;
   vehicle: string | undefined;
@@ -18,11 +19,13 @@ interface EventInfoCardProps {
   location: string | undefined;
   totalAmount: number | undefined;
   pendingAmount: number | undefined;
-  onDownloadInvoice?: () => void;
+  eventSlug: string | undefined;
   onShareIt?: () => void;
   onPayNow?: () => void;
   handleCopyClick?: () => void;
   onPayableAmountChange?: (amount: number) => void;
+  currentPayableAmount?: number;
+  onPayableAmountUpdate?: (amount: number) => void;
 }
 
 export function EventInfoCard({
@@ -34,14 +37,30 @@ export function EventInfoCard({
   location,
   totalAmount,
   pendingAmount,
-  onDownloadInvoice,
+  eventSlug,
   onShareIt,
   onPayNow,
   handleCopyClick,
   onPayableAmountChange,
+  onPayableAmountUpdate,
 }: EventInfoCardProps) {
   const role = useSelector((state: RootState) => state.userRole.role);
   const calculatedPayableAmount = (totalAmount ?? 0) - (pendingAmount ?? 0);
+  
+  // State to track the current payable amount entered by user
+  // This amount will be sent to the payment API instead of the event's pending amount
+  const [currentUserPayableAmount, setCurrentUserPayableAmount] = useState(calculatedPayableAmount);
+  
+  const { mutate: downloadInvoice, isPending: isDownloading } = useDownloadInvoice();
+
+  const handleDownloadInvoiceClick = () => {
+    if (eventSlug) {
+      downloadInvoice({ eventSlug });
+    }
+  };
+
+  // Check if invoice can be downloaded (only when fully paid)
+  const canDownloadInvoice = eventSlug && (pendingAmount === 0 || pendingAmount === null || pendingAmount === undefined);
 
   return (
     <Box
@@ -174,23 +193,118 @@ export function EventInfoCard({
               </Typography>
             </Box>
 
+            {/* Payment Status Indicator */}
+            {(() => {
+              if (pendingAmount !== undefined && pendingAmount !== null && pendingAmount > 0) {
+                return (
+                  <Box
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      mb: 2,
+                      p: 1,
+                      backgroundColor: "#FFF3E0",
+                      borderRadius: "8px",
+                      border: "1px solid #FFB74D"
+                    }}
+                  >
+                    <Typography
+                      variant="caption"
+                      sx={{
+                        color: "#E65100",
+                        fontSize: "12px",
+                        fontWeight: 500
+                      }}
+                    >
+                      ⚠️ Invoice will be available after full payment (${pendingAmount || 0} remaining)
+                    </Typography>
+                  </Box>
+                );
+              } else if (pendingAmount === 0) {
+                return (
+                  <Box
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      mb: 2,
+                      p: 1,
+                      backgroundColor: "#E8F5E8",
+                      borderRadius: "8px",
+                      border: "1px solid #4CAF50"
+                    }}
+                  >
+                    <Typography
+                      variant="caption"
+                      sx={{
+                        color: "#2E7D32",
+                        fontSize: "12px",
+                        fontWeight: 500
+                      }}
+                    >
+                      ✅ Invoice available for download
+                    </Typography>
+                  </Box>
+                );
+              } else {
+                return (
+                  <Box
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      mb: 2,
+                      p: 1,
+                      backgroundColor: "#F5F5F5",
+                      borderRadius: "8px",
+                      border: "1px solid #E0E0E0"
+                    }}
+                  >
+                    <Typography
+                      variant="caption"
+                      sx={{
+                        color: "#757575",
+                        fontSize: "12px",
+                        fontWeight: 500
+                      }}
+                    >
+                      ℹ️ Payment information not available
+                    </Typography>
+                  </Box>
+                );
+              }
+            })()}
+
             {/* Action Buttons */}
             <Box sx={{ display: "flex", gap: 2, mb: 2 }}>
-              <Button
-                variant="outlined"
-                disabled
-                sx={{
-                  flex: 1,
-                  backgroundColor: "#F5F5F5",
-                  color: "#BDBDBD",
-                  borderColor: "#E0E0E0",
-                  fontWeight: 500,
-                  fontSize: 14,
-                  textTransform: "none",
-                }}
+              <Tooltip 
+                title={!eventSlug ? "Event information not available" : !canDownloadInvoice ? `Invoice available after full payment ($${pendingAmount || 0} remaining)` : "Click to download invoice"}
+                placement="top"
               >
-                Download Invoice
-              </Button>
+                <span>
+                  <Button
+                    variant="outlined"
+                    disabled={!canDownloadInvoice || isDownloading}
+                    onClick={handleDownloadInvoiceClick}
+                    sx={{
+                      flex: 1,
+                      backgroundColor: canDownloadInvoice ? "#fff" : "#F5F5F5",
+                      color: canDownloadInvoice ? "#345794" : "#BDBDBD",
+                      borderColor: canDownloadInvoice ? "#345794" : "#E0E0E0",
+                      fontWeight: 500,
+                      fontSize: 14,
+                      textTransform: "none",
+                      "&:hover": canDownloadInvoice ? {
+                        borderColor: "#2c4770",
+                        backgroundColor: "#f8f9fa",
+                      } : {},
+                    }}
+                  >
+                    {isDownloading ? "Downloading..." : canDownloadInvoice ? "Download Invoice" : "Invoice Unavailable"}
+                  </Button>
+                </span>
+              </Tooltip>
 
               <Button
                 variant="outlined"
@@ -241,31 +355,137 @@ export function EventInfoCard({
           </Box>
         ) : (
           <Box sx={{ flex: 1 }}>
+            {/* Payment Status Indicator for User */}
+            {(() => {
+              if (pendingAmount !== undefined && pendingAmount !== null && pendingAmount > 0) {
+                return (
+                  <Box
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      mb: 2,
+                      p: 1,
+                      backgroundColor: "#FFF3E0",
+                      borderRadius: "8px",
+                      border: "1px solid #FFB74D"
+                    }}
+                  >
+                    <Typography
+                      variant="caption"
+                      sx={{
+                        color: "#E65100",
+                        fontSize: "12px",
+                        fontWeight: 500
+                      }}
+                    >
+                      ⚠️ Invoice will be available after full payment (${pendingAmount || 0} remaining)
+                    </Typography>
+                  </Box>
+                );
+              } else if (pendingAmount === 0) {
+                return (
+                  <Box
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      mb: 2,
+                      p: 1,
+                      backgroundColor: "#E8F5E8",
+                      borderRadius: "8px",
+                      border: "1px solid #4CAF50"
+                    }}
+                  >
+                    <Typography
+                      variant="caption"
+                      sx={{
+                        color: "#2E7D32",
+                        fontSize: "12px",
+                        fontWeight: 500
+                      }}
+                    >
+                      ✅ Invoice available for download
+                    </Typography>
+                  </Box>
+                );
+              } else {
+                return (
+                  <Box
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      mb: 2,
+                      p: 1,
+                      backgroundColor: "#F5F5F5",
+                      borderRadius: "8px",
+                      border: "1px solid #E0E0E0"
+                    }}
+                  >
+                    <Typography
+                      variant="caption"
+                      sx={{
+                        color: "#757575",
+                        fontSize: "12px",
+                        fontWeight: 500
+                      }}
+                    >
+                      ℹ️ Payment information not available
+                    </Typography>
+                  </Box>
+                );
+              }
+            })()}
+
+            {/* EventSummaryCard tracks user's entered payable amount for payment processing */}
             <EventSummaryCard
               totalAmount={totalAmount}
               remainingAmount={pendingAmount}
-              payableAmount={calculatedPayableAmount}
-              onPayableAmountChange={onPayableAmountChange}
+              payableAmount={currentUserPayableAmount}
+              onPayableAmountChange={(amount) => {
+                // Update local state for UI display
+                setCurrentUserPayableAmount(amount);
+                // Notify parent components about the change
+                if (onPayableAmountChange) {
+                  onPayableAmountChange(amount);
+                }
+                // Update the payment amount that will be sent to the API
+                if (onPayableAmountUpdate) {
+                  onPayableAmountUpdate(amount);
+                }
+              }}
             />
 
             {/* Action Buttons */}
             <Box sx={{ display: "flex", gap: 2, marginBottom: 2 }}>
-              <Button
-                variant="outlined"
-                disabled
-                sx={{
-                  flex: 1,
-                  background: "#F5F5F5",
-                  color: "#BDBDBD",
-                  borderColor: "#E0E0E0",
-                  fontWeight: 500,
-                  fontSize: 16,
-                  textTransform: "none",
-                }}
-                onClick={onDownloadInvoice}
+              <Tooltip 
+                title={!eventSlug ? "Event information not available" : !canDownloadInvoice ? `Invoice available after full payment ($${pendingAmount || 0} remaining)` : "Click to download invoice"}
+                placement="top"
               >
-                Download Invoice
-              </Button>
+                <span>
+                  <Button
+                    variant="outlined"
+                    disabled={!canDownloadInvoice || isDownloading}
+                    onClick={handleDownloadInvoiceClick}
+                    sx={{
+                      flex: 1,
+                      background: canDownloadInvoice ? "#fff" : "#F5F5F5",
+                      color: canDownloadInvoice ? "#2196F3" : "#BDBDBD",
+                      borderColor: canDownloadInvoice ? "#345794" : "#E0E0E0",
+                      fontWeight: 500,
+                      fontSize: 16,
+                  textTransform: "none",
+                      "&:hover": canDownloadInvoice ? {
+                        borderColor: "#2c4770",
+                        backgroundColor: "#f8f9fa",
+                      } : {},
+                    }}
+                  >
+                    {isDownloading ? "Downloading..." : canDownloadInvoice ? "Download Invoice" : "Invoice Unavailable"}
+                  </Button>
+                </span>
+              </Tooltip>
               <Button
                 variant="outlined"
                 sx={{
@@ -290,6 +510,8 @@ export function EventInfoCard({
                 />
               </div>
             </Box>
+            {/* Pay Now button will use the payable amount entered by user above */}
+            {/* The payment will be processed for the amount shown in the Payable Amount field */}
             <Button
               variant="contained"
               sx={{
@@ -336,10 +558,12 @@ function EventSummaryCard({
 
   const handleEditClick = () => setIsEditing(true);
   const handleSave = () => {
+    // Validate that payable amount doesn't exceed total amount
     if (editablePayable && editablePayable > (totalAmount || 0)) {
       setValidationError("Payable amount cannot exceed total amount");
       return;
     }
+    // Validate that payable amount is not negative
     if (editablePayable && editablePayable < 0) {
       setValidationError("Payable amount cannot be negative");
       return;
@@ -362,7 +586,7 @@ function EventSummaryCard({
       setValidationError("");
     }
     
-    // Validate in real-time
+    // Validate in real-time to provide immediate feedback
     if (value > (totalAmount || 0)) {
       setValidationError("Payable amount cannot exceed total amount");
     } else if (value < 0) {
@@ -371,7 +595,7 @@ function EventSummaryCard({
       setValidationError("");
     }
     
-    // Notify parent component of the change
+    // Notify parent component of the change for payment processing
     if (onPayableAmountChange) {
       onPayableAmountChange(value);
     }
