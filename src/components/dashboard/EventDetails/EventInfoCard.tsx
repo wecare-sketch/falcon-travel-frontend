@@ -21,6 +21,7 @@ interface EventInfoCardProps {
   pendingAmount: number | undefined;
   depositAmount: number | undefined;
   userDepositedAmount?: number;
+  isCurrentUserHost?: boolean;
   eventSlug: string | undefined;
   onShareIt?: () => void;
   onPayNow?: () => void;
@@ -41,6 +42,7 @@ export function EventInfoCard({
   pendingAmount,
   depositAmount,
   userDepositedAmount,
+  isCurrentUserHost,
   eventSlug,
   onShareIt,
   onPayNow,
@@ -77,19 +79,25 @@ export function EventInfoCard({
     }
   };
 
-  // Check if invoice can be downloaded (only when deposit amount > 0)
-  // For admins: use event's depositAmount, For users: use their personal depositedAmount
+  // Check if invoice can be downloaded
+  // For admins: use event's depositAmount, For hosts: always allow, For regular users: use their personal depositedAmount
   const relevantDepositAmount =
     role === "admin" ? depositAmount : userDepositedAmount;
+  
   const canDownloadInvoice =
     eventSlug &&
-    relevantDepositAmount !== undefined &&
-    relevantDepositAmount !== null &&
-    relevantDepositAmount > 0;
+    (role === "admin" 
+      ? (relevantDepositAmount !== undefined && relevantDepositAmount !== null && relevantDepositAmount > 0)
+      : isCurrentUserHost 
+        ? true // Hosts can always download invoices regardless of deposit amount
+        : (relevantDepositAmount !== undefined && relevantDepositAmount !== null && relevantDepositAmount > 0)
+    );
 
   console.log(
     "Invoice logic - role:",
     role,
+    "isCurrentUserHost:",
+    isCurrentUserHost,
     "relevantDepositAmount:",
     relevantDepositAmount,
     "canDownloadInvoice:",
@@ -229,11 +237,7 @@ export function EventInfoCard({
 
             {/* Payment Status Indicator - based on relevantDepositAmount (admin: event's depositAmount, user: their depositedAmount) */}
             {(() => {
-              if (
-                relevantDepositAmount !== undefined &&
-                relevantDepositAmount !== null &&
-                relevantDepositAmount > 0
-              ) {
+              if (canDownloadInvoice) {
                 return (
                   <Box
                     sx={{
@@ -255,8 +259,8 @@ export function EventInfoCard({
                         fontWeight: 500,
                       }}
                     >
-                      ✅ Invoice available for download ($
-                      {relevantDepositAmount} deposited)
+                      ✅ Invoice available for download
+                      {role === "admin" && ` ($${relevantDepositAmount} deposited)`}
                     </Typography>
                   </Box>
                 );
@@ -381,13 +385,9 @@ export function EventInfoCard({
           </Box>
         ) : (
           <Box sx={{ flex: 1 }}>
-            {/* Payment Status Indicator for User - based on user's personal depositedAmount */}
+            {/* Payment Status Indicator for User - based on user's personal depositedAmount or host status */}
             {(() => {
-              if (
-                relevantDepositAmount !== undefined &&
-                relevantDepositAmount !== null &&
-                relevantDepositAmount > 0
-              ) {
+              if (canDownloadInvoice) {
                 return (
                   <Box
                     sx={{
@@ -409,8 +409,8 @@ export function EventInfoCard({
                         fontWeight: 500,
                       }}
                     >
-                      ✅ Invoice available for download ($
-                      {relevantDepositAmount} deposited)
+                      ✅ Invoice available for download
+                      {isCurrentUserHost ? " (Host privileges)" : ` ($${relevantDepositAmount} deposited)`}
                     </Typography>
                   </Box>
                 );
@@ -530,25 +530,31 @@ export function EventInfoCard({
             </Box>
             {/* Pay Now button will use the payable amount entered by user above */}
             {/* The payment will be processed for the amount shown in the Payable Amount field */}
+            {/* Button is disabled when payable amount is 0 or less */}
             <Button
               variant="contained"
+              disabled={currentUserPayableAmount <= 0}
               sx={{
                 width: "100%",
-                background: "#345794",
+                background: currentUserPayableAmount <= 0 ? "#BDBDBD" : "#345794",
                 color: "#fff",
                 fontWeight: 600,
                 fontSize: 18,
                 textTransform: "none",
                 borderRadius: "6px",
                 boxShadow: "none",
-                "&:hover": {
+                "&:hover": currentUserPayableAmount > 0 ? {
                   background: "#2c4770",
                   boxShadow: "none",
+                } : {},
+                "&:disabled": {
+                  background: "#BDBDBD",
+                  color: "#fff",
                 },
               }}
               onClick={onPayNow}
             >
-              Pay Now
+              {currentUserPayableAmount <= 0 ? "Pay Now" : "Pay Now"}
             </Button>
           </Box>
         )}
