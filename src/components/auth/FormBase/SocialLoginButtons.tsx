@@ -67,9 +67,17 @@ const SocialLoginButtons = () => {
           throw new Error("Google email not verified");
         }
   
-        const endpoint = inviteToken
-          ? `/auth/social/google/signup/${inviteToken}`
-          : `/auth/social/google/login`;
+        // Determine endpoint based on form type and invite token
+        let endpoint;
+        if (inviteToken) {
+          // If there's an invite token, use appropriate endpoint based on form type
+          endpoint = formType === "sign-in" 
+            ? `/auth/social/google/login?token=${inviteToken}`
+            : `/auth/social/google/signup/${inviteToken}`;
+        } else {
+          // No invite token, use regular login endpoint
+          endpoint = `/auth/social/google/login`;
+        }
   
         const { data } = await axiosInstance.post<ApiResponse>(endpoint, {
           authToken: idToken,
@@ -101,7 +109,7 @@ const SocialLoginButtons = () => {
         setIsLoading(false);
       }
     },
-    [inviteToken, router]
+    [inviteToken, router, formType]
   );
 
   useEffect(() => {

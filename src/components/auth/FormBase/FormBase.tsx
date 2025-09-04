@@ -81,8 +81,10 @@ const FormBase = ({
         }
         try {
           setLoading(true);
+          // Add invite token as query parameter if it exists
+          const loginUrl = inviteToken ? `/auth/login?token=${inviteToken}` : "/auth/login";
           const res = await axiosInstance.post<{ data?: string }>(
-            "/auth/login",
+            loginUrl,
             {
               email,
               password: loginPassword,
@@ -326,7 +328,7 @@ const FormBase = ({
               <span>
                 Already have an account?{" "}
                 <Link
-                  href="/auth/sign-in"
+                  href={inviteToken ? `/auth/sign-in/${inviteToken}` : "/auth/sign-in"}
                   className="text-[#345794] font-bold hover:underline"
                 >
                   Sign In
@@ -336,7 +338,7 @@ const FormBase = ({
               <span>
                 New here?{" "}
                 <Link
-                  href="/auth/sign-up"
+                  href={inviteToken ? `/auth/sign-up/${inviteToken}` : "/auth/sign-up"}
                   className="text-[#345794] font-bold hover:underline"
                 >
                   Sign Up
