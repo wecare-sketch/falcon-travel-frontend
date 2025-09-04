@@ -36,6 +36,8 @@ export function Header({
     setIsSettingsOpen(false)
   }
 
+  const email = localStorage.getItem("userEmail");
+
   return (
     <>
       <AppBar
@@ -160,7 +162,7 @@ export function Header({
         open={isSettingsOpen}
         onClose={handleCloseSettings}
         userName={userName}
-      userEmail="james.watson@example.com"
+      userEmail={email || "N/A"}
         userAvatar={userAvatar}
       />
     </>
