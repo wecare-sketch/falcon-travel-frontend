@@ -217,7 +217,7 @@ export function EventDetailsPage({
           email: participant.email,
           equityAmount: participant.equityAmount,
           depositedAmount: participant.depositedAmount,
-          dueAmount: participant.equityAmount - participant.depositedAmount,
+          dueAmount: Math.max(0, participant.equityAmount - participant.depositedAmount),
           userStatus: participant.role === "host" ? "Host" : "Co-Host",
           paymentStatus: (participant.paymentStatus === "paid"
             ? "Paid"
