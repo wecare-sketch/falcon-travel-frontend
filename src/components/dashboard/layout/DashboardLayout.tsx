@@ -114,12 +114,13 @@ export function DashboardLayout({ role }: Readonly<DashboardLayoutProps>) {
         return <div className="p-4">Select a view</div>;
     }
   };
+  const name = localStorage.getItem("name");
 
   return (
     <div className="min-h-screen bg-[#F8F9FA]">
       <Header
-        title="Welcome Back"
-        userName="John Doe"
+        title={`Welcome ${name}`}
+        userName={name || "John Doe"}
         userAvatar="/images/avatar.png"
         onToggleSidebar={toggleSidebar}
       />

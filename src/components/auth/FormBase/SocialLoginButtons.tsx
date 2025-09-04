@@ -89,7 +89,8 @@ const SocialLoginButtons = () => {
         }
   
         localStorage.setItem("access_token", data.data);
-        const decoded = jwtDecode<{ role: string, id: string, email: string }>(data.data);
+        const decoded = jwtDecode<{ role: string, id: string, email: string, name: string }>(data.data);
+        localStorage.setItem("name", decoded.name);
         localStorage.setItem("userId", decoded.id);
         localStorage.setItem("userEmail", decoded.email);
         const role = decoded.role.toLowerCase();
