@@ -1,11 +1,11 @@
 "use client";
 
-import { useAdminEvents } from "@/hooks/events/useAdminEvents";
+import { useDashboardPaymentStatus } from "@/hooks/dashboard";
 import { Card, Typography, Box } from "@mui/material";
 import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
 
 export function PaymentStatusChart() {
-  const { data, isLoading, isError } = useAdminEvents();
+  const { data, isLoading, isError } = useDashboardPaymentStatus();
 
   if (isLoading) {
     return (
@@ -103,22 +103,27 @@ export function PaymentStatusChart() {
     );
   }
 
-  const paymentCounts = { paid: 0, pending: 0, overdue: 0 };
-
-  data?.events.forEach((event) => {
-    if (event.paymentStatus.toLowerCase() === "paid") {
-      paymentCounts.paid++;
-    } else if (event.paymentStatus.toLowerCase() === "pending") {
-      paymentCounts.pending++;
-    } else if (event.paymentStatus.toLowerCase() === "overdue") {
-      paymentCounts.overdue++;
+  // Transform API data to chart format
+  const getStatusColor = (status: string) => {
+    switch (status.toLowerCase()) {
+      case "paid":
+        return "#4CAF50";
+      case "pending":
+        return "#FF9800";
+      default:
+        return "#F44336";
     }
-  });
+  };
 
-  const paymentData = [
-    { label: "Paid", value: paymentCounts.paid, color: "#4CAF50" },
-    { label: "Pending", value: paymentCounts.pending, color: "#FF9800" },
-    { label: "Overdue", value: paymentCounts.overdue, color: "#F44336" },
+  const paymentData = data?.map((status, index) => ({
+    id: `${status.status}-${index}`,
+    label: status.status.charAt(0).toUpperCase() + status.status.slice(1),
+    value: status.count,
+    color: getStatusColor(status.status)
+  })) || [
+    { id: "paid-0", label: "Paid", value: 0, color: "#4CAF50" },
+    { id: "pending-1", label: "Pending", value: 0, color: "#FF9800" },
+    { id: "overdue-2", label: "Overdue", value: 0, color: "#F44336" },
   ];
 
   return (
@@ -161,8 +166,8 @@ export function PaymentStatusChart() {
                 startAngle={90}
                 endAngle={-270}
               >
-                {paymentData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={entry.color} />
+                {paymentData.map((entry) => (
+                  <Cell key={entry.id} fill={entry.color} />
                 ))}
               </Pie>
             </PieChart>
@@ -177,9 +182,9 @@ export function PaymentStatusChart() {
             marginTop: "16px",
           }}
         >
-          {paymentData.map((item, index) => (
+          {paymentData.map((item) => (
             <Box
-              key={index}
+              key={item.id}
               sx={{ display: "flex", alignItems: "center", gap: "6px" }}
             >
               <Box
