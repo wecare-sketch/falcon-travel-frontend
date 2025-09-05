@@ -1,42 +1,57 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { Box, Typography, Card, Divider } from "@mui/material";
+import { Box, Typography, Card, Divider, CircularProgress } from "@mui/material";
 import { ChevronRight } from "lucide-react";
-import axiosInstance from "@/lib/axios";
-
-type Notification = {
-  id: string | number;
-  title: string;
-  description: string;
-  host: string;
-};
+import { useDashboardActivities } from "@/hooks/dashboard";
 
 export function RecentActivities() {
-  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const { data, isLoading, isError } = useDashboardActivities();
 
-  useEffect(() => {
-    const fetchNotifications = async () => {
-      try {
-        const res = await axiosInstance.get<{
-          data: {
-            notifications: Notification[];
-          };
-        }>("/admin/notifications");
-        const data = res?.data?.data?.notifications;
+  if (isLoading) {
+    return (
+      <Card
+        sx={{
+          borderRadius: "12px",
+          border: "1px solid #E0E0E0",
+          backgroundColor: "#fff",
+          boxShadow: "0px 2px 8px rgba(0, 0, 0, 0.05)",
+          padding: "0",
+          width: "100%",
+          height: 370,
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "center",
+          alignItems: "center",
+        }}
+      >
+        <CircularProgress />
+      </Card>
+    );
+  }
 
-        if (data) {
-          setNotifications(data);
-        } else {
-          console.error("No data returned from notifications API");
-        }
-      } catch (error) {
-        console.error("Error fetching notifications:", error);
-      }
-    };
+  if (isError) {
+    return (
+      <Card
+        sx={{
+          borderRadius: "12px",
+          border: "1px solid #E0E0E0",
+          backgroundColor: "#fff",
+          boxShadow: "0px 2px 8px rgba(0, 0, 0, 0.05)",
+          padding: "0",
+          width: "100%",
+          height: 370,
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "center",
+          alignItems: "center",
+        }}
+      >
+        <Typography color="error">Error loading recent activities</Typography>
+      </Card>
+    );
+  }
 
-    fetchNotifications();
-  }, []);
+  const activities = data || [];
 
   return (
     <Card
@@ -76,7 +91,7 @@ export function RecentActivities() {
           overflowY: "auto",
         }}
       >
-        {notifications.length === 0 ? (
+        {activities.length === 0 ? (
           <Typography
             sx={{
               textAlign: "center",
@@ -85,10 +100,10 @@ export function RecentActivities() {
               marginTop: "20px",
             }}
           >
-            No notifications available.
+            No activities available.
           </Typography>
         ) : (
-          notifications.map((activity) => (
+          activities.map((activity) => (
             <Box
               key={activity.id}
               sx={{
@@ -118,7 +133,7 @@ export function RecentActivities() {
                     marginBottom: "1px",
                   }}
                 >
-                  {activity.title}
+                  {activity.type}
                 </Typography>
                 <Typography
                   sx={{
@@ -141,7 +156,7 @@ export function RecentActivities() {
                     marginRight: "2px",
                   }}
                 >
-                  Host: {activity.host}
+                  {new Date(activity.timestamp).toLocaleDateString()}
                 </Typography>
                 <ChevronRight size={16} style={{ color: "#B0B0B0" }} />
               </Box>

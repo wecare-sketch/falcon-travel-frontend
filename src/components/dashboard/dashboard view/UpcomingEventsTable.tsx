@@ -14,23 +14,16 @@ import {
 } from "@mui/material"
 import { useIsMobile } from "@/hooks/useIsMobile"
 import { CustomDivider } from "@/components/shared/CustomDivider"
-import { useAdminEvents } from "@/hooks/events/useAdminEvents";
+import { useDashboardUpcoming } from "@/hooks/dashboard";
 interface Event {
   id: string;
+  slug: string;
   name: string;
-  clientName: string;
-  vehicle: string;
-  paymentStatus: string;
-  pickupDate: string;
-  dropoffDate: string;
-  hoursReserved: number;
-  totalAmount: number;
-  pendingAmount: number;
-  equityDivision: number;
-  passengerCount: number;
-  eventType: string;
-  imageUrl: string;
-  slug: string;}
+  date: string;
+  client: string;
+  paymentstatus: string;
+  vehiclesRequired: string | null;
+}
 
 function UpcomingEventMobileCard({ event }: { event: Event }) {
   const getStatusColor = (status: string) => {
@@ -112,15 +105,15 @@ function UpcomingEventMobileCard({ event }: { event: Event }) {
             <Typography
               sx={{ color: "#787878", fontSize: "16px", fontWeight: 400 }}
             >
-              {event.clientName}
+              {event.client}
             </Typography>
           </Box>
           <Box>
             <Chip
-              label={event.paymentStatus}
+              label={event.paymentstatus}
               size="small"
               sx={{
-                ...getStatusColor(event.paymentStatus),
+                ...getStatusColor(event.paymentstatus),
                 fontSize: "13px",
                 fontWeight: 500,
                 height: "28px",
@@ -148,7 +141,7 @@ function UpcomingEventMobileCard({ event }: { event: Event }) {
             <Typography
               sx={{ color: "#787878", fontSize: "13px", fontWeight: 400 }}
             >
-              {event.vehicle}
+              {event.vehiclesRequired || "N/A"}
             </Typography>
           </Box>
           <Box>
@@ -160,7 +153,7 @@ function UpcomingEventMobileCard({ event }: { event: Event }) {
             <Typography
               sx={{ color: "#787878", fontSize: "13px", fontWeight: 400 }}
             >
-              {event.pickupDate}
+              {new Date(event.date).toLocaleDateString()}
             </Typography>
           </Box>
         </Box>
@@ -170,7 +163,7 @@ function UpcomingEventMobileCard({ event }: { event: Event }) {
 }
 
 export function UpcomingEventsTable() {
-  const { data, isLoading, isError } = useAdminEvents(); // Use the hook here
+  const { data, isLoading, isError } = useDashboardUpcoming(); // Use the dashboard upcoming hook
   const isMobile = useIsMobile();
 
   if (isLoading) {
@@ -206,9 +199,9 @@ export function UpcomingEventsTable() {
       >
         Upcoming Events
       </Typography>
-      {data?.events?.map((event) => (
-        <UpcomingEventMobileCard key={event.id} event={event} />
-      ))}
+              {data?.map((event) => (
+          <UpcomingEventMobileCard key={event.id} event={event} />
+        ))}
     </Box>
   ) : (
     <Card
@@ -297,7 +290,7 @@ export function UpcomingEventsTable() {
             </TableRow>
           </TableHead>
           <TableBody>
-            {data?.events?.map((event) => (
+            {data?.map((event) => (
               <TableRow
                 key={event.id}
                 sx={{
@@ -336,7 +329,7 @@ export function UpcomingEventsTable() {
                       fontSize: "14px",
                     }}
                   >
-                    {event.pickupDate}
+                    {new Date(event.date).toLocaleDateString()}
                   </Typography>
                 </TableCell>
                   <TableCell sx={{ padding: "16px 24px", borderBottom: "1px solid #F0F0F0" }}>
@@ -347,7 +340,7 @@ export function UpcomingEventsTable() {
                       fontSize: "14px",
                     }}
                   >
-                    {event.clientName}
+                    {event.client}
                   </Typography>
                 </TableCell>
                 <TableCell
@@ -364,15 +357,15 @@ export function UpcomingEventsTable() {
                       fontWeight: 500,
                     }}
                   >
-                    {event.vehicle}
+                    {event.vehiclesRequired || "N/A"}
                   </Typography>
                 </TableCell>
                   <TableCell sx={{ padding: "16px 24px", borderBottom: "1px solid #F0F0F0" }}>
                   <Chip
-                    label={event.paymentStatus}
+                    label={event.paymentstatus}
                     size="small"
                     sx={{
-                      ...getStatusColor(event.paymentStatus),
+                      ...getStatusColor(event.paymentstatus),
                       fontSize: "12px",
                       fontWeight: 500,
                       height: "24px",
