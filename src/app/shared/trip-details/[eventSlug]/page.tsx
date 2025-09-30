@@ -170,7 +170,7 @@ const ShareItineraryPagee = () => {
               </div>
 
               {/* Dropoff Location */}
-              <div className="flex gap-4">
+              {/* <div className="flex gap-4">
                 <div className="flex flex-col items-center">
                   <div className="w-8 h-8 bg-red-600 rounded-full flex items-center justify-center">
                     <MapPin
@@ -182,9 +182,9 @@ const ShareItineraryPagee = () => {
                         )
                       }
                     />
-                  </div>
-                  {/* Only show dashed line if there are route stops */}
-                  {event?.routeDetails?.route &&
+                  </div> */}
+              {/* Only show dashed line if there are route stops */}
+              {/* {event?.routeDetails?.route &&
                     event.routeDetails.route.length > 0 &&
                     event.routeDetails.route[0] &&
                     event.routeDetails.route[0].length > 0 && (
@@ -200,7 +200,7 @@ const ShareItineraryPagee = () => {
                       "Location not specified"}
                   </div>
                 </div>
-              </div>
+              </div> */}
 
               {/* Route Stops */}
               {event?.routeDetails?.route &&
