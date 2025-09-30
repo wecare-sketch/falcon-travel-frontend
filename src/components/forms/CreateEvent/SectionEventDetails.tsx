@@ -1,3 +1,4 @@
+import { TextField } from "@mui/material";
 import { useFormContext, Controller } from "react-hook-form";
 import { FormInput } from "@/components/dashboard/ui/FormInput";
 import { FormSection } from "@/components/dashboard/ui/FomSection";
@@ -72,7 +73,7 @@ export function SectionEventDetails() {
             />
           </Box>
         ))}
-        
+
         {/* Phone Number Field with PhoneInput */}
         <Box sx={{ flex: { xs: "1 1 100%", md: "1 1 calc(33.33% - 12px)" } }}>
           <Controller
@@ -85,7 +86,7 @@ export function SectionEventDetails() {
                   return "Phone number is required";
                 }
                 // Check if the phone number is valid (at least 10 digits including country code)
-                const phoneNumber = value.replace(/\D/g, ''); // Remove all non-digits
+                const phoneNumber = value.replace(/\D/g, ""); // Remove all non-digits
                 if (phoneNumber.length < 10) {
                   return "Please enter a valid phone number";
                 }
@@ -104,7 +105,7 @@ export function SectionEventDetails() {
                     onChange={(phone) => {
                       field.onChange(phone);
                       // Additional validation on change
-                      const phoneNumber = phone.replace(/\D/g, '');
+                      const phoneNumber = phone.replace(/\D/g, "");
                       if (phoneNumber.length < 10) {
                         field.onChange(phone); // Still update the field but it will be invalid
                       }
@@ -114,7 +115,7 @@ export function SectionEventDetails() {
                     containerClass="w-full"
                     buttonClass="border-0 bg-transparent"
                     isValid={(inputNumber) => {
-                      const phoneNumber = inputNumber.replace(/\D/g, '');
+                      const phoneNumber = inputNumber.replace(/\D/g, "");
                       return phoneNumber.length >= 10;
                     }}
                   />
@@ -208,7 +209,7 @@ export function SectionEventDetails() {
                 onChange={(time) => field.onChange(time?.toISOString())}
                 slotProps={{
                   textField: {
-                    fullWidth: true, 
+                    fullWidth: true,
                     label: "Pickup Time",
                     placeholder: "Enter Time",
                     sx: {},
@@ -221,24 +222,68 @@ export function SectionEventDetails() {
 
         {/* Location */}
         <Box sx={{ flex: { xs: "1 1 100%", md: "1 1 calc(25% - 12px)" } }}>
-          <FormInput
-            placeholder="Enter Location"
-            error={!!errors.location}
-            helperText={errors.location?.message as string}
-            {...register("location", {
-              required: "Location is required",
-              validate: (value) => validateNotEmpty(value, "Location"),
-            })}
-            labelMarginBottom={0}
-            sx={{
-              mt: 0,
-              "& .MuiInputBase-root": {
-                height: 56,
-              },
-              "& .MuiInputBase-input": {
-                padding: "12px 14px",
-              },
+          <Controller
+            name="pickupLocation"
+            control={control}
+            rules={{
+              required: "Pickup location is required",
+              validate: (value) => validateNotEmpty(value, "Pickup location"),
             }}
+            render={({ field, fieldState }) => (
+              <TextField
+                {...field}
+                fullWidth
+                label="Pickup Location"
+                variant="outlined"
+                error={!!fieldState.error}
+                helperText={fieldState.error?.message}
+                sx={{
+                  "& .MuiInputBase-root": {
+                    height: 56,
+                  },
+                }}
+              />
+            )}
+          />
+        </Box>
+      </Box>
+
+      <Box
+        sx={{
+          display: "flex",
+          flexWrap: "wrap",
+          gap: 2,
+          marginBottom: "16px",
+        }}
+      >
+        <Box
+          sx={{
+            flex: { xs: "1 1 100%", md: "0 0 calc(25% - 12px)" },
+            maxWidth: { md: "calc(25% - 12px)" },
+          }}
+        >
+          <Controller
+            name="dropOffLocation"
+            control={control}
+            rules={{
+              required: "Drop-off location is required",
+              validate: (value) => validateNotEmpty(value, "Drop-off location"),
+            }}
+            render={({ field, fieldState }) => (
+              <TextField
+                {...field}
+                fullWidth
+                label="Drop-off Location"
+                variant="outlined"
+                error={!!fieldState.error}
+                helperText={fieldState.error?.message}
+                sx={{
+                  "& .MuiInputBase-root": {
+                    height: 56,
+                  },
+                }}
+              />
+            )}
           />
         </Box>
       </Box>

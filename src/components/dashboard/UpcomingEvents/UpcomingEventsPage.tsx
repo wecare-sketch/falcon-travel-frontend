@@ -48,6 +48,8 @@ interface EventFormData {
   pickupTime: string;
   location: string;
   addStops: string;
+  pickupLocation: string;
+  dropOffLocation: string;
   hoursReserved: number;
   totalAmount: number;
   pendingAmount: number;
@@ -77,7 +79,7 @@ interface MappedEvent {
   remainingAmount: string;
   clientName: string;
   slug: string;
-  pickupDate: string; 
+  pickupDate: string;
   imageUrl: string;
 }
 
@@ -138,7 +140,9 @@ export function UpcomingEventsPage({
         console.error("Invalid role");
         return;
       }
-      const response = await axiosInstance.get<EventResponse>(endpoint, { params });
+      const response = await axiosInstance.get<EventResponse>(endpoint, {
+        params,
+      });
 
       if (response?.data?.data?.events) {
         const mappedFilteredEvents = response.data.data.events.map((event) => ({
@@ -154,10 +158,10 @@ export function UpcomingEventsPage({
           paymentStatus:
             event.paymentStatus.charAt(0).toUpperCase() +
             event.paymentStatus.slice(1),
-          remainingAmount: `${event.pendingAmount}$`,
+          remainingAmount: `${event.pendingAmount}`,
           clientName: event.clientName,
           slug: event.slug,
-          pickupDate: event.pickupDate, 
+          pickupDate: event.pickupDate,
           imageUrl: event.imageUrl,
         }));
         setFilteredEvents(mappedFilteredEvents);
@@ -222,7 +226,7 @@ export function UpcomingEventsPage({
       }),
       passenger: event.passengerCount.toString(),
       paymentStatus: event.paymentStatus,
-      remainingAmount: `${event.pendingAmount}$`,
+      remainingAmount: `${event.pendingAmount}`,
       clientName: event.clientName,
       slug: event.slug,
     })) || [];
@@ -230,13 +234,13 @@ export function UpcomingEventsPage({
   const paginatedEvents = hasSearched
     ? filteredEvents.length > 0
       ? filteredEvents.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
-      : [] 
+      : []
     : mappedAdminEvents.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   const totalPages = hasSearched
     ? filteredEvents.length > 0
       ? Math.ceil(filteredEvents.length / PAGE_SIZE)
-      : 1 
+      : 1
     : Math.ceil(mappedAdminEvents.length / PAGE_SIZE);
   if (isLoading) {
     return (
@@ -421,7 +425,7 @@ export function UpcomingEventsPage({
                           {event.passenger}
                         </td>
                         <td className="py-2 px-2 border border-gray-300">
-                          {event.remainingAmount}
+                          ${event.remainingAmount}
                         </td>
                         <td className="py-2 px-2 border border-gray-300">
                           <span

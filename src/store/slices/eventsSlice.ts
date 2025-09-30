@@ -10,6 +10,8 @@ interface Event {
   phoneNumber: string;
   pickupDate: string;
   location: string;
+  pickupLocation: string;
+  dropOffLocation: string;
   vehicle: string;
   totalAmount: number;
   passengerCount: number;

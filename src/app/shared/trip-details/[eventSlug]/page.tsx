@@ -1,4 +1,3 @@
-
 "use client";
 
 import {
@@ -17,24 +16,26 @@ import { Avatar } from "@mui/material";
 import { useGetSharedEvent } from "@/hooks/events/useGetSharedEvent";
 import { useParams } from "next/navigation";
 
-const ShareItineraryPagee=() =>{
-const { eventSlug } = useParams<{ eventSlug: string }>();
-const { data, isLoading, isError } = useGetSharedEvent(eventSlug);
+const ShareItineraryPagee = () => {
+  const { eventSlug } = useParams<{ eventSlug: string }>();
+  const { data, isLoading, isError } = useGetSharedEvent(eventSlug);
 
   const event = data?.data;
- const handleClick = (location: string): void => {
-   const url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
-     location
-   )}`;
-   window.open(url, "_blank");
- };
+  const handleClick = (location: string): void => {
+    const url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+      location
+    )}`;
+    window.open(url, "_blank");
+  };
 
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50">
         <div className="flex items-center justify-center h-64">
           <div className="text-center">
-            <div className="text-lg font-semibold text-gray-600">Loading trip details...</div>
+            <div className="text-lg font-semibold text-gray-600">
+              Loading trip details...
+            </div>
           </div>
         </div>
       </div>
@@ -46,8 +47,12 @@ const { data, isLoading, isError } = useGetSharedEvent(eventSlug);
       <div className="min-h-screen bg-gray-50">
         <div className="flex items-center justify-center h-64">
           <div className="text-center">
-            <div className="text-lg font-semibold text-red-600">Failed to load trip details</div>
-            <div className="text-sm text-gray-500 mt-2">Please try again later</div>
+            <div className="text-lg font-semibold text-red-600">
+              Failed to load trip details
+            </div>
+            <div className="text-sm text-gray-500 mt-2">
+              Please try again later
+            </div>
           </div>
         </div>
       </div>
@@ -55,8 +60,7 @@ const { data, isLoading, isError } = useGetSharedEvent(eventSlug);
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 sm:p-0 md:p-10 lg:p-10" >
-
+    <div className="min-h-screen bg-gray-50 sm:p-0 md:p-10 lg:p-10">
       <div className="bg-white px-4 py-3 flex items-center justify-between lg:m-4">
         <div>
           <div className="text-sm text-blue-600 font-medium capitalize">
@@ -125,12 +129,14 @@ const { data, isLoading, isError } = useGetSharedEvent(eventSlug);
           </CardContent>
         </Card>
 
+        {/* Route Details */}
         <Card>
           <CardContent className="p-4">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">
               Route Details
             </h3>
             <div className="space-y-6">
+              {/* Pickup Location */}
               <div className="flex gap-4">
                 <div className="flex flex-col items-center">
                   <div className="w-8 h-8 bg-green-600 rounded-full flex items-center justify-center">
@@ -138,7 +144,7 @@ const { data, isLoading, isError } = useGetSharedEvent(eventSlug);
                       className="w-4 h-4 text-white cursor-pointer"
                       onClick={() =>
                         handleClick(
-                          event?.routeDetails?.location ||
+                          event?.routeDetails?.pickupLocation ||
                             "Location not specified"
                         )
                       }
@@ -151,13 +157,47 @@ const { data, isLoading, isError } = useGetSharedEvent(eventSlug);
                     Pickup Location
                   </div>
                   <div className="text-gray-900 font-semibold">
-                    {event?.routeDetails?.location || "Location not specified"}
+                    {event?.routeDetails?.pickupLocation ||
+                      "Location not specified"}
                   </div>
                   <div className="text-sm text-gray-500">
                     Departure:{" "}
                     {event?.ETA
                       ? new Date(event.ETA).toLocaleDateString()
                       : "N/A"}
+                  </div>
+                </div>
+              </div>
+
+              {/* Dropoff Location */}
+              <div className="flex gap-4">
+                <div className="flex flex-col items-center">
+                  <div className="w-8 h-8 bg-red-600 rounded-full flex items-center justify-center">
+                    <MapPin
+                      className="w-4 h-4 text-white cursor-pointer"
+                      onClick={() =>
+                        handleClick(
+                          event?.routeDetails?.dropOffLocation ||
+                            "Location not specified"
+                        )
+                      }
+                    />
+                  </div>
+                  {/* Only show dashed line if there are route stops */}
+                  {event?.routeDetails?.route &&
+                    event.routeDetails.route.length > 0 &&
+                    event.routeDetails.route[0] &&
+                    event.routeDetails.route[0].length > 0 && (
+                      <div className="w-px h-12 bg-gray-300 border-l-2 border-dashed border-gray-300 my-2"></div>
+                    )}
+                </div>
+                <div className="flex-1">
+                  <div className="font-medium text-gray-900">
+                    Drop-off Location
+                  </div>
+                  <div className="text-gray-900 font-semibold">
+                    {event?.routeDetails?.dropOffLocation ||
+                      "Location not specified"}
                   </div>
                 </div>
               </div>
@@ -174,7 +214,7 @@ const { data, isLoading, isError } = useGetSharedEvent(eventSlug);
                           index === 0
                             ? "bg-blue-500"
                             : index === event.routeDetails.route[0].length - 1
-                            ? "bg-red-600"
+                            ? "bg-orange-500"
                             : "bg-yellow-500"
                         }`}
                       >
@@ -192,15 +232,15 @@ const { data, isLoading, isError } = useGetSharedEvent(eventSlug);
                         {index === 0
                           ? "First Stop"
                           : index === event.routeDetails.route[0].length - 1
-                          ? "Destination"
+                          ? "Final Stop"
                           : `Stop ${index}`}
                       </div>
                       <div className="text-gray-900 font-semibold">{stop}</div>
                       <div className="text-sm text-gray-500">
                         {index === 0
-                          ? "Starting point"
+                          ? "Additional waypoint"
                           : index === event.routeDetails.route[0].length - 1
-                          ? "Final destination"
+                          ? "Last stop before destination"
                           : "Brief stop"}
                       </div>
                     </div>
@@ -253,15 +293,14 @@ const { data, isLoading, isError } = useGetSharedEvent(eventSlug);
               Trip Notes
             </h3>
             {event?.tripNotes ? (
-              <ul className="space-y-2">
-                {event.tripNotes}
-              </ul>
+              <ul className="space-y-2">{event.tripNotes}</ul>
             ) : (
               <p className="text-gray-500 text-sm">No trip notes available</p>
             )}
           </CardContent>
         </Card>
 
+        {/* Trip Playlist */}
         <Card>
           <CardContent className="p-4">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">
@@ -325,5 +364,6 @@ const { data, isLoading, isError } = useGetSharedEvent(eventSlug);
       </div>
     </div>
   );
-}
+};
+
 export default ShareItineraryPagee;

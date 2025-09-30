@@ -51,6 +51,8 @@ interface Event {
   phoneNumber: string;
   pickupDate: string;
   location: string;
+  pickupLocation: string;
+  dropOffLocation: string;
   vehicle: string;
   totalAmount: number;
   passengerCount: number;
@@ -84,7 +86,7 @@ export function FeedbackDetailsPage({
   const feedback = event?.feedbacks?.[0];
 
   if (!event) {
-    return null; 
+    return null;
   }
 
   if (feedback === undefined) {

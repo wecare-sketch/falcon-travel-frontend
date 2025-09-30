@@ -10,7 +10,9 @@ export interface SharedEvent {
     phone: string;
   };
   routeDetails: {
-    location: string;
+    // location: string;
+    pickupLocation: string;
+    dropOffLocation: string;
     route: string[][];
   };
   vehicleInfo: {

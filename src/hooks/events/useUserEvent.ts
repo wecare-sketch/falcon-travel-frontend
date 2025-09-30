@@ -40,6 +40,8 @@ interface EventType {
   dropoffDate: string;
   pickupTime: string;
   addStops: string;
+  pickupLocation: string;
+  dropOffLocation: string;
   feedbacks: Feedback[];
   tripNotes: string;
 }

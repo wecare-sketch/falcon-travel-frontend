@@ -11,9 +11,9 @@ import {
   TableRow,
   Chip,
   Card,
-} from "@mui/material"
-import { useIsMobile } from "@/hooks/useIsMobile"
-import { CustomDivider } from "@/components/shared/CustomDivider"
+} from "@mui/material";
+import { useIsMobile } from "@/hooks/useIsMobile";
+import { CustomDivider } from "@/components/shared/CustomDivider";
 import { useDashboardUpcoming } from "@/hooks/dashboard";
 interface Event {
   id: string;
@@ -174,7 +174,9 @@ export function UpcomingEventsTable() {
     return <Typography>Error loading events.</Typography>;
   }
 
-  function getStatusColor(paymentStatus: string): import("@mui/system").SxProps<import("@mui/material").Theme> | undefined {
+  function getStatusColor(
+    paymentStatus: string
+  ): import("@mui/system").SxProps<import("@mui/material").Theme> | undefined {
     switch (paymentStatus) {
       case "paid":
         return { backgroundColor: "#B7EB8F", color: "#52C41A" };
@@ -199,9 +201,9 @@ export function UpcomingEventsTable() {
       >
         Upcoming Events
       </Typography>
-              {data?.map((event) => (
-          <UpcomingEventMobileCard key={event.id} event={event} />
-        ))}
+      {data?.map((event) => (
+        <UpcomingEventMobileCard key={event.id} event={event} />
+      ))}
     </Box>
   ) : (
     <Card
@@ -227,7 +229,14 @@ export function UpcomingEventsTable() {
           Upcoming Events
         </Typography>
       </Box>
-        <Box sx={{ height: "1px", width: "100%", backgroundColor: "#C2C2C2", marginBottom: "8px" }} />
+      <Box
+        sx={{
+          height: "1px",
+          width: "100%",
+          backgroundColor: "#C2C2C2",
+          marginBottom: "8px",
+        }}
+      />
       <TableContainer>
         <Table>
           <TableHead>
@@ -332,7 +341,12 @@ export function UpcomingEventsTable() {
                     {new Date(event.date).toLocaleDateString()}
                   </Typography>
                 </TableCell>
-                  <TableCell sx={{ padding: "16px 24px", borderBottom: "1px solid #F0F0F0" }}>
+                <TableCell
+                  sx={{
+                    padding: "16px 24px",
+                    borderBottom: "1px solid #F0F0F0",
+                  }}
+                >
                   <Typography
                     variant="body2"
                     sx={{
@@ -360,7 +374,12 @@ export function UpcomingEventsTable() {
                     {event.vehiclesRequired || "N/A"}
                   </Typography>
                 </TableCell>
-                  <TableCell sx={{ padding: "16px 24px", borderBottom: "1px solid #F0F0F0" }}>
+                <TableCell
+                  sx={{
+                    padding: "16px 24px",
+                    borderBottom: "1px solid #F0F0F0",
+                  }}
+                >
                   <Chip
                     label={event.paymentstatus}
                     size="small"
