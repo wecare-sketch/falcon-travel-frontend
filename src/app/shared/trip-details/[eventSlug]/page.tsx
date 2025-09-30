@@ -262,12 +262,12 @@ const ShareItineraryPagee = () => {
                     />
                   </div>
                   {/* Only show dashed line if there are route stops */}
-                  {event?.routeDetails?.route &&
+                  {/* {event?.routeDetails?.route &&
                     event.routeDetails.route.length > 0 &&
                     event.routeDetails.route[0] &&
                     event.routeDetails.route[0].length > 0 && (
                       <div className="w-px h-12 bg-gray-300 border-l-2 border-dashed border-gray-300 my-2"></div>
-                    )}
+                    )} */}
                 </div>
                 <div className="flex-1">
                   <div className="font-medium text-gray-900">
