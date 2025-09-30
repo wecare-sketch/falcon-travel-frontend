@@ -159,7 +159,7 @@ export function EventInfoCard({
 
           <LabelValuePair
             label="Drop off Location"
-            value={dropOffLocation ?? "--"}
+            value={dropOffLocation === "" ? "--" : dropOffLocation}
             icon={<MapPin className="w-4 h-4 text-[#4A5F8A] mt-1" />}
             rowSx={{ alignItems: "flex-start" }}
             valueSx={{ lineHeight: 1.4 }}
@@ -182,7 +182,7 @@ export function EventInfoCard({
           />
           <LabelValuePair
             label="Pickup Location"
-            value={pickupLocation}
+            value={pickupLocation === "" ? "--" : pickupLocation}
             icon={<MapPin className="w-4 h-4 text-[#4A5F8A] mt-1" />}
             rowSx={{ alignItems: "flex-start" }}
             valueSx={{ lineHeight: 1.4 }}
