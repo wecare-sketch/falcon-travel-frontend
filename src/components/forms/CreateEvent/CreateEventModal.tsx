@@ -34,6 +34,8 @@ interface EventFormData {
   pickupTime: string;
   location: string;
   addStops: string[] | string;
+  pickupLocation: string;
+  dropOffLocation: string;
   hoursReserved: number;
   totalAmount: number;
   pendingAmount: number;
@@ -185,13 +187,12 @@ export function CreateEventModal({
         pickupTime: data.pickupTime,
         location: data.location,
         stops: data.addStops ? [data.addStops] : [],
+        pickupLocation: data.pickupLocation,
+        dropOffLocation: data.dropOffLocation,
       })
     );
 
-    formData.append(
-      "tripNotes",
-      JSON.stringify(data.tripNotes)
-    );
+    formData.append("tripNotes", JSON.stringify(data.tripNotes));
 
     formData.append(
       "vehicleInfo",
@@ -219,7 +220,7 @@ export function CreateEventModal({
           onSuccess: () => {
             toast.success("Event updated!");
             reset();
-            
+
             setEventImage(null);
             setEventFile(null);
             onClose();

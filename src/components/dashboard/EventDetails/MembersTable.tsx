@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import {
   Box,
@@ -9,24 +9,25 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-} from "@mui/material"
-import { Phone, Mail } from "lucide-react"
-import { ProfileImage } from "./ui/ProfileImage"
-import { MemberInfoCell } from "./ui/MemberInfoCell"
-import { AmountCell } from "./ui/AmountCell"
-import { StatusChip } from "./ui/StatusChip"
-import { useIsMobile } from "@/hooks/useIsMobile"
-import { CustomDivider } from "@/components/shared/CustomDivider"
+} from "@mui/material";
+import { Phone, Mail } from "lucide-react";
+import { ProfileImage } from "./ui/ProfileImage";
+import { MemberInfoCell } from "./ui/MemberInfoCell";
+import { AmountCell } from "./ui/AmountCell";
+import { StatusChip } from "./ui/StatusChip";
+import { useIsMobile } from "@/hooks/useIsMobile";
+import { CustomDivider } from "@/components/shared/CustomDivider";
 
 export interface Member {
-  id: string
-  name: string
-  phoneNumber: string
-  email: string
-  equityAmount: number
-  depositedAmount: number
-  dueAmount: number
-  paymentStatus: "Paid" | "Pending" | "Overdue"
+  id: string;
+  name: string;
+  phoneNumber: string;
+  email: string;
+  paidFor: number; // Added for head count
+  equityAmount: number;
+  depositedAmount: number;
+  dueAmount: number;
+  paymentStatus: "Paid" | "Pending" | "Overdue";
 }
 
 interface MembersTableProps {
@@ -34,20 +35,20 @@ interface MembersTableProps {
 }
 
 export function MembersTable({ members }: MembersTableProps) {
-  const isMobile = useIsMobile()
+  const isMobile = useIsMobile();
 
   const getStatusColor = (status: string) => {
     switch (status) {
       case "Paid":
-        return { backgroundColor: "#E8F5E8", color: "#2E7D32" }
+        return { backgroundColor: "#E8F5E8", color: "#2E7D32" };
       case "Pending":
-        return { backgroundColor: "#FFF3E0", color: "#F57C00" }
+        return { backgroundColor: "#FFF3E0", color: "#F57C00" };
       case "Overdue":
-        return { backgroundColor: "#FFEBEE", color: "#D32F2F" }
+        return { backgroundColor: "#FFEBEE", color: "#D32F2F" };
       default:
-        return { backgroundColor: "#F5F5F5", color: "#666" }
+        return { backgroundColor: "#F5F5F5", color: "#666" };
     }
-  }
+  };
 
   return isMobile ? (
     <Box>
@@ -71,33 +72,62 @@ export function MembersTable({ members }: MembersTableProps) {
             <Typography fontSize={12} fontWeight={600} color="#345794">
               Member Name:
             </Typography>
-            <Typography fontSize={14} color="#000000">{member.name}</Typography>
+            <Typography fontSize={14} color="#000000">
+              {member.name}
+            </Typography>
           </Box>
-          <CustomDivider/>
-          <Box sx={{display:"flex",justifyContent:"space-between",alignItems:"center",marginTop:"5px"}}>
+          <CustomDivider />
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              marginTop: "5px",
+            }}
+          >
             <Box mb={1}>
               <Typography fontSize={12} fontWeight={600} color="#345794">
                 Phone Number:
               </Typography>
-              <Typography fontSize={14} color="#000000">{member.phoneNumber}</Typography>
+              <Typography fontSize={14} color="#000000">
+                {member.phoneNumber}
+              </Typography>
               <Typography fontSize={12} fontWeight={600} color="#345794">
                 Email:
               </Typography>
-              <Typography fontSize={14} color="#000000">{member.email}</Typography>
+              <Typography fontSize={14} color="#000000">
+                {member.email}
+              </Typography>
             </Box>
             <Box mb={1}>
               <Typography fontSize={12} fontWeight={600} color="#345794">
+                Head Count:
+              </Typography>
+              <Typography fontSize={14} color="#000000">
+                {member.paidFor
+                  ? member.paidFor > 1
+                    ? `${member.paidFor}x`
+                    : "1"
+                  : "--"}
+              </Typography>
+              <Typography fontSize={12} fontWeight={600} color="#345794">
                 Equity Amount:
               </Typography>
-              <Typography fontSize={14} color="#000000">${member.equityAmount}</Typography>
+              <Typography fontSize={14} color="#000000">
+                ${member.equityAmount}
+              </Typography>
               <Typography fontSize={12} fontWeight={600} color="#345794">
                 Deposited Amount:
               </Typography>
-              <Typography fontSize={14} color="#000000">${member.depositedAmount}</Typography>
+              <Typography fontSize={14} color="#000000">
+                ${member.depositedAmount}
+              </Typography>
               <Typography fontSize={12} fontWeight={600} color="#345794">
                 Due Amount:
               </Typography>
-              <Typography fontSize={14} color="#000000">${member.dueAmount}</Typography>
+              <Typography fontSize={14} color="#000000">
+                ${member.dueAmount}
+              </Typography>
               <Typography fontSize={12} fontWeight={600} color="#345794">
                 Payment Status:
               </Typography>
@@ -115,9 +145,7 @@ export function MembersTable({ members }: MembersTableProps) {
                 {member.paymentStatus}
               </Typography>
             </Box>
-
           </Box>
-
         </Box>
       ))}
     </Box>
@@ -152,7 +180,16 @@ export function MembersTable({ members }: MembersTableProps) {
         <Table>
           <TableHead>
             <TableRow>
-              {["Member Name", "Phone Number", "Email Address", "Equity Amount", "Deposited Amount", "Due Amount", "Payment Status"].map((text) => (
+              {[
+                "Member Name",
+                "Phone Number",
+                "Email Address",
+                "Head Count",
+                "Equity Amount",
+                "Deposited Amount",
+                "Due Amount",
+                "Payment Status",
+              ].map((text) => (
                 <TableCell
                   key={text}
                   sx={{
@@ -174,31 +211,84 @@ export function MembersTable({ members }: MembersTableProps) {
                 key={member.id}
                 sx={{ "&:hover": { backgroundColor: "#F8F9FA" } }}
               >
-                <TableCell sx={{ padding: "16px", borderBottom: "1px solid #F0F0F0" }}>
-                  <Box sx={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                <TableCell
+                  sx={{ padding: "16px", borderBottom: "1px solid #F0F0F0" }}
+                >
+                  <Box
+                    sx={{ display: "flex", alignItems: "center", gap: "12px" }}
+                  >
                     <ProfileImage />
-                    <Typography variant="body2" sx={{ color: "#333", fontSize: "14px", fontWeight: 500 }}>
+                    <Typography
+                      variant="body2"
+                      sx={{ color: "#333", fontSize: "14px", fontWeight: 500 }}
+                    >
                       {member.name}
                     </Typography>
                   </Box>
                 </TableCell>
-                <TableCell sx={{ padding: "16px", borderBottom: "1px solid #F0F0F0" }}>
-                  <MemberInfoCell icon={<Phone className="w-4 h-4 text-gray-400" />} value={member.phoneNumber} />
+                <TableCell
+                  sx={{ padding: "16px", borderBottom: "1px solid #F0F0F0" }}
+                >
+                  <MemberInfoCell
+                    icon={<Phone className="w-4 h-4 text-gray-400" />}
+                    value={member.phoneNumber}
+                  />
                 </TableCell>
-                <TableCell sx={{ padding: "16px", borderBottom: "1px solid #F0F0F0" }}>
-                  <MemberInfoCell icon={<Mail className="w-4 h-4 text-gray-400" />} value={member.email} />
+                <TableCell
+                  sx={{ padding: "16px", borderBottom: "1px solid #F0F0F0" }}
+                >
+                  <MemberInfoCell
+                    icon={<Mail className="w-4 h-4 text-gray-400" />}
+                    value={member.email}
+                  />
                 </TableCell>
-                <TableCell sx={{ padding: "16px", borderBottom: "1px solid #F0F0F0" }}>
+                <TableCell
+                  sx={{ padding: "16px", borderBottom: "1px solid #F0F0F0" }}
+                >
+                  <Box
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      backgroundColor: member.paidFor ? "#F0F4F8" : "#F5F5F5",
+                      borderRadius: "6px",
+                      padding: "4px 12px",
+                      fontWeight: 600,
+                      fontSize: "14px",
+                      color: member.paidFor ? "#345794" : "#999",
+                      width: "fit-content",
+                      margin: "0 auto",
+                    }}
+                  >
+                    {member.paidFor
+                      ? member.paidFor > 0
+                        ? `${member.paidFor}x`
+                        : "1"
+                      : "--"}
+                  </Box>
+                </TableCell>
+                <TableCell
+                  sx={{ padding: "16px", borderBottom: "1px solid #F0F0F0" }}
+                >
                   <AmountCell amount={member.equityAmount} />
                 </TableCell>
-                <TableCell sx={{ padding: "16px", borderBottom: "1px solid #F0F0F0" }}>
+                <TableCell
+                  sx={{ padding: "16px", borderBottom: "1px solid #F0F0F0" }}
+                >
                   <AmountCell amount={member.depositedAmount} />
                 </TableCell>
-                <TableCell sx={{ padding: "16px", borderBottom: "1px solid #F0F0F0" }}>
+                <TableCell
+                  sx={{ padding: "16px", borderBottom: "1px solid #F0F0F0" }}
+                >
                   <AmountCell amount={member.dueAmount} />
                 </TableCell>
-                <TableCell sx={{ padding: "16px", borderBottom: "1px solid #F0F0F0" }}>
-                  <StatusChip label={member.paymentStatus} sx={getStatusColor(member.paymentStatus)} />
+                <TableCell
+                  sx={{ padding: "16px", borderBottom: "1px solid #F0F0F0" }}
+                >
+                  <StatusChip
+                    label={member.paymentStatus}
+                    sx={getStatusColor(member.paymentStatus)}
+                  />
                 </TableCell>
               </TableRow>
             ))}
@@ -206,5 +296,5 @@ export function MembersTable({ members }: MembersTableProps) {
         </Table>
       </TableContainer>
     </Box>
-  )
+  );
 }

@@ -37,6 +37,8 @@ interface Event {
   phoneNumber: string;
   pickupDate: string;
   location: string;
+  pickupLocation: string;
+  dropOffLocation: string;
   vehicle: string;
   totalAmount: number;
   passengerCount: number;
@@ -101,39 +103,38 @@ export function FeedBackPage({ setActiveView }: FeedBackPageProps) {
       });
 
       if (response?.data?.data?.events) {
-       const mappedFilteredEvents = response.data.data.events.map(
-         (event) => ({
-           id: event.id,
-           name: event.name,
-           title: event.eventType,
-           pickupDate: event.pickupDate,
-           imageUrl: event.imageUrl,
-           averageRating: event.feedbacks?.[0]?.averageRating ?? 0,
-           createdAt: event.feedbacks?.[0]?.createdAt ?? "",
-           slug: event.slug,
-           eventType: event.eventType,
-           clientName: event.clientName, 
-           phoneNumber: event.phoneNumber,
-           location: event.location, 
-           vehicle: event.vehicle, 
-           totalAmount: event.totalAmount, 
-           passengerCount: event.passengerCount, 
-           pendingAmount: event.pendingAmount,
-           depositAmount: event.depositAmount, 
-           hoursReserved: event.hoursReserved,
-           equityDivision: event.equityDivision,
-           eventStatus: event.eventStatus,
-           paymentStatus: event.paymentStatus, 
-           updatedAt: event.updatedAt, 
-           expiresAt: event.expiresAt, 
-           host: event.host, 
-           cohosts: event.cohosts, 
-           feedbacks: event.feedbacks, 
-         })
-       );
+        const mappedFilteredEvents = response.data.data.events.map((event) => ({
+          id: event.id,
+          name: event.name,
+          title: event.eventType,
+          pickupDate: event.pickupDate,
+          imageUrl: event.imageUrl,
+          averageRating: event.feedbacks?.[0]?.averageRating ?? 0,
+          createdAt: event.feedbacks?.[0]?.createdAt ?? "",
+          slug: event.slug,
+          eventType: event.eventType,
+          clientName: event.clientName,
+          phoneNumber: event.phoneNumber,
+          location: event.location,
+          pickupLocation: event.pickupLocation,
+          dropOffLocation: event.dropOffLocation,
+          vehicle: event.vehicle,
+          totalAmount: event.totalAmount,
+          passengerCount: event.passengerCount,
+          pendingAmount: event.pendingAmount,
+          depositAmount: event.depositAmount,
+          hoursReserved: event.hoursReserved,
+          equityDivision: event.equityDivision,
+          eventStatus: event.eventStatus,
+          paymentStatus: event.paymentStatus,
+          updatedAt: event.updatedAt,
+          expiresAt: event.expiresAt,
+          host: event.host,
+          cohosts: event.cohosts,
+          feedbacks: event.feedbacks,
+        }));
 
-       setFilteredEvents(mappedFilteredEvents);
-
+        setFilteredEvents(mappedFilteredEvents);
       } else {
         setFilteredEvents([]);
       }

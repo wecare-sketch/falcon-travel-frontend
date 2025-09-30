@@ -148,7 +148,7 @@ export function ShareItineraryPage({ eventSlug, onBack }: ShareItineraryPageProp
                       className="w-4 h-4 text-white cursor-pointer"
                       onClick={() =>
                         handleClick(
-                          event?.routeDetails?.location ||
+                          event?.routeDetails?.pickupLocation ||
                             "Location not specified"
                         )
                       }
@@ -161,7 +161,7 @@ export function ShareItineraryPage({ eventSlug, onBack }: ShareItineraryPageProp
                     Pickup Location
                   </div>
                   <div className="text-gray-900 font-semibold">
-                    {event?.routeDetails?.location || "Location not specified"}
+                    {event?.routeDetails?.pickupLocation || "Location not specified"}
                   </div>
                   <div className="text-sm text-gray-500">
                     Departure:{" "}

@@ -21,6 +21,7 @@ interface EventParticipant {
   id: number;
   email: string;
   equityAmount: number;
+  paidFor: number;
   depositedAmount: number;
   paymentStatus: PaymentStatus;
   role: UserRole;
@@ -38,7 +39,9 @@ interface Events {
   clientName: string;
   phoneNumber: string;
   pickupDate: string;
-  location: string;
+  // location: string;
+  pickupLocation: string;
+  dropOffLocation: string;
   vehicle: string;
   totalAmount: number;
   passengerCount: number;

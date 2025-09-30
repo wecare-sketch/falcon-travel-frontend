@@ -20,6 +20,7 @@ export interface Member {
   name: string;
   phoneNumber: string;
   email: string;
+  paidFor: number; // Added for head count
   equityAmount: number;
   depositedAmount: number;
   dueAmount: number;
@@ -44,9 +45,12 @@ export function EventDetailsPage({
 
   // State to track the current user's deposited amount for invoice availability
   const [userDepositedAmount, setUserDepositedAmount] = useState<number>(0);
-  
+
   // State to track if the current user is the host of the event
   const [isCurrentUserHost, setIsCurrentUserHost] = useState<boolean>(false);
+
+  // State to track if the current user paid for 1 headCount or more
+  const [perHeadCount, setPerHeadCount] = useState(1);
 
   const { event, isLoading, isError } = useEventDetailsByPageType(
     eventId,
@@ -59,7 +63,7 @@ export function EventDetailsPage({
     if (event && "participants" in event) {
       const userId = localStorage.getItem("userId");
       const userEmail = localStorage.getItem("userEmail");
-      
+
       // Find current user's participant record
       let currentUserParticipant = null;
       if (userId) {
@@ -72,18 +76,28 @@ export function EventDetailsPage({
           setUserDepositedAmount(currentUserParticipant.depositedAmount);
         }
       }
-      
+
       // Check if current user is the host by comparing emails
       if (userEmail && event.host) {
         const isHost = userEmail === event.host;
         setIsCurrentUserHost(isHost);
-        console.log("Host check - userEmail:", userEmail, "eventHost:", event.host, "isHost:", isHost);
-        
+        console.log(
+          "Host check - userEmail:",
+          userEmail,
+          "eventHost:",
+          event.host,
+          "isHost:",
+          isHost
+        );
+
         // Set payable amount based on user role
         if (isHost) {
           // For hosts: use remaining amount (pendingAmount)
           setUserPayableAmount(event.pendingAmount || 0);
-          console.log("Host payable amount set to remaining amount:", event.pendingAmount);
+          console.log(
+            "Host payable amount set to remaining amount:",
+            event.pendingAmount
+          );
         } else if (currentUserParticipant) {
           // For regular users: calculate their due amount
           const userDueAmount =
@@ -161,18 +175,16 @@ export function EventDetailsPage({
       // Use different endpoints based on user role:
       // For hosts: /user/payment/stripe/remaining/:event (pays for remaining amount)
       // For regular users: /user/payment/stripe/:event (pays custom amount)
-      const endpoint = isCurrentUserHost 
+      const endpoint = isCurrentUserHost
         ? `/user/payment/stripe/remaining/${event?.slug}`
         : `/user/payment/stripe/${event?.slug}`;
-      
+
       console.log("Using payment endpoint:", endpoint);
 
-      const response = await axiosInstance.post<PaymentResponse>(
-        endpoint,
-        {
-          amount: userPayableAmount || event?.pendingAmount,
-        }
-      );
+      const response = await axiosInstance.post<PaymentResponse>(endpoint, {
+        amount: userPayableAmount || event?.pendingAmount,
+        paidFor: perHeadCount,
+      });
 
       if (response.status !== 200) {
         console.error("Failed to create Stripe session");
@@ -213,11 +225,15 @@ export function EventDetailsPage({
       ? event.participants.map((participant) => ({
           id: participant.id.toString(),
           name: participant.user?.fullName ?? "Unknown",
+          paidFor: participant.paidFor,
           phoneNumber: participant.user?.phoneNumber ?? "N/A",
           email: participant.email,
           equityAmount: participant.equityAmount,
           depositedAmount: participant.depositedAmount,
-          dueAmount: Math.max(0, participant.equityAmount - participant.depositedAmount),
+          dueAmount: Math.max(
+            0,
+            participant.equityAmount - participant.depositedAmount
+          ),
           userStatus: participant.role === "host" ? "Host" : "Co-Host",
           paymentStatus: (participant.paymentStatus === "paid"
             ? "Paid"
@@ -240,7 +256,8 @@ export function EventDetailsPage({
         pickupDate={event?.pickupDate}
         phoneNumber={event?.phoneNumber}
         clientName={event?.clientName}
-        location={formatValue(event?.location)}
+        pickupLocation={formatValue(event?.pickupLocation)}
+        dropOffLocation={formatValue(event?.dropOffLocation)}
         totalAmount={event?.totalAmount}
         pendingAmount={event?.pendingAmount}
         depositAmount={event?.depositAmount}
@@ -249,6 +266,7 @@ export function EventDetailsPage({
         eventSlug={event?.slug}
         onShareIt={handleShareIt}
         onPayNow={handlePay}
+        onPerHeadChange={setPerHeadCount}
         handleCopyClick={handleCopyClick}
         currentPayableAmount={userPayableAmount}
         onPayableAmountUpdate={setUserPayableAmount}

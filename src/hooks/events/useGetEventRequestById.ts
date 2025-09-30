@@ -10,6 +10,8 @@ interface EventRequest {
   pickupTime: string;
   location: string;
   addStops: string;
+  pickupLocation: string;
+  dropOffLocation: string;
   hoursReserved: number;
   totalAmount: number;
   pendingAmount: number;
