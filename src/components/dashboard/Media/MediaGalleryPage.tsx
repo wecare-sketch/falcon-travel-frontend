@@ -34,6 +34,7 @@ interface MediaEvent {
   badgeCount: number;
   slug: string;
 }
+
 export function MediaGalleryPage({
   setActiveSubItem,
   setActiveView,
@@ -44,6 +45,7 @@ export function MediaGalleryPage({
   const [SelectedEventid, setSelectedEventid] = useState<string>("");
   const [filteredEvents, setFilteredEvents] = useState<MediaEvent[]>([]);
   const role = useSelector((state: RootState) => state.userRole.role);
+
   const fetchUserEvents = useCallback(async () => {
     let endpoint = "";
     if (role === "admin") {
@@ -63,7 +65,7 @@ export function MediaGalleryPage({
     } catch (error) {
       console.error("Error fetching events:", error);
     }
-  }, [role]); // ✅ stable dependencies
+  }, [role]);
 
   useEffect(() => {
     fetchUserEvents();
@@ -72,27 +74,19 @@ export function MediaGalleryPage({
   const handleSearch = async (query: string, host: string, status: string) => {
     setHasSearched(true);
     try {
-      const params: SearchParams = {
-        search: query,
-      };
+      const params: SearchParams = { search: query };
 
-      if (host !== "allHost") {
-        params.host = host;
-      }
-
-      if (status !== "allStatus") {
-        params.paymentStatus = status;
-      }
+      if (host !== "allHost") params.host = host;
+      if (status !== "allStatus") params.paymentStatus = status;
 
       let endpoint = "";
-      if (role === "admin") {
-        endpoint = "/admin/events";
-      } else if (role === "user") {
-        endpoint = "/user/events";
-      } else {
+      if (role === "admin") endpoint = "/admin/events";
+      else if (role === "user") endpoint = "/user/events";
+      else {
         console.error("Invalid role");
         return;
       }
+
       const response = await axiosInstance.get<EventResponse>(endpoint, {
         params,
       });
@@ -120,10 +114,18 @@ export function MediaGalleryPage({
     setSelectedEventId(eventId);
     setSelectedEventid(eventid);
   };
+
   const handlebackpage = () => {
     setSelectedEventId(null);
-    setActiveView("Media");
+    setActiveView("Media"); // back from upload to media grid
   };
+
+  // ✅ Back from the media grid should go to the Music page
+  const handleBack = () => {
+    setActiveView("Music Library"); // <- use the parent's exact key
+    setActiveSubItem(null);
+  };
+
   if (selectedEventId !== null) {
     return (
       <MediaUploadPage
@@ -133,10 +135,7 @@ export function MediaGalleryPage({
       />
     );
   }
-  const handleBack = () => {
-    setActiveView("Dashboard");
-    setActiveSubItem(null);
-  };
+
   return (
     <>
       <PageHeader onBack={handleBack} title="Media Gallery" />
@@ -171,7 +170,7 @@ export function MediaGalleryPage({
               />
             ))
           ) : (
-            <div className="flex items-center top-1/2   justify-center absolute ">
+            <div className="flex items-center top-1/2 justify-center absolute">
               <h1 className="text-black text-xl text-center">
                 Result not found
               </h1>

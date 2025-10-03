@@ -58,10 +58,12 @@ const musicEvents = [
     ],
   },
 ];
+
 interface MusicLibraryPageProps {
   setActiveView: (view: string) => void;
   setActiveSubItem: (subItem: string | null) => void;
 }
+
 export function MusicLibraryPage({
   setActiveView,
   setActiveSubItem,
@@ -85,10 +87,12 @@ export function MusicLibraryPage({
   const handleLikeSong = (songId: string, listType: "music" | "personal") => {
     console.log("Like song:", songId, "from", listType);
   };
+
   const handleBack = () => {
-    setActiveView("Dashboard");
+    setActiveView("Upcoming Events");
     setActiveSubItem(null);
   };
+
   return (
     <div>
       <PageHeader onBack={handleBack} title="Add Music into Specific event" />

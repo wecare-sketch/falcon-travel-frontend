@@ -93,6 +93,8 @@ export function UpcomingEventsPage({
   const [editingEvent, setEditingEvent] = useState<EventFormData>();
 
   const role = useSelector((state: RootState) => state.userRole.role);
+  const isAdmin = role === "admin";
+
   const [page, setPage] = useState(1);
   const isMobile = useIsMobile();
   const {
@@ -242,6 +244,7 @@ export function UpcomingEventsPage({
       ? Math.ceil(filteredEvents.length / PAGE_SIZE)
       : 1
     : Math.ceil(mappedAdminEvents.length / PAGE_SIZE);
+
   if (isLoading) {
     return (
       <div className="flex justify-center items-center h-64">
@@ -266,15 +269,22 @@ export function UpcomingEventsPage({
     setActiveView("Upcoming Events");
   };
 
+  // When an event is selected, show its details
   if (selectedEventId !== null) {
     return (
-      <EventDetailsPage onBack={onBackhandler} eventId={selectedEventId} />
+      <EventDetailsPage
+        onBack={isAdmin ? onBackhandler : undefined}
+        eventId={selectedEventId}
+      />
     );
   }
 
   return (
     <div>
-      <PageHeader onBack={handleBack} title="List of Events" />
+      <PageHeader
+        title="List of Events"
+        {...(isAdmin ? { onBack: handleBack } : {})}
+      />
       <SearchFilters onSearch={handleSearch} />
       {role === "admin" ? (
         isMobile ? (
