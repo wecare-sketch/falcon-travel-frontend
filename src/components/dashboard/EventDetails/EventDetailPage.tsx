@@ -32,6 +32,14 @@ interface PaymentResponse {
   };
 }
 
+function getCurrentUserFromStorage() {
+  if (typeof window === "undefined") return null;
+  const id = localStorage.getItem("userId");
+  const email = localStorage.getItem("userEmail");
+  if (!id || !email) return null;
+  return { id: String(id), email: String(email) };
+}
+
 export function EventDetailsPage({
   onBack,
   eventId,
@@ -52,70 +60,65 @@ export function EventDetailsPage({
   // State to track if the current user paid for 1 headCount or more
   const [perHeadCount, setPerHeadCount] = useState(1);
 
+  const [currentUser, setCurrentUser] = useState<{
+    id: string;
+    email: string;
+  } | null>(null);
+
   const { event, isLoading, isError } = useEventDetailsByPageType(
     eventId,
     isUserRequestPage ?? false
   );
 
+  useEffect(() => {
+    const token =
+      typeof window !== "undefined"
+        ? localStorage.getItem("access_token")
+        : null;
+
+    if (token) {
+      axiosInstance.defaults.headers.common[
+        "Authorization"
+      ] = `Bearer ${token}`;
+    }
+
+    setCurrentUser(getCurrentUserFromStorage());
+  }, []);
+
   // Calculate initial payable amount based on current user's due amount
   // Get user ID from localStorage and find their participant record
   useEffect(() => {
-    if (event && "participants" in event) {
-      const userId = localStorage.getItem("userId");
-      const userEmail = localStorage.getItem("userEmail");
+    if (!event || !("participants" in event) || !currentUser) return;
 
-      // Find current user's participant record
-      let currentUserParticipant = null;
-      if (userId) {
-        currentUserParticipant = event.participants.find(
-          (participant) => participant.user?.id === userId
-        );
+    // normalize host/email
+    const eventHost = (event.host ?? "").toString().toLowerCase();
+    const userEmail = currentUser.email.toLowerCase();
+    const isHost = !!eventHost && userEmail === eventHost;
+    setIsCurrentUserHost(isHost);
 
-        if (currentUserParticipant) {
-          // Set user's deposited amount for invoice availability
-          setUserDepositedAmount(currentUserParticipant.depositedAmount);
-        }
-      }
+    // find the participant row for THIS user (normalize ids to strings)
+    const participant = event.participants.find(
+      (p) => String(p.user?.id ?? p.user.id ?? "") === currentUser.id
+    );
 
-      // Check if current user is the host by comparing emails
-      if (userEmail && event.host) {
-        const isHost = userEmail === event.host;
-        setIsCurrentUserHost(isHost);
-        console.log(
-          "Host check - userEmail:",
-          userEmail,
-          "eventHost:",
-          event.host,
-          "isHost:",
-          isHost
-        );
-
-        // Set payable amount based on user role
-        if (isHost) {
-          // For hosts: use remaining amount (pendingAmount)
-          setUserPayableAmount(event.pendingAmount || 0);
-          console.log(
-            "Host payable amount set to remaining amount:",
-            event.pendingAmount
-          );
-        } else if (currentUserParticipant) {
-          // For regular users: calculate their due amount
-          const userDueAmount =
-            currentUserParticipant.equityAmount -
-            currentUserParticipant.depositedAmount;
-          setUserPayableAmount(userDueAmount);
-          console.log("User payable amount set to due amount:", userDueAmount);
-        }
-      } else if (currentUserParticipant) {
-        // If not host but found participant, calculate their due amount
-        const userDueAmount =
-          currentUserParticipant.equityAmount -
-          currentUserParticipant.depositedAmount;
-        setUserPayableAmount(userDueAmount);
-        console.log("User payable amount set to due amount:", userDueAmount);
-      }
+    if (participant) {
+      setUserDepositedAmount(participant.depositedAmount ?? 0);
     }
-  }, [event]);
+
+    if (isHost) {
+      // host pays remaining
+      setUserPayableAmount(event.pendingAmount ?? 0);
+    } else if (participant) {
+      const due = Math.max(
+        0,
+        (participant.equityAmount ?? 0) - (participant.depositedAmount ?? 0)
+      );
+      setUserPayableAmount(due);
+    } else {
+      // not found – either hide controls or default to 0
+      setUserPayableAmount(0);
+    }
+  }, [event, currentUser]);
 
   const formatValue = (value: unknown): string => {
     if (value == null) return "";
@@ -268,7 +271,7 @@ export function EventDetailsPage({
         onPayNow={handlePay}
         onPerHeadChange={setPerHeadCount}
         handleCopyClick={handleCopyClick}
-        currentPayableAmount={userPayableAmount}
+        currentPayableAmount={userPayableAmount ?? 0}
         onPayableAmountUpdate={setUserPayableAmount}
       />
 
