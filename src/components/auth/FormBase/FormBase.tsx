@@ -94,17 +94,35 @@ const FormBase = ({
 
           if (accessToken) {
             localStorage.setItem("access_token", accessToken);
+
+            // Decode and store user information
             const decoded = jwtDecode<{
               role: string;
               id: string;
               email: string;
               name: string;
             }>(accessToken);
+
+            // Store all user data
             localStorage.setItem("name", decoded.name);
             localStorage.setItem("userId", decoded.id);
             localStorage.setItem("userEmail", decoded.email);
+
+            console.log("User data stored after login:", {
+              userId: decoded.id,
+              userEmail: decoded.email,
+              name: decoded.name,
+            });
+
             const role = decoded.role.toLowerCase();
-            router.replace(`/${role}/dashboard`); // Change this one to replace
+
+            // If there's an invite token, they might be joining an event
+            // Add a query parameter to trigger refresh on the dashboard
+            if (inviteToken) {
+              router.replace(`/${role}/dashboard?justJoinedEvent=true`);
+            } else {
+              router.replace(`/${role}/dashboard`);
+            }
           } else {
             toast.error("Login failed: Invalid response");
           }
@@ -123,6 +141,9 @@ const FormBase = ({
         }
         try {
           setLoading(true);
+
+          console.log("Signing up with invite token:", inviteToken);
+
           const response = await axiosInstance.post<ApiResponse>(
             `/auth/register${inviteToken ? `/${inviteToken}` : ""}`,
             {
@@ -132,8 +153,46 @@ const FormBase = ({
           );
 
           if (response?.data?.data) {
-            localStorage.setItem("access_token", response?.data?.data);
-            router.push("/personal-details");
+            const accessToken = response.data.data;
+            localStorage.setItem("access_token", accessToken);
+
+            // Immediately decode and store user info
+            try {
+              const decoded = jwtDecode<{
+                role?: string;
+                id: string;
+                email: string;
+                name?: string;
+              }>(accessToken);
+
+              // Store all user info immediately after signup
+              localStorage.setItem("userId", decoded.id || "");
+              localStorage.setItem("userEmail", decoded.email || email); // Fallback to form email
+              if (decoded.name) {
+                localStorage.setItem("name", decoded.name);
+              }
+
+              console.log("User data stored immediately after signup:", {
+                userId: decoded.id,
+                userEmail: decoded.email || email,
+                fromInviteToken: !!inviteToken,
+              });
+            } catch (decodeError) {
+              console.error(
+                "Failed to decode token after signup:",
+                decodeError
+              );
+              // Still store the email from the form as fallback
+              localStorage.setItem("userEmail", email);
+              console.log("Stored email from form as fallback:", email);
+            }
+
+            // Navigate to personal details with flag if from event signup
+            if (inviteToken) {
+              router.push("/personal-details?fromEventSignup=true");
+            } else {
+              router.push("/personal-details");
+            }
           }
         } catch (err: unknown) {
           const error = err as ApiError;

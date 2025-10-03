@@ -1,5 +1,6 @@
 import { useSelector } from "react-redux";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import { PageHeader } from "../PageHeader";
 import { EventCard } from "./EventCard";
 import { SearchFilters } from "../SearchFilter";
@@ -39,6 +40,7 @@ interface EventResponse {
     events: EventFormData[];
   };
 }
+
 interface EventFormData {
   eventType: string;
   clientName: string;
@@ -64,11 +66,13 @@ interface EventFormData {
   vehicle: string;
   tripNotes: string;
 }
+
 interface SearchParams {
   search: string;
   host?: string;
   paymentStatus?: string;
 }
+
 interface MappedEvent {
   id: string;
   title: string;
@@ -88,9 +92,12 @@ export function UpcomingEventsPage({
   setIsCreateModalOpen,
   setActiveSubItem,
 }: Readonly<UpcomingEventsPageProps>) {
+  // const router = useRouter();
+  const searchParams = useSearchParams();
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
   const [openEditModal, setOpenEditModal] = useState(false);
   const [editingEvent, setEditingEvent] = useState<EventFormData>();
+  const [shouldPassJustSignedUp, setShouldPassJustSignedUp] = useState(false);
 
   const role = useSelector((state: RootState) => state.userRole.role);
   const isAdmin = role === "admin";
@@ -114,6 +121,33 @@ export function UpcomingEventsPage({
   const [eventToDelete, setEventToDelete] = useState<string | null>(null);
   const [filteredEvents, setFilteredEvents] = useState<MappedEvent[]>([]);
   const [hasSearched, setHasSearched] = useState(false);
+
+  // Check for query parameters on component mount
+  useEffect(() => {
+    const justSignedUp = searchParams?.get("justSignedUp") === "true";
+    const justJoinedEvent = searchParams?.get("justJoinedEvent") === "true";
+
+    if (justSignedUp || justJoinedEvent) {
+      console.log("User just signed up/joined event, refreshing events...");
+      setShouldPassJustSignedUp(true);
+
+      // Refresh the events list
+      if (refetch) {
+        setTimeout(() => {
+          refetch();
+        }, 1000);
+      }
+
+      // If there's an event to navigate to (you might store this in localStorage during signup)
+      const targetEventId = localStorage.getItem("pendingEventNavigation");
+      if (targetEventId) {
+        setTimeout(() => {
+          setSelectedEventId(targetEventId);
+          localStorage.removeItem("pendingEventNavigation");
+        }, 1500);
+      }
+    }
+  }, [searchParams, refetch]);
 
   const handleViewDetails = (eventId: string) => {
     setSelectedEventId(eventId);
@@ -182,6 +216,7 @@ export function UpcomingEventsPage({
   const handleClose = () => {
     setOpenEditModal(false);
   };
+
   const handleEditClick = (eventId: string) => {
     const originalEvent = eventsData?.events.find((e) => e.id === eventId);
     if (originalEvent) {
@@ -252,6 +287,7 @@ export function UpcomingEventsPage({
       </div>
     );
   }
+
   if (isError) {
     return (
       <div className="p-4 text-red-500 bg-red-50 rounded-lg">
@@ -264,9 +300,11 @@ export function UpcomingEventsPage({
     setActiveView("Dashboard");
     setActiveSubItem(null);
   };
+
   const onBackhandler = () => {
     setSelectedEventId(null);
     setActiveView("Upcoming Events");
+    setShouldPassJustSignedUp(false);
   };
 
   // When an event is selected, show its details
@@ -275,6 +313,8 @@ export function UpcomingEventsPage({
       <EventDetailsPage
         onBack={isAdmin ? onBackhandler : undefined}
         eventId={selectedEventId}
+        // Pass the justSignedUp flag if we have it
+        {...(shouldPassJustSignedUp && { justSignedUp: true })}
       />
     );
   }
