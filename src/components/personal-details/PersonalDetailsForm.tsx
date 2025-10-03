@@ -31,7 +31,7 @@ const PersonalDetailsForm = () => {
       return "Phone number is required";
     }
     // Check if the phone number is valid (at least 10 digits including country code)
-    const phone = phoneNumber.replace(/\D/g, ''); // Remove all non-digits
+    const phone = phoneNumber.replace(/\D/g, ""); // Remove all non-digits
     if (phone.length < 10) {
       return "Please enter a valid phone number";
     }
@@ -56,7 +56,9 @@ const PersonalDetailsForm = () => {
     mutate(userDetails, {
       onSuccess: () => {
         toast.success("Details saved successfully!");
-        router.push("/user/dashboard");
+        localStorage.setItem("name", fullName);
+
+        router.replace("/user/dashboard"); // Use replace here too
       },
       onError: (error: ApiError) => {
         toast.error(error.message || "Failed to save details.");
@@ -85,7 +87,9 @@ const PersonalDetailsForm = () => {
       />
 
       <div className="mb-6 ">
-        <label className="block text-lg text-black sm:text-sm mb-2">Phone Number</label>
+        <label className="block text-lg text-black sm:text-sm mb-2">
+          Phone Number
+        </label>
         <div className="w-full p-2 border border-gray-300 bg-gray-100 rounded-md min-h-[54px] resize-none sm:text-base md:text-lg lg:text-[16px]">
           <PhoneInput
             country="pk"
@@ -100,7 +104,7 @@ const PersonalDetailsForm = () => {
             placeholder="Enter Your Phone Number"
             inputClass="rounded-md min-h-[40px] resize-none sm:text-base md:text-lg lg:text-[16px] text-black"
             isValid={(inputNumber) => {
-              const phone = inputNumber.replace(/\D/g, '');
+              const phone = inputNumber.replace(/\D/g, "");
               return phone.length >= 10;
             }}
           />

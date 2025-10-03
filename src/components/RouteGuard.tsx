@@ -1,44 +1,82 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { jwtDecode } from "jwt-decode";
 import { toast } from "react-hot-toast";
 
+type GuardMode = "private" | "public";
+
 interface Props {
   children: React.ReactNode;
-  allowedRoles?: string[]; 
+  allowedRoles?: string[]; // for private pages
+  mode?: GuardMode; // "private" (default) | "public"
+  // where to send logged-in users from public pages (e.g., sign-in)
+  redirectAuthedTo?: string | ((role?: string) => string);
+  fallback?: React.ReactNode; // optional loading/skeleton
 }
 
-const RouteGuard = ({ children, allowedRoles }: Props) => {
-  const [isAuthorized, setIsAuthorized] = useState(false);
+const RouteGuard = ({
+  children,
+  allowedRoles,
+  mode = "private",
+  redirectAuthedTo = (role?: string) =>
+    `/${(role ?? "user").toLowerCase()}/dashboard`,
+  fallback = null,
+}: Props) => {
+  const [ok, setOk] = useState(false);
   const router = useRouter();
 
-  useEffect(() => {
-    const token = localStorage.getItem("access_token");
+  const token = useMemo(() => {
+    if (typeof window === "undefined") return null;
+    return localStorage.getItem("access_token");
+  }, []);
 
-    if (!token) {
-      router.push("/auth/sign-in");
-      return;
-    }
+  useEffect(() => {
+    // Helper to resolve redirect target
+    const resolve = (
+      target: string | ((role?: string) => string),
+      role?: string
+    ) => (typeof target === "function" ? target(role) : target);
 
     try {
-      const decoded: { role: string } = jwtDecode(token);
-      if (allowedRoles && !allowedRoles.includes(decoded.role.toLowerCase())) {
-        router.push("/auth/sign-in");
+      if (mode === "public") {
+        // public page (e.g., /auth/sign-in): if authed, bounce forward
+        if (token) {
+          const { role } = jwtDecode<{ role?: string }>(token);
+          router.replace(resolve(redirectAuthedTo, role));
+          return;
+        }
+        setOk(true); // not authed → can view public page
         return;
       }
 
-      setIsAuthorized(true);
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : "Invalid token";
-      toast.error(`Authentication failed: ${errorMessage}`);
-      localStorage.removeItem("access_token");
-      router.push("/auth/sign-in");
-    }
-  }, [allowedRoles, router]);
+      // private mode (protected pages)
+      if (!token) {
+        router.replace("/auth/sign-in");
+        return;
+      }
 
-  return isAuthorized ? <>{children}</> : null;
+      const { role } = jwtDecode<{ role?: string }>(token);
+      if (
+        allowedRoles &&
+        role &&
+        !allowedRoles.map((r) => r.toLowerCase()).includes(role.toLowerCase())
+      ) {
+        router.replace("/auth/sign-in");
+        return;
+      }
+
+      setOk(true);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Invalid token";
+      toast.error(`Authentication failed: ${msg}`);
+      localStorage.removeItem("access_token");
+      router.replace("/auth/sign-in");
+    }
+  }, [mode, allowedRoles, redirectAuthedTo, router, token]);
+
+  return ok ? <>{children}</> : <>{fallback}</>;
 };
 
 export default RouteGuard;

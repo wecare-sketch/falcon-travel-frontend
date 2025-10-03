@@ -9,6 +9,9 @@ import {
   Typography,
   Box,
   Avatar,
+  DialogActions,
+  Button,
+  TextField,
 } from "@mui/material";
 import { X, User } from "lucide-react";
 import { SectionEventDetails } from "./SectionEventDetails";
@@ -51,11 +54,16 @@ interface EventFormData {
   tripNotes: string;
 }
 
+interface UpdateEventFormData {
+  event: EventFormData;
+  url: string;
+}
+
 interface CreateEventModalProps {
   open: boolean;
   onClose: () => void;
   onCreateEvent?: (eventData: EventFormData) => void;
-  onUpdateEvent?: (eventData: EventFormData) => void;
+  onUpdateEvent?: (eventData: UpdateEventFormData) => void;
   isEditMode?: boolean;
   initialData?: EventFormData;
   eventId?: string;
@@ -113,6 +121,8 @@ export function CreateEventModal({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [eventImage, setEventImage] = useState<string | null>(null);
   const [eventFile, setEventFile] = useState<File | null>(null);
+  const [inviteUrl, setInviteUrl] = useState("");
+  const [showOnlyCopyModal, setShowOnlyCopyModal] = useState(false);
 
   const { mutate: submitEvent, status } = useEventMutationByRole();
   const { mutate: updateEvent, isPending: isUpdating } =
@@ -140,6 +150,17 @@ export function CreateEventModal({
       setValue("addStops", newStops);
       setCurrentStop("");
     }
+  };
+
+  const hasShareUrl = (
+    data: unknown
+  ): data is { event: EventFormData; url: string } => {
+    return (
+      typeof data === "object" &&
+      data !== null &&
+      "url" in data &&
+      typeof (data as { url: unknown }).url === "string"
+    );
   };
 
   const handleCancel = () => {
@@ -186,7 +207,11 @@ export function CreateEventModal({
         dropOffDate: data.dropoffDate,
         pickupTime: data.pickupTime,
         location: data.location,
-        stops: data.addStops ? [data.addStops] : [],
+        stops: Array.isArray(data.addStops)
+          ? data.addStops
+          : data.addStops
+          ? [data.addStops]
+          : [],
         pickupLocation: data.pickupLocation,
         dropOffLocation: data.dropOffLocation,
       })
@@ -215,17 +240,27 @@ export function CreateEventModal({
 
     if (isEditMode && eventId) {
       updateEvent(
-        { slug: eventId, formData },
+        { slug: (eventId || initialData?.slug) as string, formData },
         {
-          onSuccess: () => {
-            toast.success("Event updated!");
-            reset();
+          onSuccess: (response) => {
+            // Narrow safely:
 
+            const shareUrl = hasShareUrl(response.data)
+              ? response.data.url
+              : undefined;
+
+            toast.success("Event updated!");
+
+            if (shareUrl) {
+              setInviteUrl(shareUrl);
+              setShowOnlyCopyModal(true);
+            }
+
+            reset();
             setEventImage(null);
             setEventFile(null);
-            onClose();
             refetch();
-            reset({ tripNotes: "" });
+            onClose();
           },
           onError: () => toast.error("Failed to update event"),
         }
@@ -402,7 +437,7 @@ export function CreateEventModal({
                     : "+ Create Event"
                 }
                 onClick={handleSubmit(onSubmit)}
-                disabled={isPending}
+                disabled={isPending || isUpdating}
                 sx={{
                   minWidth: { xs: "100%", sm: "180px" },
                   height: 44,
@@ -417,6 +452,76 @@ export function CreateEventModal({
         onClose={handleCloseShareModal}
         slug={slug || ""}
       />
+
+      <Dialog
+        open={showOnlyCopyModal}
+        onClose={() => setShowOnlyCopyModal(false)}
+        maxWidth="sm"
+        fullWidth
+        PaperProps={{
+          sx: {
+            borderRadius: "12px",
+            padding: "24px",
+          },
+        }}
+      >
+        <DialogContent>
+          <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>
+            Share Event Link
+          </Typography>
+
+          <Box sx={{ display: "flex", gap: 2, alignItems: "center" }}>
+            <TextField
+              fullWidth
+              value={inviteUrl}
+              InputProps={{
+                readOnly: true,
+              }}
+              sx={{
+                "& .MuiOutlinedInput-root": {
+                  borderRadius: "8px",
+                  backgroundColor: "#F5F5F5",
+                  "& fieldset": {
+                    borderColor: "#E0E0E0",
+                  },
+                },
+              }}
+            />
+
+            <Button
+              variant="outlined"
+              onClick={() => {
+                navigator.clipboard.writeText(inviteUrl);
+                toast.success("Link copied!");
+              }}
+              sx={{
+                textTransform: "none",
+                fontWeight: 500,
+                padding: "10px 16px",
+              }}
+            >
+              Copy Link
+            </Button>
+          </Box>
+        </DialogContent>
+
+        <DialogActions sx={{ justifyContent: "flex-end", mt: 2 }}>
+          <Button
+            onClick={() => setShowOnlyCopyModal(false)}
+            sx={{
+              textTransform: "none",
+              fontWeight: 500,
+              fontSize: "14px",
+              padding: "10px 24px",
+              "&:hover": {
+                backgroundColor: "#F5F5F5",
+              },
+            }}
+          >
+            Close
+          </Button>
+        </DialogActions>
+      </Dialog>
     </>
   );
 }

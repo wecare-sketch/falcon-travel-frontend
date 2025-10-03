@@ -82,25 +82,29 @@ const FormBase = ({
         try {
           setLoading(true);
           // Add invite token as query parameter if it exists
-          const loginUrl = inviteToken ? `/auth/login?token=${inviteToken}` : "/auth/login";
-          const res = await axiosInstance.post<{ data?: string }>(
-            loginUrl,
-            {
-              email,
-              password: loginPassword,
-            }
-          );
+          const loginUrl = inviteToken
+            ? `/auth/login?token=${inviteToken}`
+            : "/auth/login";
+          const res = await axiosInstance.post<{ data?: string }>(loginUrl, {
+            email,
+            password: loginPassword,
+          });
 
           const accessToken = res.data?.data;
 
           if (accessToken) {
             localStorage.setItem("access_token", accessToken);
-            const decoded = jwtDecode<{ role: string, id: string, email: string, name: string }>(accessToken);
+            const decoded = jwtDecode<{
+              role: string;
+              id: string;
+              email: string;
+              name: string;
+            }>(accessToken);
             localStorage.setItem("name", decoded.name);
             localStorage.setItem("userId", decoded.id);
             localStorage.setItem("userEmail", decoded.email);
             const role = decoded.role.toLowerCase();
-            router.push(`/${role}/dashboard`);
+            router.replace(`/${role}/dashboard`); // Change this one to replace
           } else {
             toast.error("Login failed: Invalid response");
           }
@@ -265,7 +269,7 @@ const FormBase = ({
         },
         maxHeight: {
           xs: "none",
-          sm: "none", 
+          sm: "none",
           md: "85vh",
           lg: "85vh",
         },
@@ -329,7 +333,11 @@ const FormBase = ({
               <span>
                 Already have an account?{" "}
                 <Link
-                  href={inviteToken ? `/auth/sign-in/${inviteToken}` : "/auth/sign-in"}
+                  href={
+                    inviteToken
+                      ? `/auth/sign-in/${inviteToken}`
+                      : "/auth/sign-in"
+                  }
                   className="text-[#345794] font-bold hover:underline"
                 >
                   Sign In
@@ -339,7 +347,11 @@ const FormBase = ({
               <span>
                 New here?{" "}
                 <Link
-                  href={inviteToken ? `/auth/sign-up/${inviteToken}` : "/auth/sign-up"}
+                  href={
+                    inviteToken
+                      ? `/auth/sign-up/${inviteToken}`
+                      : "/auth/sign-up"
+                  }
                   className="text-[#345794] font-bold hover:underline"
                 >
                   Sign Up

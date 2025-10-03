@@ -890,7 +890,7 @@ function EventSummaryCard({
                 disabled={isEditing}
               />
               <Typography sx={{ fontSize: 13, color: "#444" }}>
-                Pay per head
+                Pay Per Person
               </Typography>
             </Box>
 

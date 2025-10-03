@@ -67,7 +67,7 @@ export function SettingsDrawer({
   };
   const handleLogout = () => {
     localStorage.clear();
-    router.push("/auth/sign-in");
+    router.replace("/auth/sign-in");
   };
   return (
     <Drawer
