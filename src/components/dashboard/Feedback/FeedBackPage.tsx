@@ -55,9 +55,11 @@ interface Event {
   cohosts: string[];
   feedbacks: Feedback[];
 }
+
 interface FeedBackPageProps {
   setActiveView: (view: string) => void;
 }
+
 interface SearchParams {
   search: string;
   host?: string;
@@ -72,32 +74,29 @@ export function FeedBackPage({ setActiveView }: FeedBackPageProps) {
   const { data } = useGetEventByIdByRole(selectedEventId);
   const [filteredEvents, setFilteredEvents] = useState<Event[]>([]);
   const [hasSearched, setHasSearched] = useState(false);
+
   const role = useSelector((state: RootState) => state.userRole.role);
+  const isAdmin = (role ?? "").toLowerCase() === "admin";
+
   const { data: eventsData, isLoading, isError } = useEventsByRole();
   const events = eventsData?.events;
+
   const handleSearch = async (query: string, host: string, status: string) => {
     setHasSearched(true);
     try {
-      const params: SearchParams = {
-        search: query,
-      };
+      const params: SearchParams = { search: query };
 
-      if (host !== "allHost") {
-        params.host = host;
-      }
+      if (host !== "allHost") params.host = host;
+      if (status !== "allStatus") params.paymentStatus = status;
 
-      if (status !== "allStatus") {
-        params.paymentStatus = status;
-      }
       let endpoint = "";
-      if (role === "admin") {
-        endpoint = "/admin/events";
-      } else if (role === "user") {
-        endpoint = "/user/events";
-      } else {
+      if (isAdmin) endpoint = "/admin/events";
+      else if ((role ?? "").toLowerCase() === "user") endpoint = "/user/events";
+      else {
         console.error("Invalid role");
         return;
       }
+
       const response = await axiosInstance.get<EventResponse>(endpoint, {
         params,
       });
@@ -134,7 +133,7 @@ export function FeedBackPage({ setActiveView }: FeedBackPageProps) {
           feedbacks: event.feedbacks,
         }));
 
-        setFilteredEvents(mappedFilteredEvents);
+        setFilteredEvents(mappedFilteredEvents as Event[]);
       } else {
         setFilteredEvents([]);
       }
@@ -147,13 +146,15 @@ export function FeedBackPage({ setActiveView }: FeedBackPageProps) {
     setSelectedEventSlug(event.slug);
     setSelectedEventId(event.id);
   };
-  const handlebackk = () => {
+
+  const handleBackDetails = () => {
     setSelectedEventSlug(null);
     setSelectedEventId("");
     setActiveView("Feedback");
   };
 
-  if (role === "user") {
+  // User flow: add feedback screen (no back in header—child handles its own)
+  if ((role ?? "").toLowerCase() === "user") {
     if (selectedEventSlug !== null) {
       return (
         <AddFeedback
@@ -165,18 +166,22 @@ export function FeedBackPage({ setActiveView }: FeedBackPageProps) {
       );
     }
   } else {
+    // Admin flow: details page with back button
     if (selectedEventSlug !== null) {
-      return <FeedbackDetailsPage onBack={handlebackk} event={data?.event} />;
+      return (
+        <FeedbackDetailsPage onBack={handleBackDetails} event={data?.event} />
+      );
     }
   }
 
   return (
     <>
       <PageHeader
-        onBack={() => setActiveView("Dashboard")}
         title="Add Event FeedBack"
+        {...(isAdmin ? { onBack: () => setActiveView("Dashboard") } : {})}
       />
       <SearchFilters onSearch={handleSearch} />
+
       {isLoading && (
         <div className="mt-8 text-center text-blue-600 font-semibold">
           Loading events...
@@ -208,7 +213,7 @@ export function FeedBackPage({ setActiveView }: FeedBackPageProps) {
                 averageRating={event?.feedbacks?.[0]?.averageRating}
                 createdAt={event?.createdAt}
                 onViewDetails={() => handleViewDetails(event)}
-                Label={role === "user" ? "Add Your Feedback" : "View Details"}
+                Label={isAdmin ? "View Details" : "Add Your Feedback"}
               />
             ))
           ) : (
@@ -228,7 +233,7 @@ export function FeedBackPage({ setActiveView }: FeedBackPageProps) {
               averageRating={event?.feedbacks?.[0]?.averageRating}
               createdAt={event?.feedbacks?.[0]?.createdAt}
               onViewDetails={() => handleViewDetails(event)}
-              Label={role === "user" ? "Add Your Feedback" : "View Details"}
+              Label={isAdmin ? "View Details" : "Add Your Feedback"}
             />
           ))
         )}
