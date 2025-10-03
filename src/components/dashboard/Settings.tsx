@@ -22,6 +22,9 @@ import { ChevronRight, Bell, ChevronLeft, LogOut } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import axiosInstance from "@/lib/axios";
+// If you use React Query and have a client, you can clear cache on logout too:
+// import { queryClient } from "@/lib/queryClient";
 
 interface SettingsDrawerProps {
   open: boolean;
@@ -65,10 +68,37 @@ export function SettingsDrawer({
     setLogoutDialogOpen(false);
     handleLogout();
   };
+
   const handleLogout = () => {
-    localStorage.clear();
-    router.push("/auth/sign-in");
+    // 1) Clear localStorage keys set on login
+    try {
+      localStorage.removeItem("access_token");
+      localStorage.removeItem("name");
+      localStorage.removeItem("userId");
+      localStorage.removeItem("userEmail");
+    } catch {
+      // ignore
+    }
+
+    // 2) Remove axios Authorization header so no requests use a stale token
+    try {
+      delete axiosInstance.defaults.headers.common["Authorization"];
+    } catch {
+      // ignore
+    }
+
+    // 3) Clear cookies used by PublicOnly/middleware
+    document.cookie = "auth_token=; Path=/; Max-Age=0; SameSite=Lax";
+    document.cookie = "role=; Path=/; Max-Age=0; SameSite=Lax";
+
+    // 4) (Optional) Clear React Query cache if you use it
+    // try { queryClient.clear(); } catch {}
+
+    // 5) Redirect away (replace so Back doesn’t return to the app)
+    router.replace("/auth/sign-in");
+    // router.refresh(); // optional: ensure a fresh render
   };
+
   return (
     <Drawer
       anchor="right"
@@ -76,7 +106,7 @@ export function SettingsDrawer({
       onClose={onClose}
       PaperProps={{
         sx: {
-          width: { xs: "100vw", sm: 320 }, // Full width on mobile, 320px on larger screens
+          width: { xs: "100vw", sm: 320 },
           maxWidth: 320,
           backgroundColor: "#FFFFFF",
           boxShadow: "-4px 0px 20px rgba(0, 0, 0, 0.1)",
@@ -90,7 +120,7 @@ export function SettingsDrawer({
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
-            padding: { xs: "12px 16px", sm: "16px 20px" }, // Less padding on mobile
+            padding: { xs: "12px 16px", sm: "16px 20px" },
             borderBottom: "1px solid #F0F0F0",
           }}
         >
@@ -111,7 +141,7 @@ export function SettingsDrawer({
             <Typography
               variant="h6"
               sx={{
-                fontSize: { xs: "16px", sm: "18px" }, // Smaller on mobile
+                fontSize: { xs: "16px", sm: "18px" },
                 fontWeight: 600,
                 color: "#333",
               }}
@@ -136,7 +166,7 @@ export function SettingsDrawer({
             <Typography
               variant="subtitle1"
               sx={{
-                fontSize: { xs: "14px", sm: "16px" }, // Smaller on mobile
+                fontSize: { xs: "14px", sm: "16px" },
                 fontWeight: 600,
                 color: "#333",
                 marginBottom: "16px",
@@ -162,8 +192,8 @@ export function SettingsDrawer({
                 <ListItemIcon sx={{ minWidth: 40 }}>
                   <Image
                     src="/images/emptyprofile.png"
-                    width="24"
-                    height="24"
+                    width={24}
+                    height={24}
                     alt="profile"
                   />
                 </ListItemIcon>
@@ -171,7 +201,7 @@ export function SettingsDrawer({
                   primary={
                     <Typography
                       sx={{
-                        fontSize: { xs: "13px", sm: "14px" }, // Smaller text on mobile
+                        fontSize: { xs: "13px", sm: "14px" },
                         fontWeight: 500,
                         color: "#333",
                         marginBottom: "2px",
@@ -183,7 +213,7 @@ export function SettingsDrawer({
                   secondary={
                     <Typography
                       sx={{
-                        fontSize: { xs: "11px", sm: "12px" }, // Smaller text on mobile
+                        fontSize: { xs: "11px", sm: "12px" },
                         color: "#666",
                       }}
                     >
@@ -219,8 +249,8 @@ export function SettingsDrawer({
                   >
                     <Image
                       src="/images/lock.png"
-                      width="24"
-                      height="24"
+                      width={24}
+                      height={24}
                       alt="profile"
                     />
                   </Box>
@@ -248,7 +278,7 @@ export function SettingsDrawer({
             <Typography
               variant="subtitle1"
               sx={{
-                fontSize: { xs: "14px", sm: "16px" }, // Smaller on mobile
+                fontSize: { xs: "14px", sm: "16px" },
                 fontWeight: 600,
                 color: "#333",
                 marginBottom: "16px",
@@ -309,6 +339,8 @@ export function SettingsDrawer({
                   }}
                 />
               </ListItem>
+
+              {/* Logout */}
               <ListItem
                 onClick={handleLogoutClick}
                 sx={{
@@ -331,20 +363,20 @@ export function SettingsDrawer({
                   >
                     <LogOut className="w-5 h-5 text-red-600" />
                   </Box>
-                  <ListItemText
-                    primary={
-                      <Typography
-                        sx={{
-                          fontSize: "14px",
-                          fontWeight: 500,
-                          color: "#333",
-                        }}
-                      >
-                        Logout
-                      </Typography>
-                    }
-                  />
                 </ListItemIcon>
+                <ListItemText
+                  primary={
+                    <Typography
+                      sx={{
+                        fontSize: "14px",
+                        fontWeight: 500,
+                        color: "#333",
+                      }}
+                    >
+                      Logout
+                    </Typography>
+                  }
+                />
               </ListItem>
             </List>
           </Box>

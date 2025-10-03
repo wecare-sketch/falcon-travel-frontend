@@ -8,7 +8,6 @@ import { jwtDecode } from "jwt-decode";
 import { useSelector } from "react-redux";
 import { RootState } from "@/store";
 
-// Add this interface for API response
 interface ApiResponse {
   data: string;
   message: string;
@@ -58,53 +57,77 @@ const SocialLoginButtons = () => {
       setIsLoading(true);
       try {
         const idToken = response.credential;
-  
+
         const payload = JSON.parse(atob(idToken.split(".")[1]));
         const email = payload.email;
         const email_verified = payload.email_verified;
-  
+
         if (!email || !email_verified) {
           throw new Error("Google email not verified");
         }
-  
-        // Determine endpoint based on form type and invite token
-        let endpoint;
+
+        // Decide endpoint from flow + invite token
+        let endpoint: string;
         if (inviteToken) {
-          // If there's an invite token, use appropriate endpoint based on form type
-          endpoint = formType === "sign-in" 
-            ? `/auth/social/google/login?token=${inviteToken}`
-            : `/auth/social/google/signup/${inviteToken}`;
+          endpoint =
+            formType === "sign-in"
+              ? `/auth/social/google/login?token=${inviteToken}`
+              : `/auth/social/google/signup/${inviteToken}`;
         } else {
-          // No invite token, use regular login endpoint
+          // If your backend supports a separate signup route without invite, you can branch here.
           endpoint = `/auth/social/google/login`;
         }
-  
+
         const { data } = await axiosInstance.post<ApiResponse>(endpoint, {
           authToken: idToken,
           email,
         });
-  
+
         if (!data?.data) {
           throw new Error("Invalid response from server");
         }
-  
+
+        // Store token
         localStorage.setItem("access_token", data.data);
-        const decoded = jwtDecode<{ role: string, id: string, email: string, name: string }>(data.data);
+
+        // Decode for role/id/email
+        const decoded = jwtDecode<{
+          role: string;
+          id: string;
+          email: string;
+          name: string;
+        }>(data.data);
+
         localStorage.setItem("name", decoded.name);
         localStorage.setItem("userId", decoded.id);
         localStorage.setItem("userEmail", decoded.email);
+
         const role = decoded.role.toLowerCase();
-        router.push(`/${role}/dashboard`);
+
+        // ✅ NEW: make the token available to the very next requests
+        axiosInstance.defaults.headers.common[
+          "Authorization"
+        ] = `Bearer ${data.data}`;
+
+        // ✅ NEW: set cookies so PublicOnly/middleware can detect auth on Back nav
+        document.cookie = `auth_token=${data.data}; Path=/; SameSite=Lax`;
+        document.cookie = `role=${role}; Path=/; SameSite=Lax`;
+
+        // Redirect (replace to avoid leaving auth page in history)
+        router.replace(`/${role}/dashboard`);
       } catch (error: unknown) {
         console.error("Google login error:", error);
         const message = error instanceof Error ? error.message : "Login failed";
-        
-        // Type guard to check if error is an Axios error with response
-        const isAxiosError = (err: unknown): err is { response: { data: { message: string } } } => {
-          return typeof err === 'object' && err !== null && 'response' in err;
+
+        const isAxiosError = (
+          err: unknown
+        ): err is { response: { data: { message: string } } } => {
+          return typeof err === "object" && err !== null && "response" in err;
         };
-        
-        const axiosMessage = isAxiosError(error) ? error.response?.data?.message : undefined;
+
+        const axiosMessage = isAxiosError(error)
+          ? error.response?.data?.message
+          : undefined;
         toast.error(axiosMessage || message);
       } finally {
         setIsLoading(false);
@@ -148,7 +171,13 @@ const SocialLoginButtons = () => {
   return (
     <div className="flex w-full gap-3 md:gap-4 mb-3 md:mb-4">
       <button className="flex-1 bg-[#F5F5F5] rounded-lg h-9 md:h-11 flex items-center justify-center cursor-pointer">
-        <Image src="/images/apple.png" alt="Apple" width={24} height={24} className="md:w-7 md:h-7" />
+        <Image
+          src="/images/apple.png"
+          alt="Apple"
+          width={24}
+          height={24}
+          className="md:w-7 md:h-7"
+        />
       </button>
       <div
         id="google-signin-button"
