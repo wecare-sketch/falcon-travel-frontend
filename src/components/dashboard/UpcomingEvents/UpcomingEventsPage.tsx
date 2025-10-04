@@ -311,7 +311,7 @@ export function UpcomingEventsPage({
   if (selectedEventId !== null) {
     return (
       <EventDetailsPage
-        onBack={isAdmin ? onBackhandler : undefined}
+        onBack={onBackhandler} // Always show back button in event details
         eventId={selectedEventId}
         // Pass the justSignedUp flag if we have it
         {...(shouldPassJustSignedUp && { justSignedUp: true })}
