@@ -71,6 +71,13 @@ export function EventDetailsPage({
   const router = useRouter();
   const searchParams = useSearchParams();
 
+  // Debug log to check if onBack is received
+  console.log("EventDetailsPage props:", {
+    hasOnBack: !!onBack,
+    eventId,
+    isUserRequestPage,
+  });
+
   const [userPayableAmount, setUserPayableAmount] = useState<number>(0);
   const [userDepositedAmount, setUserDepositedAmount] = useState<number>(0);
   const [isCurrentUserHost, setIsCurrentUserHost] = useState<boolean>(false);
@@ -321,16 +328,16 @@ export function EventDetailsPage({
       });
   };
 
-  const handleManualRefresh = async () => {
-    if (refetch) {
-      toast.loading("Refreshing event data...");
-      refetch();
-      setTimeout(() => {
-        toast.dismiss();
-        toast.success("Event data refreshed!");
-      }, 1500);
-    }
-  };
+  // const handleManualRefresh = async () => {
+  //   if (refetch) {
+  //     toast.loading("Refreshing event data...");
+  //     refetch();
+  //     setTimeout(() => {
+  //       toast.dismiss();
+  //       toast.success("Event data refreshed!");
+  //     }, 1500);
+  //   }
+  // };
 
   const membersData: Member[] | undefined =
     !isUserRequestPage && isEventsType(event)
@@ -360,7 +367,7 @@ export function EventDetailsPage({
       <PageHeader
         title="Event Details"
         onBack={onBack}
-        onRefresh={handleManualRefresh}
+        // onRefresh={handleManualRefresh}
       />
 
       <EventInfoCard

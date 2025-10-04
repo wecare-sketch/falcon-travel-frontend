@@ -1,6 +1,6 @@
 "use client";
 import React from "react";
-import { ArrowLeft, RefreshCw } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { Box } from "@mui/material";
 
 interface PageHeaderProps {
@@ -18,6 +18,14 @@ export function PageHeader({
 }: Readonly<PageHeaderProps>) {
   const showBack = typeof onBack === "function";
   const showRefresh = typeof onRefresh === "function";
+
+  // Debug log
+  console.log("PageHeader props:", {
+    showBack,
+    showRefresh,
+    hasOnBack: !!onBack,
+    title,
+  });
 
   return (
     <div className="w-full bg-[#F1F6FF] px-6 py-1 rounded mb-6 mt-6">
@@ -41,7 +49,7 @@ export function PageHeader({
           <h2 className="text-[#101010] font-source font-normal text-[23px] leading-[100%] tracking-[0]">
             {title}
           </h2>
-          {showRefresh && (
+          {/* {showRefresh && (
             <button
               type="button"
               aria-label="Refresh"
@@ -55,7 +63,7 @@ export function PageHeader({
             >
               <RefreshCw className="w-4 h-4 text-white" />
             </button>
-          )}
+          )} */}
         </div>
 
         {headerContent && (
