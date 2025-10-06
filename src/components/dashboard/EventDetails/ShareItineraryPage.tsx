@@ -21,18 +21,28 @@ interface ShareItineraryPageProps {
   onBack: () => void;
 }
 
-
-
-export function ShareItineraryPage({ eventSlug, onBack }: ShareItineraryPageProps) {
+export function ShareItineraryPage({
+  eventSlug,
+  onBack,
+}: ShareItineraryPageProps) {
   const { data, isLoading, isError } = useGetSharedEvent(eventSlug);
   console.log(data);
+  console.log("Full route data:", data?.data.routeDetails?.route);
+  console.log("Type of route:", typeof data?.data.routeDetails?.route);
+  console.log("Is route array?", Array.isArray(data?.data.routeDetails?.route));
+  console.log("Route[0]:", data?.data.routeDetails?.route?.[0]);
+  console.log("Type of route[0]:", typeof data?.data.routeDetails?.route?.[0]);
+  console.log(
+    "Is route[0] array?",
+    Array.isArray(data?.data.routeDetails?.route?.[0])
+  );
   const event = data?.data;
- const handleClick = (location: string): void => {
-   const url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
-     location
-   )}`;
-   window.open(url, "_blank"); // Open in a new tab
- };
+  const handleClick = (location: string): void => {
+    const url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+      location
+    )}`;
+    window.open(url, "_blank"); // Open in a new tab
+  };
 
   if (isLoading) {
     return (
@@ -40,7 +50,9 @@ export function ShareItineraryPage({ eventSlug, onBack }: ShareItineraryPageProp
         <PageHeader title="Trip Dashboard" onBack={onBack} />
         <div className="flex items-center justify-center h-64">
           <div className="text-center">
-            <div className="text-lg font-semibold text-gray-600">Loading trip details...</div>
+            <div className="text-lg font-semibold text-gray-600">
+              Loading trip details...
+            </div>
           </div>
         </div>
       </div>
@@ -53,8 +65,12 @@ export function ShareItineraryPage({ eventSlug, onBack }: ShareItineraryPageProp
         <PageHeader title="Trip Dashboard" onBack={onBack} />
         <div className="flex items-center justify-center h-64">
           <div className="text-center">
-            <div className="text-lg font-semibold text-red-600">Failed to load trip details</div>
-            <div className="text-sm text-gray-500 mt-2">Please try again later</div>
+            <div className="text-lg font-semibold text-red-600">
+              Failed to load trip details
+            </div>
+            <div className="text-sm text-gray-500 mt-2">
+              Please try again later
+            </div>
           </div>
         </div>
       </div>
@@ -161,7 +177,8 @@ export function ShareItineraryPage({ eventSlug, onBack }: ShareItineraryPageProp
                     Pickup Location
                   </div>
                   <div className="text-gray-900 font-semibold">
-                    {event?.routeDetails?.pickupLocation || "Location not specified"}
+                    {event?.routeDetails?.pickupLocation ||
+                      "Location not specified"}
                   </div>
                   <div className="text-sm text-gray-500">
                     Departure:{" "}
@@ -263,9 +280,7 @@ export function ShareItineraryPage({ eventSlug, onBack }: ShareItineraryPageProp
               Trip Notes
             </h3>
             {event?.tripNotes ? (
-              <ul className="space-y-2">
-                {event.tripNotes}
-              </ul>
+              <ul className="space-y-2">{event.tripNotes}</ul>
             ) : (
               <p className="text-gray-500 text-sm">No trip notes available</p>
             )}
