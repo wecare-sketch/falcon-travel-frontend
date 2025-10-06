@@ -27,21 +27,13 @@ export function ShareItineraryPage({
 }: ShareItineraryPageProps) {
   const { data, isLoading, isError } = useGetSharedEvent(eventSlug);
   console.log(data);
-  console.log("Full route data:", data?.data.routeDetails?.route);
-  console.log("Type of route:", typeof data?.data.routeDetails?.route);
-  console.log("Is route array?", Array.isArray(data?.data.routeDetails?.route));
-  console.log("Route[0]:", data?.data.routeDetails?.route?.[0]);
-  console.log("Type of route[0]:", typeof data?.data.routeDetails?.route?.[0]);
-  console.log(
-    "Is route[0] array?",
-    Array.isArray(data?.data.routeDetails?.route?.[0])
-  );
   const event = data?.data;
+
   const handleClick = (location: string): void => {
     const url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
       location
     )}`;
-    window.open(url, "_blank"); // Open in a new tab
+    window.open(url, "_blank");
   };
 
   if (isLoading) {
@@ -190,49 +182,63 @@ export function ShareItineraryPage({
               </div>
 
               {/* Route Stops */}
-              {event?.routeDetails?.route &&
-                event.routeDetails.route.length > 0 &&
-                event.routeDetails.route[0] &&
-                event.routeDetails.route[0].map((stop, index) => (
-                  <div key={index} className="flex gap-4">
-                    <div className="flex flex-col items-center">
-                      <div
-                        className={`w-6 h-6 rounded-full flex items-center justify-center ${
-                          index === 0
-                            ? "bg-blue-500"
-                            : index === event.routeDetails.route[0].length - 1
-                            ? "bg-red-600"
-                            : "bg-yellow-500"
-                        }`}
-                      >
-                        <MapPin
-                          className="w-3 h-3 text-white cursor-pointer"
-                          onClick={() => handleClick(stop)}
-                        />
+              {(() => {
+                const route = event?.routeDetails?.route;
+
+                let stops: string[] = [];
+                if (route && Array.isArray(route)) {
+                  if (route.length > 0 && Array.isArray(route[0])) {
+                    stops = route[0] as unknown as string[];
+                  } else if (route.length > 0 && typeof route[0] === "string") {
+                    stops = route as unknown as string[];
+                  }
+                }
+
+                return stops.length > 0
+                  ? stops.map((stop, index) => (
+                      <div key={index} className="flex gap-4">
+                        <div className="flex flex-col items-center">
+                          <div
+                            className={`w-6 h-6 rounded-full flex items-center justify-center ${
+                              index === 0
+                                ? "bg-blue-500"
+                                : index === stops.length - 1
+                                ? "bg-red-600"
+                                : "bg-yellow-500"
+                            }`}
+                          >
+                            <MapPin
+                              className="w-3 h-3 text-white cursor-pointer"
+                              onClick={() => handleClick(stop)}
+                            />
+                          </div>
+                          {index < stops.length - 1 && (
+                            <div className="w-px h-12 bg-gray-300 border-l-2 border-dashed border-gray-300 my-2"></div>
+                          )}
+                        </div>
+                        <div className="flex-1">
+                          <div className="font-medium text-gray-900">
+                            {index === 0
+                              ? "First Stop"
+                              : index === stops.length - 1
+                              ? "Destination"
+                              : `Stop ${index}`}
+                          </div>
+                          <div className="text-gray-900 font-semibold">
+                            {stop}
+                          </div>
+                          <div className="text-sm text-gray-500">
+                            {index === 0
+                              ? "Starting point"
+                              : index === stops.length - 1
+                              ? "Final destination"
+                              : "Brief stop"}
+                          </div>
+                        </div>
                       </div>
-                      {index < event.routeDetails.route[0].length - 1 && (
-                        <div className="w-px h-12 bg-gray-300 border-l-2 border-dashed border-gray-300 my-2"></div>
-                      )}
-                    </div>
-                    <div className="flex-1">
-                      <div className="font-medium text-gray-900">
-                        {index === 0
-                          ? "First Stop"
-                          : index === event.routeDetails.route[0].length - 1
-                          ? "Destination"
-                          : `Stop ${index}`}
-                      </div>
-                      <div className="text-gray-900 font-semibold">{stop}</div>
-                      <div className="text-sm text-gray-500">
-                        {index === 0
-                          ? "Starting point"
-                          : index === event.routeDetails.route[0].length - 1
-                          ? "Final destination"
-                          : "Brief stop"}
-                      </div>
-                    </div>
-                  </div>
-                ))}
+                    ))
+                  : null;
+              })()}
             </div>
           </CardContent>
         </Card>
@@ -294,7 +300,6 @@ export function ShareItineraryPage({
               Trip Playlist
             </h3>
 
-            {/* Now Playing */}
             <div className="bg-gray-50 rounded-lg p-4 mb-4">
               <div className="flex items-center gap-3 mb-3">
                 <div className="w-12 h-12 bg-gray-300 rounded-lg flex items-center justify-center">
@@ -310,7 +315,6 @@ export function ShareItineraryPage({
                 </div>
               </div>
 
-              {/* Controls */}
               <div className="flex items-center justify-center gap-4 mb-3">
                 <Button size="small" variant="outlined" className="w-8 h-8">
                   <SkipBack className="w-4 h-4" />
@@ -326,7 +330,6 @@ export function ShareItineraryPage({
                 </Button>
               </div>
 
-              {/* Progress Bar */}
               <div className="space-y-2">
                 <div className="w-full bg-gray-200 rounded-full h-1">
                   <div
@@ -341,7 +344,6 @@ export function ShareItineraryPage({
               </div>
             </div>
 
-            {/* Playlist Items */}
             <div className="space-y-3">
               <div className="text-center text-gray-500 py-8">
                 <Music className="w-12 h-12 mx-auto mb-2 text-gray-300" />
