@@ -169,83 +169,64 @@ const ShareItineraryPagee = () => {
                 </div>
               </div>
 
-              {/* Dropoff Location */}
-              {/* <div className="flex gap-4">
-                <div className="flex flex-col items-center">
-                  <div className="w-8 h-8 bg-red-600 rounded-full flex items-center justify-center">
-                    <MapPin
-                      className="w-4 h-4 text-white cursor-pointer"
-                      onClick={() =>
-                        handleClick(
-                          event?.routeDetails?.dropOffLocation ||
-                            "Location not specified"
-                        )
-                      }
-                    />
-                  </div> */}
-              {/* Only show dashed line if there are route stops */}
-              {/* {event?.routeDetails?.route &&
-                    event.routeDetails.route.length > 0 &&
-                    event.routeDetails.route[0] &&
-                    event.routeDetails.route[0].length > 0 && (
-                      <div className="w-px h-12 bg-gray-300 border-l-2 border-dashed border-gray-300 my-2"></div>
-                    )}
-                </div>
-                <div className="flex-1">
-                  <div className="font-medium text-gray-900">
-                    Drop-off Location
-                  </div>
-                  <div className="text-gray-900 font-semibold">
-                    {event?.routeDetails?.dropOffLocation ||
-                      "Location not specified"}
-                  </div>
-                </div>
-              </div> */}
-
               {/* Route Stops */}
-              {event?.routeDetails?.route &&
-                event.routeDetails.route.length > 0 &&
-                event.routeDetails.route[0] &&
-                event.routeDetails.route[0].map((stop, index) => (
-                  <div key={index} className="flex gap-4">
-                    <div className="flex flex-col items-center">
-                      <div
-                        className={`w-6 h-6 rounded-full flex items-center justify-center ${
-                          index === 0
-                            ? "bg-blue-500"
-                            : index === event.routeDetails.route[0].length - 1
-                            ? "bg-orange-500"
-                            : "bg-yellow-500"
-                        }`}
-                      >
-                        <MapPin
-                          className="w-3 h-3 text-white cursor-pointer"
-                          onClick={() => handleClick(stop)}
-                        />
+              {(() => {
+                const route = event?.routeDetails?.route;
+
+                let stops: string[] = [];
+                if (route && Array.isArray(route)) {
+                  if (route.length > 0 && Array.isArray(route[0])) {
+                    stops = route[0] as unknown as string[];
+                  } else if (route.length > 0 && typeof route[0] === "string") {
+                    stops = route as unknown as string[];
+                  }
+                }
+
+                return stops.length > 0
+                  ? stops.map((stop, index) => (
+                      <div key={index} className="flex gap-4">
+                        <div className="flex flex-col items-center">
+                          <div
+                            className={`w-6 h-6 rounded-full flex items-center justify-center ${
+                              index === 0
+                                ? "bg-blue-500"
+                                : index === stops.length - 1
+                                ? "bg-orange-500"
+                                : "bg-yellow-500"
+                            }`}
+                          >
+                            <MapPin
+                              className="w-3 h-3 text-white cursor-pointer"
+                              onClick={() => handleClick(stop)}
+                            />
+                          </div>
+                          {index < stops.length - 1 && (
+                            <div className="w-px h-12 bg-gray-300 border-l-2 border-dashed border-gray-300 my-2"></div>
+                          )}
+                        </div>
+                        <div className="flex-1">
+                          <div className="font-medium text-gray-900">
+                            {index === 0
+                              ? "First Stop"
+                              : index === stops.length - 1
+                              ? "Final Stop"
+                              : `Stop ${index}`}
+                          </div>
+                          <div className="text-gray-900 font-semibold">
+                            {stop}
+                          </div>
+                          <div className="text-sm text-gray-500">
+                            {index === 0
+                              ? "Additional waypoint"
+                              : index === stops.length - 1
+                              ? "Last stop before destination"
+                              : "Brief stop"}
+                          </div>
+                        </div>
                       </div>
-                      {index < event.routeDetails.route[0].length - 1 && (
-                        <div className="w-px h-12 bg-gray-300 border-l-2 border-dashed border-gray-300 my-2"></div>
-                      )}
-                    </div>
-                    <div className="flex-1">
-                      <div className="font-medium text-gray-900">
-                        {index === 0
-                          ? "First Stop"
-                          : index === event.routeDetails.route[0].length - 1
-                          ? "Final Stop"
-                          : `Stop ${index}`}
-                      </div>
-                      <div className="text-gray-900 font-semibold">{stop}</div>
-                      <div className="text-sm text-gray-500">
-                        {index === 0
-                          ? "Additional waypoint"
-                          : index === event.routeDetails.route[0].length - 1
-                          ? "Last stop before destination"
-                          : "Brief stop"}
-                      </div>
-                    </div>
-                  </div>
-                ))}
+                    ))
+                  : null;
+              })()}
 
               {/* Dropoff Location */}
               <div className="flex gap-4">
@@ -261,13 +242,6 @@ const ShareItineraryPagee = () => {
                       }
                     />
                   </div>
-                  {/* Only show dashed line if there are route stops */}
-                  {/* {event?.routeDetails?.route &&
-                    event.routeDetails.route.length > 0 &&
-                    event.routeDetails.route[0] &&
-                    event.routeDetails.route[0].length > 0 && (
-                      <div className="w-px h-12 bg-gray-300 border-l-2 border-dashed border-gray-300 my-2"></div>
-                    )} */}
                 </div>
                 <div className="flex-1">
                   <div className="font-medium text-gray-900">
@@ -370,7 +344,6 @@ const ShareItineraryPagee = () => {
                 </Button>
               </div>
 
-              {/* Progress Bar */}
               <div className="space-y-2">
                 <div className="w-full bg-gray-200 rounded-full h-1">
                   <div
